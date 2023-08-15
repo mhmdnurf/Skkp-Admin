@@ -1,15 +1,16 @@
 import { useEffect, useState } from "react";
 import {
+  FaInfoCircle,
   FaLaptopCode,
-  FaReact,
   FaRegFileAlt,
+  FaRegPaperPlane,
   FaToolbox,
   FaUserGraduate,
 } from "react-icons/fa";
 import { Sidebar } from "../components/sidebar/Sidebar";
 import { InfinitySpin } from "react-loader-spinner";
-import { db } from "../utils/firebase";
-import { doc, onSnapshot } from "firebase/firestore";
+// import { db } from "../utils/firebase";
+// import { doc, onSnapshot } from "firebase/firestore";
 
 export const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -17,25 +18,27 @@ export const Dashboard = () => {
 
   useEffect(() => {
     setIsLoading(true);
-    const userRef = doc(db, "users", "2lFizySdnoM3l8RPA75Ly49bvAT2");
-    const unsubscribe = onSnapshot(
-      userRef,
-      (doc) => {
-        if (doc.exists()) {
-          const userData = doc.data();
-          setUsername(userData.nama);
-        }
-        setIsLoading(false);
-      },
-      (error) => {
-        console.error("Error getting user data:", error);
-        setIsLoading(false);
-      }
-    );
+    setUsername("Zaka");
+    setIsLoading(false);
+    //   const userRef = doc(db, "users", "2lFizySdnoM3l8RPA75Ly49bvAT2");
+    //   const unsubscribe = onSnapshot(
+    //     userRef,
+    //     (doc) => {
+    //       if (doc.exists()) {
+    //         const userData = doc.data();
+    //         setUsername(userData.nama);
+    //       }
+    //       setIsLoading(false);
+    //     },
+    //     (error) => {
+    //       console.error("Error getting user data:", error);
+    //       setIsLoading(false);
+    //     }
+    //   );
 
-    return () => {
-      unsubscribe();
-    };
+    //   return () => {
+    //     unsubscribe();
+    //   };
   }, []);
 
   return (
@@ -52,8 +55,11 @@ export const Dashboard = () => {
           </div>
         ) : (
           <div className="w-full content overflow-y-auto">
-            <h1 className="m-2 p-6 bg-white mb-4 rounded-xl drop-shadow-xl text-xl text-slate-600 font-extrabold ">
+            <h1 className="m-2 p-6 bg-white mb-4 rounded-xl drop-shadow-xl text-xl text-slate-600 font-extrabold flex items-center">
               Welcome Back, {username}
+              <div className="ml-4 flex ">
+                <FaRegPaperPlane size={40} />
+              </div>
             </h1>
             <h1 className="p-4 text-4xl text-slate-600 font-bold">Dashboard</h1>
             <div className="flex">
@@ -99,7 +105,7 @@ export const Dashboard = () => {
             </div>
             <div className="bg-slate-200 p-4 m-4 rounded-lg drop-shadow-xl">
               <div className="flex items-center m-4 text-slate-600">
-                <FaReact className="font-bold mr-2 text-lg" size={40} />
+                <FaInfoCircle className="font-bold mr-2 text-lg" size={40} />
                 <h1 className="text-3xl font-bold">Pengumuman</h1>
               </div>
               <div className="flex-row">

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Sidebar } from "../../../../components/sidebar/Sidebar";
 import { InfinitySpin } from "react-loader-spinner";
 
-export const HomePengajuanKP = () => {
+export const HomePengajuanSkripsi = () => {
   const data = [
     {
       no: 1,
@@ -45,7 +45,7 @@ export const HomePengajuanKP = () => {
           <>
             <div className="flex flex-col">
               <h1 className="text-2xl text-white text-center shadow-md font-bold rounded-lg p-4 m-4 mb-10 w-1/2 bg-slate-600">
-                Data Pengajuan Kerja Praktek
+                Data Pengajuan Skripsi
               </h1>
               <div className="flex items-center mt-4 mb-2 mx-2 justify-end mr-4">
                 <input
@@ -76,18 +76,7 @@ export const HomePengajuanKP = () => {
                         className="hover:bg-slate-100 border-b border-t border-slate-300"
                       >
                         <td className="text-center">{index + 1}</td>
-                        <td className="text-center">
-                          {/* {item.createdAt &&
-                            new Date(
-                              item.createdAt.seconds * 1000
-                            ).toLocaleDateString("id-ID", {
-                              day: "2-digit",
-                              month: "2-digit",
-                              year: "numeric",
-                            })} */}
-
-                          {item.tanggalDaftar}
-                        </td>
+                        <td className="text-center">{item.tanggalDaftar}</td>
                         <td className="align-middle justify-center items-center p-4">
                           {item.judul}
                         </td>

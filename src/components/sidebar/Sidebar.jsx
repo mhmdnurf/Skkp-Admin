@@ -1,31 +1,41 @@
 import { useState, useEffect } from "react";
-import { FaHome, FaReact } from "react-icons/fa";
+import {
+  FaHistory,
+  FaHome,
+  FaLinux,
+  FaRegClock,
+  FaRegFolderOpen,
+  FaSignOutAlt,
+  FaUserGraduate,
+} from "react-icons/fa";
 import { Link, useLocation } from "react-router-dom";
+import { SubMenuPengajuan, SubMenuPendaftaran } from "./SubMenu";
 
 const Menus = [{ title: "dashboard", label: "Dashboard", icon: FaHome }];
-
-const DropdownMenu = () => (
-  <div className="ml-[65px] mt-2 flex flex-col justify-center">
-    <Link to="/pengajuan" className="block py-2">
-      Pengajuan Kerja Praktek
-    </Link>
-    <Link to="/pengajuan" className="block py-2">
-      Pengajuan Skripsi
-    </Link>
-  </div>
-);
 
 export const Sidebar = () => {
   const location = useLocation();
   const [active, setActive] = useState("");
-  const [dropdown, setDropdown] = useState(false);
+  const [subMenuPengajuan, setSubMenuPengajuan] = useState(false);
+  const [subMenuPendaftaran, setSubMenuPendaftaran] = useState(false);
 
   useEffect(() => {
     const path = location.pathname.slice(1);
-    setActive(path || "dashboard");
+
+    if (path === "pengajuan-kp" || path === "pengajuan-skripsi") {
+      setActive("pengajuan");
+    } else if (path === "tahun-ajaran") {
+      setActive("tahunAjaran");
+    } else if (path === "kelola-jadwal") {
+      setActive("kelolaJadwal");
+    } else {
+      setActive("dashboard");
+    }
+
     const closeDropdown = (event) => {
       if (!event.target.closest(".dropdown-container")) {
-        setDropdown(false);
+        setSubMenuPengajuan(false);
+        setSubMenuPendaftaran(false);
       }
     };
 
@@ -34,17 +44,27 @@ export const Sidebar = () => {
   }, [location]);
 
   const dropdownPengajuan = () => {
-    setDropdown(true);
+    setSubMenuPengajuan(!subMenuPengajuan);
     setActive("pengajuan");
+  };
+
+  const dropdownPendaftaran = () => {
+    setSubMenuPendaftaran(true);
+    setActive("pendaftaran");
+  };
+
+  const handleLogout = () => {
+    setActive("logout");
+    alert("helo");
   };
 
   return (
     <>
       <div
-        className={`bg-slate-100 min-w-[300px] min-h-screen text-slate-600 border-2 overflow-y-auto transition-opacity duration-300`}
+        className={`bg-slate-100 min-w-[300px] min-h-screen text-slate-600 border-2 overflow-y-auto transition-opacity duration-300 drop-shadow-xl border-r-slate-300`}
       >
         <div className="flex items-center justify-center pt-10 pb-4">
-          <FaReact className="text-2xl mr-2" />
+          <FaLinux className="text-2xl mr-2" />
           <h1 className="text-xl font-bold">SKKP ADMIN</h1>
         </div>
         <hr />
@@ -68,6 +88,7 @@ export const Sidebar = () => {
           </Link>
         ))}
 
+        {/* Kelola Pengajuan */}
         <div className="flex items-center justify-center mt-4 ">
           <div
             onClick={dropdownPengajuan}
@@ -77,11 +98,72 @@ export const Sidebar = () => {
                 : "opacity-50"
             }`}
           >
-            <FaReact className="font-bold mr-2 text-lg" />
+            <FaRegFolderOpen className="font-bold mr-2 text-lg" />
             <h1 className="font-bold ">Kelola Pengajuan</h1>
           </div>
         </div>
-        {dropdown && <DropdownMenu />}
+        {subMenuPengajuan && <SubMenuPengajuan />}
+
+        {/* Kelola Pendaftaran */}
+        <div className="flex items-center justify-center mt-4 ">
+          <div
+            onClick={dropdownPendaftaran}
+            className={`flex w-[200px] p-4 items-center cursor-pointer dropdown-container ${
+              active === "pendaftaran"
+                ? " bg-white rounded-md drop-shadow-lg"
+                : "opacity-50"
+            }`}
+          >
+            <FaUserGraduate className="font-bold mr-2 text-lg" />
+            <h1 className="font-bold ">Kelola Pendaftaran</h1>
+          </div>
+        </div>
+        {subMenuPendaftaran && <SubMenuPendaftaran />}
+
+        {/* Jadwal Pengajuan */}
+        <div className="flex items-center justify-center mt-4">
+          <Link
+            to="/kelola-jadwal"
+            className={`flex w-[200px] p-4 items-center cursor-pointer ${
+              active === "kelolaJadwal"
+                ? " bg-white rounded-md drop-shadow-lg"
+                : "opacity-50"
+            }`}
+          >
+            <FaRegClock className="font-bold mr-2 text-lg" />
+            <h1 className="font-bold">Kelola Jadwal</h1>
+          </Link>
+        </div>
+
+        {/* Tahun Ajaran */}
+        <div className="flex items-center justify-center mt-4">
+          <Link
+            to="/tahun-ajaran"
+            className={`flex w-[200px] p-4 items-center cursor-pointer ${
+              active === "tahunAjaran"
+                ? " bg-white rounded-md drop-shadow-lg"
+                : "opacity-50"
+            }`}
+          >
+            <FaHistory className="font-bold mr-2 text-lg" />
+            <h1 className="font-bold">Tahun Ajaran</h1>
+          </Link>
+        </div>
+
+        {/* Logout */}
+        <div className="flex items-center justify-center mt-4 ">
+          <div
+            onClick={handleLogout}
+            className={`flex w-[200px] p-4 items-center cursor-pointer ${
+              active === "logout"
+                ? " bg-white rounded-md drop-shadow-lg"
+                : "opacity-50"
+            }`}
+          >
+            <FaSignOutAlt className="font-bold mr-2 text-lg" />
+            <h1 className="font-bold ">Logout</h1>
+          </div>
+        </div>
 
         <div className="mb-10" />
       </div>
