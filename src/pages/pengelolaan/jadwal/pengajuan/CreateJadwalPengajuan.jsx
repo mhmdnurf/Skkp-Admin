@@ -130,88 +130,90 @@ export const CreateJadwalPengajuan = () => {
       ) : (
         <>
           <Sidebar />
-          <div className="flex-1 p-8">
-            <h1 className="text-2xl text-white text-center shadow-md font-semibold rounded-lg p-4 m-4 mb-4 w-full bg-slate-600">
-              Buat Jadwal Pengajuan
-            </h1>
-            <form
-              onSubmit={handleFormSubmit}
-              className="w-full px-8 ml-4 py-10 drop-shadow-md rounded-lg bg-white"
-            >
-              <div className="mb-4">
-                <label className="block text-slate-600 font-bold mb-2">
-                  Tahun Ajaran
-                </label>
-                <select
-                  className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring focus:border-slate-300 bg-white"
-                  value={tahunAjaran}
-                  onChange={(e) => setTahunAjaran(e.target.value)}
-                  required
-                >
-                  <option value="" disabled>
-                    Pilih Tahun Ajaran
-                  </option>
-                  {availableTahunAjaran.map((tahun) => (
-                    <option key={tahun.id} value={tahun.tahun}>
-                      {tahun.tahun}
+          <div className="flex flex-col w-full pl-[300px] overflow-y-auto pr-4 pb-4">
+            <div className="flex-1 p-8">
+              <h1 className="text-2xl text-white text-center shadow-md font-semibold rounded-lg p-4 m-4 mb-4 w-full bg-slate-600">
+                Buat Jadwal Pengajuan
+              </h1>
+              <form
+                onSubmit={handleFormSubmit}
+                className="w-full px-8 ml-4 py-10 drop-shadow-md rounded-lg bg-white"
+              >
+                <div className="mb-4">
+                  <label className="block text-slate-600 font-bold mb-2">
+                    Tahun Ajaran
+                  </label>
+                  <select
+                    className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring focus:border-slate-300 bg-white"
+                    value={tahunAjaran}
+                    onChange={(e) => setTahunAjaran(e.target.value)}
+                    required
+                  >
+                    <option value="" disabled>
+                      Pilih Tahun Ajaran
                     </option>
-                  ))}
-                </select>
-                <div className="mb-4 relative mt-2">
-                  <label className="block text-slate-600 font-bold">
-                    Periode Pengajuan
-                  </label>
-                  <div>
-                    <Datepicker
-                      value={periodePengajuan}
-                      onChange={handleValueChange}
-                    />
-                  </div>
-                </div>
-
-                <div className="border-4 p-2 border-slate-200 rounded-md mt-2">
-                  <label className="block text-slate-600 font-bold">
-                    Jenis Pengajuan
-                  </label>
-                  <div className="flex justify-evenly mt-2">
-                    {jenisPengajuanOptions.map((option) => (
-                      <label
-                        key={option.id}
-                        className="block text-slate-600 font-bold"
-                      >
-                        <input
-                          type="checkbox"
-                          value={option.value}
-                          checked={selectedJenisPengajuan.includes(
-                            option.value
-                          )}
-                          onChange={() =>
-                            handleJenisPengajuanChange(option.value)
-                          }
-                        />
-                        {option.label}
-                      </label>
+                    {availableTahunAjaran.map((tahun) => (
+                      <option key={tahun.id} value={tahun.tahun}>
+                        {tahun.tahun}
+                      </option>
                     ))}
+                  </select>
+                  <div className="mb-4 relative mt-2">
+                    <label className="block text-slate-600 font-bold">
+                      Periode Pengajuan
+                    </label>
+                    <div>
+                      <Datepicker
+                        value={periodePengajuan}
+                        onChange={handleValueChange}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="border-4 p-2 border-slate-200 rounded-md mt-2">
+                    <label className="block text-slate-600 font-bold">
+                      Jenis Pengajuan
+                    </label>
+                    <div className="flex justify-evenly mt-2">
+                      {jenisPengajuanOptions.map((option) => (
+                        <label
+                          key={option.id}
+                          className="block text-slate-600 font-bold"
+                        >
+                          <input
+                            type="checkbox"
+                            value={option.value}
+                            checked={selectedJenisPengajuan.includes(
+                              option.value
+                            )}
+                            onChange={() =>
+                              handleJenisPengajuanChange(option.value)
+                            }
+                          />
+                          {option.label}
+                        </label>
+                      ))}
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div className="flex justify-end">
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-slate-600 drop-shadow-lg text-white rounded-md hover:bg-slate-700"
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? "Loading..." : "Submit"}
-                </button>
-                <Link
-                  to="/kelola-jadwal/pengajuan"
-                  className="px-4 py-2 bg-red-400 text-white rounded-md hover:bg-red-500 ml-1 drop-shadow-lg"
-                >
-                  Cancel
-                </Link>
-              </div>
-              {error && <p className="text-red-600 mt-2">{error}</p>}
-            </form>
+                <div className="flex justify-end">
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-slate-600 drop-shadow-lg text-white rounded-md hover:bg-slate-700"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? "Loading..." : "Submit"}
+                  </button>
+                  <Link
+                    to="/kelola-jadwal/pengajuan"
+                    className="px-4 py-2 bg-red-400 text-white rounded-md hover:bg-red-500 ml-1 drop-shadow-lg"
+                  >
+                    Cancel
+                  </Link>
+                </div>
+                {error && <p className="text-red-600 mt-2">{error}</p>}
+              </form>
+            </div>
           </div>
         </>
       )}

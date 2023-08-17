@@ -10,6 +10,9 @@ import { EditTahunAjaran } from "./pages/tahun_ajaran/EditTahunAjaran";
 import { CreateJadwalSidang } from "./pages/pengelolaan/jadwal/sidang/CreateJadwalSidang";
 import { HomeJadwalPengajuan } from "./pages/pengelolaan/jadwal/pengajuan/HomeJadwalPengajuan";
 import { CreateJadwalPengajuan } from "./pages/pengelolaan/jadwal/pengajuan/CreateJadwalPengajuan";
+import { DetailPengajuanKP } from "./pages/pengelolaan/pengajuan/pengajuan_kp/DetailPengajuanKP";
+import { VerifikasiKP } from "./pages/pengelolaan/pengajuan/pengajuan_kp/VerifikasiKP";
+import { DosenPembimbingKP } from "./pages/pengelolaan/pengajuan/pengajuan_kp/DosenPembimbingKP";
 
 export default function App() {
   return (
@@ -19,6 +22,18 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/" element={<Dashboard />} />
           <Route path="/pengajuan-kp" element={<HomePengajuanKP />} />
+          <Route
+            path="/pengajuan-kp/detail/:itemId"
+            element={<DetailPengajuanKP />}
+          />
+          <Route
+            path="/pengajuan-kp/verifikasi/:itemId"
+            element={<VerifikasiKP />}
+          />
+          <Route
+            path="/pengajuan-kp/dosen-pembimbing/:itemId"
+            element={<DosenPembimbingKP />}
+          />
           <Route path="/pengajuan-skripsi" element={<HomePengajuanSkripsi />} />
           <Route path="/tahun-ajaran" element={<HomeTahunAjaran />} />
           <Route path="/tahun-ajaran/create" element={<CreateTahunAjaran />} />

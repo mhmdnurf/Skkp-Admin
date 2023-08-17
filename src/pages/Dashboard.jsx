@@ -58,13 +58,13 @@ export const Dashboard = () => {
         {/* Content Start */}
 
         {isLoading ? (
-          <div className="flex items-center justify-center w-screen">
+          <div className="flex items-center justify-center w-full h-screen overflow-y-auto ">
             <InfinitySpin width="200" color="#475569" />
           </div>
         ) : (
           <>
             <Sidebar />
-            <div className="w-full content overflow-y-auto">
+            <div className="flex flex-col w-full pl-[300px] overflow-y-auto pr-4 pb-4">
               <h1 className="m-2 p-6 bg-white mb-4 rounded-xl drop-shadow-xl text-xl text-slate-600 font-extrabold flex items-center">
                 Welcome Back, {username}
                 <div className="ml-4 flex ">

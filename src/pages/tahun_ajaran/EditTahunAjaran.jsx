@@ -18,7 +18,7 @@ import { useAuthState } from "react-firebase-hooks/auth";
 export const EditTahunAjaran = () => {
   const navigate = useNavigate();
 
-  const { itemId } = useParams(); // Mendapatkan itemId dari URL parameter
+  const { itemId } = useParams();
 
   const [tahunAjaran, setTahunAjaran] = useState("");
   const [isLoading, setIsLoading] = useState(true);

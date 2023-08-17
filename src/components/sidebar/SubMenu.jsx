@@ -38,3 +38,13 @@ export const SubMenuJadwal = () => (
     </Link>
   </div>
 );
+export const SubMenuPengguna = () => (
+  <div className="ml-[65px] mt-2 flex flex-col justify-center">
+    <Link to="/kelola-pengguna/mahasiswa" className="block py-2">
+      Mahasiswa
+    </Link>
+    <Link to="/kelola-pengguna/dosen" className="block py-2">
+      Dosen
+    </Link>
+  </div>
+);

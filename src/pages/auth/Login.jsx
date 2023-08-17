@@ -139,7 +139,7 @@ export const Login = () => {
       </div>
       {isLoading && (
         <div className="fixed top-0 left-0 w-full h-screen flex justify-center items-center bg-black bg-opacity-50">
-          <InfinitySpin width={40} color="#ffffff" />
+          <InfinitySpin width={200} color="#ffffff" />
         </div>
       )}
     </>

@@ -1,0 +1,179 @@
+import { useState, useEffect } from "react";
+import { Sidebar } from "../../../../components/sidebar/Sidebar";
+import { InfinitySpin } from "react-loader-spinner";
+import { useParams, useNavigate, Link } from "react-router-dom";
+import { useAuthState } from "react-firebase-hooks/auth";
+import { auth, db } from "../../../../utils/firebase";
+import { doc, getDoc } from "firebase/firestore";
+
+export const DetailPengajuanKP = () => {
+  const { itemId } = useParams();
+  const [data, setData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const navigate = useNavigate();
+  const [user, loading] = useAuthState(auth);
+
+  const getUserInfo = async (uid) => {
+    const userDocRef = doc(db, "users", uid);
+    const userDocSnapshot = await getDoc(userDocRef);
+
+    if (userDocSnapshot.exists()) {
+      return userDocSnapshot.data();
+    }
+    return null;
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const itemDocRef = doc(db, "pengajuan", itemId);
+      const itemDocSnapshot = await getDoc(itemDocRef);
+
+      if (itemDocSnapshot.exists()) {
+        const itemData = itemDocSnapshot.data();
+        const userInfo = await getUserInfo(itemData.uid);
+        const dosenPembimbingInfo = await getUserInfo(itemData.dosenPembimbing);
+
+        setData({
+          id: itemDocSnapshot.id,
+          ...itemData,
+          userInfo: userInfo,
+          dosenPembimbingInfo: dosenPembimbingInfo,
+        });
+      }
+
+      setIsLoading(false);
+    };
+
+    fetchData();
+
+    if (loading) return;
+    if (!user) return navigate("/login");
+  }, [itemId, user, loading, navigate]);
+
+  if (isLoading) {
+    return (
+      <div className="flex bg-slate-100 h-screen">
+        <Sidebar />
+        <div className="flex-1 flex justify-center items-center">
+          <InfinitySpin width="200" color="#475569" />
+        </div>
+      </div>
+    );
+  }
+
+  if (!data) {
+    return <p>Data not found.</p>;
+  }
+
+  return (
+    <>
+      <div className="flex bg-slate-100 h-full">
+        <Sidebar />
+        <div className="flex flex-col w-full pl-[300px] overflow-y-auto pr-4 pb-4">
+          <h1 className="text-2xl text-white text-center shadow-md font-bold rounded-lg p-4 m-4 mb-10 bg-slate-600">
+            Detail Pengajuan Kerja Praktek
+          </h1>
+
+          <div className="flex flex-col px-4 mt-2 bg-white mx-4 rounded-lg p-4 drop-shadow-lg">
+            <div className="flex justify-start mt-4 items-center">
+              <h1 className="w-full p-4 bg-slate-600 text-center text-white rounded-lg  font-bold">
+                Berkas Persyaratan
+              </h1>
+            </div>
+            <div className="flex justify-evenly items-center p-4">
+              <Link
+                to={`${data.transkipNilai}`}
+                target="_blank"
+                className="p-2 bg-slate-300 hover:bg-slate-200 rounded-md text-slate-600  font-semibold hover:transform hover:scale-110 transition-transform duration-300 ease-in-out"
+              >
+                Transkip Nilai
+              </Link>
+              <Link
+                to={`${data.transkipNilai}`}
+                target="_blank"
+                className="p-2 bg-slate-300 hover:bg-slate-200 rounded-md text-slate-600  font-semibold hover:transform hover:scale-110 transition-transform duration-300 ease-in-out"
+              >
+                Form KRS
+              </Link>
+              <Link
+                to={`${data.transkipNilai}`}
+                target="_blank"
+                className="p-2 bg-slate-300 hover:bg-slate-200 rounded-md font-semibold text-slate-600 hover:transform hover:scale-110 transition-transform duration-300 ease-in-out"
+              >
+                Form Pendaftaran KP
+              </Link>
+              <Link
+                to={`${data.transkipNilai}`}
+                target="_blank"
+                className="p-2 bg-slate-300 hover:bg-slate-200 rounded-md text-slate-600  font-semibold hover:transform hover:scale-110 transition-transform duration-300 ease-in-out"
+              >
+                Slip Pembayaran KP
+              </Link>
+              <Link
+                to={`${data.dokumenProporsal}`}
+                target="_blank"
+                className="p-2 bg-slate-300 hover:bg-slate-200 rounded-md text-slate-600  font-semibold hover:transform hover:scale-110 transition-transform duration-300 ease-in-out"
+              >
+                Dokumen Proposal KP
+              </Link>
+            </div>
+
+            <div className="border p-4 rounded-md border-slate-300">
+              <h1 className="text-lg font-bold text-slate-600 mb-2">
+                Tanggal Daftar
+              </h1>
+              <p className="mb-2">
+                {data.createdAt.toDate().toLocaleDateString()}
+              </p>
+              <p className="mb-2 text-lg font-bold text-slate-600">NIM</p>
+              <p className="mb-2">{data.userInfo.nim}</p>
+              <p className="mb-2 text-lg font-bold text-slate-600">Nama</p>
+              <p className="mb-2">{data.userInfo.nama}</p>
+              <p className="mb-2 text-lg font-bold text-slate-600">Jurusan</p>
+              <p className="mb-2">{data.userInfo.jurusan}</p>
+              <p className="mb-2 text-lg font-bold text-slate-600">Judul</p>
+              <p className="mb-2">{data.judul}</p>
+              <p className="mb-2 text-lg font-bold text-slate-600">Status</p>
+              <p className="mb-2">{data.status}</p>
+              <p className="mb-2 text-lg font-bold text-slate-600">Catatan</p>
+              <p className="mb-2">{data.catatan}</p>
+              <p className="mb-2 text-lg font-bold text-slate-600">
+                Dosen Pembimbing
+              </p>
+              <p className="mb-2">
+                {" "}
+                {data.dosenPembimbingInfo ? (
+                  <p className="mb-2">{data.dosenPembimbingInfo.nama}</p>
+                ) : (
+                  <p className="mb-2 ">-</p>
+                )}
+              </p>
+            </div>
+
+            <div className="flex flex-1 justify-end p-4">
+              <Link
+                to={`/pengajuan-kp/verifikasi/${itemId}`}
+                className="bg-green-600 hover:bg-green-500 p-2 m-2 rounded-lg w-[150px] text-center text-slate-100 drop-shadow-xl"
+              >
+                Verifikasi
+              </Link>
+              <Link
+                to={`/pengajuan-kp/dosen-pembimbing/${itemId}`}
+                className="bg-blue-600 hover:bg-blue-500 p-2 m-2 rounded-lg w-[200px] text-center text-slate-100"
+              >
+                Beri Dosen Pembimbing
+              </Link>
+              <Link
+                to={"/pengajuan-kp"}
+                className="bg-red-400 hover:bg-red-300 p-2 m-2 rounded-lg w-[150px] text-center text-slate-100"
+              >
+                Kembali
+              </Link>
+            </div>
+          </div>
+          <div className="mb-10" />
+        </div>
+      </div>
+    </>
+  );
+};

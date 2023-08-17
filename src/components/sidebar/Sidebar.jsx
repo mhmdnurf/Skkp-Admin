@@ -74,9 +74,7 @@ export const Sidebar = () => {
 
   return (
     <>
-      <div
-        className={`bg-slate-100 min-w-[300px] min-h-screen text-slate-600 border-2 overflow-y-auto transition-opacity duration-300 drop-shadow-xl border-r-slate-300`}
-      >
+      <div className="bg-slate-100 h-full min-w-[300px] text-slate-600 border-2 overflow-y-auto transition-opacity duration-300 drop-shadow-xl border-r-slate-300 fixed top-0 left-0">
         <div className="flex items-center justify-center pt-10 pb-4">
           <FaLinux className="text-2xl mr-2" />
           <h1 className="text-xl font-bold">SKKP ADMIN</h1>

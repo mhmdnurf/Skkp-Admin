@@ -79,7 +79,7 @@ export const HomeTahunAjaran = () => {
       ) : (
         <>
           <Sidebar />
-          <div className="flex flex-col w-full">
+          <div className="flex flex-col w-full pl-[300px] overflow-y-auto pr-4 pb-4">
             <h1 className="text-2xl text-white text-center shadow-md font-semibold rounded-lg p-4 m-4 mb-10 bg-slate-600">
               Tahun Ajaran
             </h1>
