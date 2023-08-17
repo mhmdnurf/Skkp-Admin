@@ -27,3 +27,14 @@ export const SubMenuPendaftaran = () => (
     </Link>
   </div>
 );
+
+export const SubMenuJadwal = () => (
+  <div className="ml-[65px] mt-2 flex flex-col justify-center">
+    <Link to="/kelola-jadwal/pengajuan" className="block py-2">
+      Jadwal Pengajuan
+    </Link>
+    <Link to="/kelola-jadwal/sidang" className="block py-2">
+      Jadwal Sidang
+    </Link>
+  </div>
+);

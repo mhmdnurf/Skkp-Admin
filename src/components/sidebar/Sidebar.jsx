@@ -8,25 +8,29 @@ import {
   FaSignOutAlt,
   FaUserGraduate,
 } from "react-icons/fa";
-import { Link, useLocation } from "react-router-dom";
-import { SubMenuPengajuan, SubMenuPendaftaran } from "./SubMenu";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { SubMenuPengajuan, SubMenuPendaftaran, SubMenuJadwal } from "./SubMenu";
+import { signOut } from "firebase/auth";
+import { auth } from "../../utils/firebase";
 
 const Menus = [{ title: "dashboard", label: "Dashboard", icon: FaHome }];
 
 export const Sidebar = () => {
+  const navigate = useNavigate();
   const location = useLocation();
   const [active, setActive] = useState("");
   const [subMenuPengajuan, setSubMenuPengajuan] = useState(false);
   const [subMenuPendaftaran, setSubMenuPendaftaran] = useState(false);
+  const [subMenuJadwal, setSubMenuJadwal] = useState(false);
 
   useEffect(() => {
     const path = location.pathname.slice(1);
 
-    if (path === "pengajuan-kp" || path === "pengajuan-skripsi") {
+    if (path.startsWith("pengajuan-")) {
       setActive("pengajuan");
-    } else if (path === "tahun-ajaran") {
+    } else if (path.startsWith("tahun-ajaran")) {
       setActive("tahunAjaran");
-    } else if (path === "kelola-jadwal") {
+    } else if (path.startsWith("kelola-jadwal")) {
       setActive("kelolaJadwal");
     } else {
       setActive("dashboard");
@@ -36,6 +40,7 @@ export const Sidebar = () => {
       if (!event.target.closest(".dropdown-container")) {
         setSubMenuPengajuan(false);
         setSubMenuPendaftaran(false);
+        setSubMenuJadwal(false);
       }
     };
 
@@ -49,13 +54,22 @@ export const Sidebar = () => {
   };
 
   const dropdownPendaftaran = () => {
-    setSubMenuPendaftaran(true);
+    setSubMenuPendaftaran(!subMenuPendaftaran);
     setActive("pendaftaran");
   };
 
-  const handleLogout = () => {
-    setActive("logout");
-    alert("helo");
+  const dropdownJadwal = () => {
+    setSubMenuJadwal(!subMenuJadwal);
+    setActive("kelolaJadwal");
+  };
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      navigate("/login");
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
   };
 
   return (
@@ -122,9 +136,9 @@ export const Sidebar = () => {
 
         {/* Jadwal Pengajuan */}
         <div className="flex items-center justify-center mt-4">
-          <Link
-            to="/kelola-jadwal"
-            className={`flex w-[200px] p-4 items-center cursor-pointer ${
+          <div
+            onClick={dropdownJadwal}
+            className={`flex w-[200px] p-4 items-center cursor-pointer dropdown-container ${
               active === "kelolaJadwal"
                 ? " bg-white rounded-md drop-shadow-lg"
                 : "opacity-50"
@@ -132,8 +146,9 @@ export const Sidebar = () => {
           >
             <FaRegClock className="font-bold mr-2 text-lg" />
             <h1 className="font-bold">Kelola Jadwal</h1>
-          </Link>
+          </div>
         </div>
+        {subMenuJadwal && <SubMenuJadwal />}
 
         {/* Tahun Ajaran */}
         <div className="flex items-center justify-center mt-4">
