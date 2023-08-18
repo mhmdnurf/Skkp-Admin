@@ -12,6 +12,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { SubMenuPengajuan, SubMenuPendaftaran, SubMenuJadwal } from "./SubMenu";
 import { signOut } from "firebase/auth";
 import { auth } from "../../utils/firebase";
+import Swal from "sweetalert2";
 
 const Menus = [{ title: "dashboard", label: "Dashboard", icon: FaHome }];
 
@@ -65,8 +66,21 @@ export const Sidebar = () => {
 
   const handleLogout = async () => {
     try {
-      await signOut(auth);
-      navigate("/login");
+      const result = await Swal.fire({
+        title: "Apakah anda yakin untuk logout?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#3085d6",
+        cancelButtonText: "Batal",
+        confirmButtonText: "Confirm",
+      });
+
+      if (result.isConfirmed) {
+        await signOut(auth);
+        navigate("/login");
+        Swal.fire("Success", "Berhasil Logout!", "success");
+      }
     } catch (error) {
       console.error("Logout error:", error);
     }

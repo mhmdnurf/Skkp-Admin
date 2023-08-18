@@ -61,30 +61,18 @@ export const CreateJadwalPengajuan = () => {
     e.preventDefault();
 
     try {
-      const currentTimeUTC = new Date();
-
-      // Konversi waktu UTC ke waktu lokal Indonesia (Asia/Jakarta)
-      const timezone = "Asia/Jakarta";
-      const currentTimeIndonesia = utcToZonedTime(currentTimeUTC, timezone);
-
-      // Format waktu dalam bentuk string sesuai dengan preferensi Anda
-      const formattedTime = format(
-        currentTimeIndonesia,
-        "yyyy-MM-dd HH:mm:ss",
-        { timeZone: timezone }
-      );
       setIsSubmitting(true);
 
       // Dapatkan data yang akan disimpan
       const jadwalData = {
         tahunAjaran: tahunAjaran,
         periodePendaftaran: {
-          tanggalBuka: periodePengajuan.startDate,
-          tanggalTutup: periodePengajuan.endDate,
+          tanggalBuka: new Date(periodePengajuan.startDate),
+          tanggalTutup: new Date(periodePengajuan.endDate),
         },
         jenisPengajuan: selectedJenisPengajuan,
         status: "Aktif",
-        cretedAt: formattedTime,
+        cretedAt: new Date(),
       };
 
       // Simpan data jadwal ke koleksi jadwal

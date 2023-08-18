@@ -5,8 +5,6 @@ import { addDoc, collection, getDocs } from "firebase/firestore";
 import { InfinitySpin } from "react-loader-spinner";
 import { Link, useNavigate } from "react-router-dom";
 import Datepicker from "react-tailwindcss-datepicker";
-import { utcToZonedTime } from "date-fns-tz";
-import format from "date-fns-tz/format";
 import Swal from "sweetalert2";
 import { useAuthState } from "react-firebase-hooks/auth";
 
@@ -71,31 +69,19 @@ export const CreateJadwalSidang = () => {
     e.preventDefault();
 
     try {
-      const currentTimeUTC = new Date();
-
-      // Konversi waktu UTC ke waktu lokal Indonesia (Asia/Jakarta)
-      const timezone = "Asia/Jakarta";
-      const currentTimeIndonesia = utcToZonedTime(currentTimeUTC, timezone);
-
-      // Format waktu dalam bentuk string sesuai dengan preferensi Anda
-      const formattedTime = format(
-        currentTimeIndonesia,
-        "yyyy-MM-dd HH:mm:ss",
-        { timeZone: timezone }
-      );
       setIsSubmitting(true);
 
       // Dapatkan data yang akan disimpan
       const jadwalData = {
         tahunAjaran: tahunAjaran,
         periodePendaftaran: {
-          tanggalBuka: periodeSidang.startDate,
-          tanggalTutup: periodeSidang.endDate,
+          tanggalBuka: new Date(periodeSidang.startDate),
+          tanggalTutup: new Date(periodeSidang.endDate),
         },
-        tanggalSidang: tanggalSidang.startDate,
+        tanggalSidang: new Date(tanggalSidang.startDate),
         jenisSidang: selectedJenisSidang,
         status: "Aktif",
-        cretedAt: formattedTime,
+        cretedAt: new Date(),
       };
 
       // Simpan data jadwal ke koleksi jadwal

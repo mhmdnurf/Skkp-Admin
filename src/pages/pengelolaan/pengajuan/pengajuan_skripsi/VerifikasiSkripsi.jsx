@@ -7,7 +7,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import Swal from "sweetalert2";
 import { useAuthState } from "react-firebase-hooks/auth";
 
-export const VerifikasiKP = () => {
+export const VerifikasiSkripsi = () => {
   const { itemId } = useParams();
   const [status, setStatus] = useState("");
   const [catatan, setCatatan] = useState("");
@@ -37,7 +37,6 @@ export const VerifikasiKP = () => {
         await updateDoc(itemDocRef, {
           status: status,
           catatan: catatan,
-          editedAt: new Date(),
         });
 
         Swal.fire({
@@ -46,7 +45,7 @@ export const VerifikasiKP = () => {
           icon: "success",
           confirmButtonText: "OK",
         }).then(() => {
-          navigate(`/pengajuan-kp/detail/${itemId}`);
+          navigate(`/pengajuan-skripsi/detail/${itemId}`);
         });
       }
     } catch (error) {
@@ -68,7 +67,7 @@ export const VerifikasiKP = () => {
         ) : (
           <div className="flex-1 p-8">
             <h1 className="text-2xl text-white text-center shadow-md font-semibold rounded-lg p-4 m-4 mb-4 w-full bg-slate-600">
-              Verifikasi Pengajuan Kerja Praktek
+              Verifikasi Pengajuan Skripsi
             </h1>
             <form
               onSubmit={handleFormSubmit}

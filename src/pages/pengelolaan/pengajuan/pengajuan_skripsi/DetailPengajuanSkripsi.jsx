@@ -6,7 +6,7 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, db } from "../../../../utils/firebase";
 import { doc, getDoc } from "firebase/firestore";
 
-export const DetailPengajuanKP = () => {
+export const DetailPengajuanSkripsi = () => {
   const { itemId } = useParams();
   const [data, setData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -128,8 +128,10 @@ export const DetailPengajuanKP = () => {
               <p className="mb-2">{data.userInfo.nama}</p>
               <p className="mb-2 text-lg font-bold text-slate-600">Jurusan</p>
               <p className="mb-2">{data.userInfo.jurusan}</p>
-              <p className="mb-2 text-lg font-bold text-slate-600">Judul</p>
-              <p className="mb-2">{data.judul}</p>
+              <p className="mb-2 text-lg font-bold text-slate-600">
+                Topik Penelitian
+              </p>
+              <p className="mb-2">{data.topikPenelitian}</p>
               <p className="mb-2 text-lg font-bold text-slate-600">Status</p>
               <p className="mb-2">{data.status}</p>
               <p className="mb-2 text-lg font-bold text-slate-600">Catatan</p>
@@ -149,19 +151,19 @@ export const DetailPengajuanKP = () => {
 
             <div className="flex flex-1 justify-end p-4">
               <Link
-                to={`/pengajuan-kp/verifikasi/${itemId}`}
+                to={`/pengajuan-skripsi/verifikasi/${itemId}`}
                 className="bg-green-600 hover:bg-green-500 p-2 m-2 rounded-lg w-[150px] text-center text-slate-100 drop-shadow-xl"
               >
                 Verifikasi
               </Link>
               <Link
-                to={`/pengajuan-kp/dosen-pembimbing/${itemId}`}
+                to={`/pengajuan-skripsi/dosen-pembimbing/${itemId}`}
                 className="bg-blue-600 hover:bg-blue-500 p-2 m-2 rounded-lg w-[200px] text-center text-slate-100"
               >
                 Beri Dosen Pembimbing
               </Link>
               <Link
-                to={"/pengajuan-kp"}
+                to={"/pengajuan-skripsi"}
                 className="bg-red-400 hover:bg-red-300 p-2 m-2 rounded-lg w-[150px] text-center text-slate-100"
               >
                 Kembali

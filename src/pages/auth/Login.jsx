@@ -6,6 +6,7 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { getDoc, doc } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import { InfinitySpin } from "react-loader-spinner"; // Import loader library
+import Swal from "sweetalert2";
 export const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -23,10 +24,14 @@ export const Login = () => {
         if (userDoc.exists()) {
           const userData = userDoc.data();
           if (userData.role === "prodi") {
+            await Swal.fire("Success", "Login Berhasil!", "success");
             navigate("/");
           } else {
-            // Pengguna bukan "prodi", tampilkan pesan kesalahan
-            alert("Access denied. Kamu bukan prodi :)");
+            await Swal.fire(
+              "Error",
+              "Oops, anda bukan bagian dari prodi",
+              "error"
+            );
           }
         }
       };

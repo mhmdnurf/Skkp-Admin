@@ -13,6 +13,9 @@ import { CreateJadwalPengajuan } from "./pages/pengelolaan/jadwal/pengajuan/Crea
 import { DetailPengajuanKP } from "./pages/pengelolaan/pengajuan/pengajuan_kp/DetailPengajuanKP";
 import { VerifikasiKP } from "./pages/pengelolaan/pengajuan/pengajuan_kp/VerifikasiKP";
 import { DosenPembimbingKP } from "./pages/pengelolaan/pengajuan/pengajuan_kp/DosenPembimbingKP";
+import { DetailPengajuanSkripsi } from "./pages/pengelolaan/pengajuan/pengajuan_skripsi/DetailPengajuanSkripsi";
+import { VerifikasiSkripsi } from "./pages/pengelolaan/pengajuan/pengajuan_skripsi/VerifikasiSkripsi";
+import { DosenPembimbingSkripsi } from "./pages/pengelolaan/pengajuan/pengajuan_skripsi/DosenPembimbingSkripsi";
 
 export default function App() {
   return (
@@ -35,6 +38,18 @@ export default function App() {
             element={<DosenPembimbingKP />}
           />
           <Route path="/pengajuan-skripsi" element={<HomePengajuanSkripsi />} />
+          <Route
+            path="/pengajuan-skripsi/detail/:itemId"
+            element={<DetailPengajuanSkripsi />}
+          />
+          <Route
+            path="/pengajuan-skripsi/verifikasi/:itemId"
+            element={<VerifikasiSkripsi />}
+          />
+          <Route
+            path="/pengajuan-skripsi/dosen-pembimbing/:itemId"
+            element={<DosenPembimbingSkripsi />}
+          />
           <Route path="/tahun-ajaran" element={<HomeTahunAjaran />} />
           <Route path="/tahun-ajaran/create" element={<CreateTahunAjaran />} />
           <Route

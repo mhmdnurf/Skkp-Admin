@@ -11,7 +11,14 @@ import { Sidebar } from "../components/sidebar/Sidebar";
 import { InfinitySpin } from "react-loader-spinner";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useNavigate } from "react-router-dom";
-import { doc, getDoc } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  where,
+} from "firebase/firestore";
 import { db } from "../utils/firebase";
 import { auth } from "../utils/firebase";
 
@@ -20,18 +27,55 @@ export const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [username, setUsername] = useState("");
   const [user, loading] = useAuthState(auth);
+  const [jumlahKP, setJumlahKP] = useState(0);
 
   const fetchUserName = async () => {
     try {
       const userDocRef = doc(db, "users", user.uid);
       const userDocSnapshot = await getDoc(userDocRef);
 
+      // Mendapatkan jadwal sidang yang aktif
+      const activeJadwalSidangQuery = query(
+        collection(db, "jadwalSidang"),
+        where("status", "==", "Aktif")
+      );
+      const activeJadwalSidangDocs = await getDocs(activeJadwalSidangQuery);
+
+      let activeJadwalSidang;
+      if (activeJadwalSidangDocs.size > 0) {
+        // Jika ada jadwal sidang aktif, ambil data jadwal sidang pertama
+        activeJadwalSidang = activeJadwalSidangDocs.docs[0].data();
+      }
+
+      // Jika ada jadwal sidang aktif, lakukan query berdasarkan jenis pengajuan dan periode pendaftaran
+      const currentDate = new Date();
+
+      if (activeJadwalSidang) {
+        const tanggalBuka = new Date(activeJadwalSidang.tanggalBuka);
+        const tanggalTutup = new Date(activeJadwalSidang.tanggalTutup);
+
+        if (currentDate >= tanggalBuka && currentDate <= tanggalTutup) {
+          const kerjaPraktekQuery = query(
+            collection(db, "pengajuan"),
+            where("jenisPengajuan", "==", "Kerja Praktek"),
+            where("createdAt", ">=", tanggalBuka),
+            where("createdAt", "<=", tanggalTutup)
+          );
+
+          const kerjaPraktekDocs = await getDocs(kerjaPraktekQuery);
+          setJumlahKP(kerjaPraktekDocs.size);
+        } else {
+          setJumlahKP(0);
+        }
+      } else {
+        setJumlahKP(0);
+      }
+
       if (userDocSnapshot.exists()) {
         const userData = userDocSnapshot.data();
         setUsername(userData.nama);
         setIsLoading(false);
 
-        // Cek peran pengguna
         if (userData.role !== "prodi") {
           navigate("/login"); // Redirect jika peran bukan "prodi"
         }
@@ -45,6 +89,7 @@ export const Dashboard = () => {
   useEffect(() => {
     if (loading) return;
     if (!user) return navigate("/login");
+    console.log(jumlahKP);
 
     fetchUserName();
   }, [user, loading]);
@@ -82,7 +127,7 @@ export const Dashboard = () => {
                       <FaToolbox className="mr-2" size={80} />
                       <div className="text-right">
                         <p>Pendaftar Sidang Kerja Praktek</p>
-                        <p>0</p>
+                        <p>{jumlahKP}</p>
                       </div>
                     </div>
                     <div className="p-4 bg-white m-2 flex items-center justify-center rounded-xl hover:transform hover:scale-110 transition-transform duration-300 ease-in-out">

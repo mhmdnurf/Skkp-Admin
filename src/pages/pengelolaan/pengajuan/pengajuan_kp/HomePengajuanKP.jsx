@@ -6,6 +6,7 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, db } from "../../../../utils/firebase";
 import {
   collection,
+  deleteDoc,
   doc,
   getDoc,
   onSnapshot,
@@ -13,12 +14,13 @@ import {
   query,
   where,
 } from "firebase/firestore";
+import Swal from "sweetalert2";
 
 export const HomePengajuanKP = () => {
   const itemsPerPage = 5;
   const [data, setData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   // const [searchText, setSearchText] = useState("");
   const navigate = useNavigate();
   const [user, loading] = useAuthState(auth);
@@ -73,16 +75,39 @@ export const HomePengajuanKP = () => {
     return title;
   };
 
+  const handleDelete = async (id) => {
+    try {
+      const result = await Swal.fire({
+        title: "Apakah Anda Yakin?",
+        text: "Data akan hilang permanen ketika dihapus",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#3085d6",
+        cancelButtonText: "Batal",
+        confirmButtonText: "Confirm",
+      });
+
+      if (result.isConfirmed) {
+        const docRef = doc(db, "pengajuan", id);
+        await deleteDoc(docRef);
+        Swal.fire("Success", "Data Berhasil dihapus!", "success");
+      }
+    } catch (error) {
+      console.error("Error deleting data: ", error);
+    }
+  };
+
   return (
     <>
-      <div className="flex bg-slate-100 h-screen">
-        <Sidebar />
-        {isLoading ? (
-          <div className="flex-1 flex justify-center items-center">
-            <InfinitySpin width="200" color="#475569" />
-          </div>
-        ) : (
-          <>
+      {isLoading ? (
+        <div className="flex-1 flex justify-center items-center h-screen bg-slate-100">
+          <InfinitySpin width="200" color="#475569" />
+        </div>
+      ) : (
+        <>
+          <div className="flex bg-slate-100 h-screen">
+            <Sidebar />
             <div className="flex flex-col w-full pl-[300px] overflow-y-auto pr-4 pb-4">
               <h1 className="text-2xl text-white text-center shadow-md font-bold rounded-lg p-4 m-4 mb-10 bg-slate-600">
                 Data Pengajuan Kerja Praktek
@@ -134,7 +159,7 @@ export const HomePengajuanKP = () => {
                         <td className="text-center">
                           {item.userInfo && item.userInfo.nim}
                         </td>
-                        <td className="text-center">
+                        <td className="text-center whitespace-nowrap">
                           {item.userInfo && item.userInfo.nama}
                         </td>
                         <td className="text-center">
@@ -158,7 +183,10 @@ export const HomePengajuanKP = () => {
                             >
                               Detail
                             </Link>
-                            <button className="p-2 bg-red-200 rounded-md hover:bg-red-300">
+                            <button
+                              className="p-2 bg-red-200 rounded-md hover:bg-red-300"
+                              onClick={() => handleDelete(item.id)}
+                            >
                               Hapus
                             </button>
                           </div>
@@ -201,9 +229,9 @@ export const HomePengajuanKP = () => {
               </div>
               <div className="mb-10" />
             </div>
-          </>
-        )}
-      </div>
+          </div>
+        </>
+      )}
     </>
   );
 };

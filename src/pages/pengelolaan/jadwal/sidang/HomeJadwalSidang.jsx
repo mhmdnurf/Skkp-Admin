@@ -70,13 +70,13 @@ export const HomeJadwalSidang = () => {
 
   return (
     <>
-      <div className="flex bg-slate-100 h-screen">
-        {isLoading ? (
-          <div className="flex-1 flex justify-center items-center">
-            <InfinitySpin width="200" color="#475569" />
-          </div>
-        ) : (
-          <>
+      {isLoading ? (
+        <div className="flex-1 flex justify-center items-center h-screen bg-slate-100">
+          <InfinitySpin width="200" color="#475569" />
+        </div>
+      ) : (
+        <>
+          <div className="flex bg-slate-100 h-screen">
             <Sidebar />
             <div className="flex flex-col w-full pl-[300px] overflow-y-auto pr-4 pb-4">
               <h1 className="text-2xl text-white text-center shadow-md font-semibold rounded-lg p-4 m-4 mb-10 bg-slate-600">
@@ -120,10 +120,34 @@ export const HomeJadwalSidang = () => {
                       <tr key={item.id}>
                         <td className="p-2 px-6">{index + 1}</td>
                         <td className="p-2 px-6">
-                          {item.periodePendaftaran.tanggalBuka} -{" "}
-                          {item.periodePendaftaran.tanggalTutup}
+                          {item.periodePendaftaran.tanggalBuka &&
+                            new Date(
+                              item.periodePendaftaran.tanggalBuka.toDate()
+                            ).toLocaleDateString("id-ID", {
+                              day: "2-digit",
+                              month: "2-digit",
+                              year: "numeric",
+                            })}{" "}
+                          -{" "}
+                          {item.periodePendaftaran.tanggalTutup &&
+                            new Date(
+                              item.periodePendaftaran.tanggalTutup.toDate()
+                            ).toLocaleDateString("id-ID", {
+                              day: "2-digit",
+                              month: "2-digit",
+                              year: "numeric",
+                            })}
                         </td>
-                        <td className="p-2 px-6">{item.tanggalSidang}</td>
+                        <td className="p-2 px-6">
+                          {item.tanggalSidang &&
+                            new Date(
+                              item.tanggalSidang.toDate()
+                            ).toLocaleDateString("id-ID", {
+                              day: "2-digit",
+                              month: "2-digit",
+                              year: "numeric",
+                            })}
+                        </td>
                         <td className="p-2 px-6">
                           <ul className="list-none">
                             {item.jenisSidang.map((jenis) => (
@@ -187,9 +211,9 @@ export const HomeJadwalSidang = () => {
                 <div className="mb-10" />
               </div>
             </div>
-          </>
-        )}
-      </div>
+          </div>
+        </>
+      )}
     </>
   );
 };

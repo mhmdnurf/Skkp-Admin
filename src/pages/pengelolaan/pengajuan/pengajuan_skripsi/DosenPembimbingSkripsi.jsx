@@ -1,27 +1,56 @@
 import { useState, useEffect } from "react";
 import { Sidebar } from "../../../../components/sidebar/Sidebar";
 import { auth, db } from "../../../../utils/firebase";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  updateDoc,
+  where,
+} from "firebase/firestore";
 import { InfinitySpin } from "react-loader-spinner";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import Swal from "sweetalert2";
 import { useAuthState } from "react-firebase-hooks/auth";
 
-export const VerifikasiKP = () => {
+export const DosenPembimbingSkripsi = () => {
   const { itemId } = useParams();
-  const [status, setStatus] = useState("");
-  const [catatan, setCatatan] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [user, loading] = useAuthState(auth);
+  const [availableDosen, setAvailableDosen] = useState([]);
+  const [dosenPembimbing, setDosenPembimbing] = useState("");
 
   const navigate = useNavigate();
 
   useEffect(() => {
+    const fetchDosen = async () => {
+      try {
+        const querySnapshot = await getDocs(
+          query(collection(db, "users"), where("role", "==", "dosen"))
+        );
+        console.log(querySnapshot);
+        const dosenOptions = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        console.log(dosenOptions);
+        setAvailableDosen(dosenOptions);
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Error fetching data: ", error);
+        setError("Error fetching data");
+        setIsLoading(false);
+      }
+    };
+
     if (loading) return;
     if (!user) return navigate("/login");
-  }, [itemId, user, loading, navigate]);
+    fetchDosen();
+  }, [user, loading, navigate]);
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
@@ -35,9 +64,7 @@ export const VerifikasiKP = () => {
       if (itemDocSnapshot.exists()) {
         // Update the document with new status and catatan
         await updateDoc(itemDocRef, {
-          status: status,
-          catatan: catatan,
-          editedAt: new Date(),
+          dosenPembimbing: dosenPembimbing,
         });
 
         Swal.fire({
@@ -46,7 +73,7 @@ export const VerifikasiKP = () => {
           icon: "success",
           confirmButtonText: "OK",
         }).then(() => {
-          navigate(`/pengajuan-kp/detail/${itemId}`);
+          navigate(`/pengajuan-skripsi/detail/${itemId}`);
         });
       }
     } catch (error) {
@@ -68,7 +95,7 @@ export const VerifikasiKP = () => {
         ) : (
           <div className="flex-1 p-8">
             <h1 className="text-2xl text-white text-center shadow-md font-semibold rounded-lg p-4 m-4 mb-4 w-full bg-slate-600">
-              Verifikasi Pengajuan Kerja Praktek
+              Verifikasi Pengajuan Skripsi
             </h1>
             <form
               onSubmit={handleFormSubmit}
@@ -76,31 +103,23 @@ export const VerifikasiKP = () => {
             >
               <div className="mb-4">
                 <label className="block text-slate-600 font-bold mb-2">
-                  Status
+                  Dosen Pembimbing
                 </label>
                 <select
                   className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring focus:border-slate-300 bg-white"
-                  value={status}
-                  onChange={(e) => setStatus(e.target.value)}
+                  value={dosenPembimbing}
+                  onChange={(e) => setDosenPembimbing(e.target.value)}
                   required
                 >
                   <option value="" disabled>
-                    Pilih Status
+                    Pilih Dosen Pembimbing
                   </option>
-                  <option value="Sah">Sah</option>
-                  <option value="Ditolak">Ditolak</option>
+                  {availableDosen.map((dosen) => (
+                    <option key={dosen.id} value={dosen.uid}>
+                      {dosen.nama}
+                    </option>
+                  ))}
                 </select>
-                <label className="block text-slate-600 font-bold mb-2">
-                  Catatan
-                </label>
-                <input
-                  type="text"
-                  className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-500"
-                  placeholder="Catatan Verifikasi"
-                  value={catatan}
-                  onChange={(e) => setCatatan(e.target.value)}
-                  required
-                />
               </div>
               <div className="flex justify-end">
                 <button
