@@ -79,9 +79,23 @@ export const DetailPengajuanSkripsi = () => {
             </div>
             <div className="flex justify-evenly items-center p-4">
               <Link
-                to={`${data.transkipNilai}`}
+                to={`${data.formTopik}`}
                 target="_blank"
                 className="p-2 bg-slate-300 hover:bg-slate-200 rounded-md text-slate-600  font-semibold hover:transform hover:scale-110 transition-transform duration-300 ease-in-out"
+              >
+                Form Pengajuan Topik
+              </Link>
+              <Link
+                to={`${data.formKrs}`}
+                target="_blank"
+                className="p-2 bg-slate-300 hover:bg-slate-200 rounded-md text-slate-600  font-semibold hover:transform hover:scale-110 transition-transform duration-300 ease-in-out"
+              >
+                Form KRS
+              </Link>
+              <Link
+                to={`${data.slipPembayaranSkripsi}`}
+                target="_blank"
+                className="p-2 bg-slate-300 hover:bg-slate-200 rounded-md font-semibold text-slate-600 hover:transform hover:scale-110 transition-transform duration-300 ease-in-out"
               >
                 Transkip Nilai
               </Link>
@@ -90,28 +104,14 @@ export const DetailPengajuanSkripsi = () => {
                 target="_blank"
                 className="p-2 bg-slate-300 hover:bg-slate-200 rounded-md text-slate-600  font-semibold hover:transform hover:scale-110 transition-transform duration-300 ease-in-out"
               >
-                Form KRS
+                Slip Pembayaran Skripsi
               </Link>
               <Link
-                to={`${data.transkipNilai}`}
-                target="_blank"
-                className="p-2 bg-slate-300 hover:bg-slate-200 rounded-md font-semibold text-slate-600 hover:transform hover:scale-110 transition-transform duration-300 ease-in-out"
-              >
-                Form Pendaftaran KP
-              </Link>
-              <Link
-                to={`${data.transkipNilai}`}
+                to={`${data.sertifikatPSPT}`}
                 target="_blank"
                 className="p-2 bg-slate-300 hover:bg-slate-200 rounded-md text-slate-600  font-semibold hover:transform hover:scale-110 transition-transform duration-300 ease-in-out"
               >
-                Slip Pembayaran KP
-              </Link>
-              <Link
-                to={`${data.dokumenProporsal}`}
-                target="_blank"
-                className="p-2 bg-slate-300 hover:bg-slate-200 rounded-md text-slate-600  font-semibold hover:transform hover:scale-110 transition-transform duration-300 ease-in-out"
-              >
-                Dokumen Proposal KP
+                Sertifikat PSPT
               </Link>
             </div>
 
@@ -120,7 +120,11 @@ export const DetailPengajuanSkripsi = () => {
                 Tanggal Daftar
               </h1>
               <p className="mb-2">
-                {data.createdAt.toDate().toLocaleDateString()}
+                {data.createdAt.toDate().toLocaleDateString("id-ID", {
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                })}
               </p>
               <p className="mb-2 text-lg font-bold text-slate-600">NIM</p>
               <p className="mb-2">{data.userInfo.nim}</p>

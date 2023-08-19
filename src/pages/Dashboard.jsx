@@ -15,7 +15,7 @@ import {
   collection,
   doc,
   getDoc,
-  getDocs,
+  onSnapshot,
   query,
   where,
 } from "firebase/firestore";
@@ -27,49 +27,23 @@ export const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [username, setUsername] = useState("");
   const [user, loading] = useAuthState(auth);
-  const [jumlahKP, setJumlahKP] = useState(0);
+  const [tanggalBukaKP, setTanggalBukaKP] = useState(null);
+  const [tanggalTutupKP, setTanggalTutupKP] = useState(null);
+  const [tanggalBukaSempro, setTanggalBukaSempro] = useState(null);
+  const [tanggalTutupSempro, setTanggalTutupSempro] = useState(null);
+  const [tanggalBukaKompre, setTanggalBukaKompre] = useState(null);
+  const [tanggalTutupKompre, setTanggalTutupKompre] = useState(null);
+  const [tanggalBukaSkripsi, setTanggalBukaSkripsi] = useState(null);
+  const [tanggalTutupSkripsi, setTanggalTutupSkripsi] = useState(null);
+  const [tanggalSidangKP, setTanggalSidangKP] = useState(null);
+  const [tanggalSidangSempro, setTanggalSidangSempro] = useState(null);
+  const [tanggalSidangKompre, setTanggalSidangKompre] = useState(null);
+  const [tanggalSidangSkripsi, setTanggalSidangSkripsi] = useState(null);
 
   const fetchUserName = async () => {
     try {
       const userDocRef = doc(db, "users", user.uid);
       const userDocSnapshot = await getDoc(userDocRef);
-
-      // Mendapatkan jadwal sidang yang aktif
-      const activeJadwalSidangQuery = query(
-        collection(db, "jadwalSidang"),
-        where("status", "==", "Aktif")
-      );
-      const activeJadwalSidangDocs = await getDocs(activeJadwalSidangQuery);
-
-      let activeJadwalSidang;
-      if (activeJadwalSidangDocs.size > 0) {
-        // Jika ada jadwal sidang aktif, ambil data jadwal sidang pertama
-        activeJadwalSidang = activeJadwalSidangDocs.docs[0].data();
-      }
-
-      // Jika ada jadwal sidang aktif, lakukan query berdasarkan jenis pengajuan dan periode pendaftaran
-      const currentDate = new Date();
-
-      if (activeJadwalSidang) {
-        const tanggalBuka = new Date(activeJadwalSidang.tanggalBuka);
-        const tanggalTutup = new Date(activeJadwalSidang.tanggalTutup);
-
-        if (currentDate >= tanggalBuka && currentDate <= tanggalTutup) {
-          const kerjaPraktekQuery = query(
-            collection(db, "pengajuan"),
-            where("jenisPengajuan", "==", "Kerja Praktek"),
-            where("createdAt", ">=", tanggalBuka),
-            where("createdAt", "<=", tanggalTutup)
-          );
-
-          const kerjaPraktekDocs = await getDocs(kerjaPraktekQuery);
-          setJumlahKP(kerjaPraktekDocs.size);
-        } else {
-          setJumlahKP(0);
-        }
-      } else {
-        setJumlahKP(0);
-      }
 
       if (userDocSnapshot.exists()) {
         const userData = userDocSnapshot.data();
@@ -86,12 +60,87 @@ export const Dashboard = () => {
     }
   };
 
+  // Fetch the number of Kerja Praktek submissions in real-time
+  const fetchSidang = () => {
+    const activeJadwalPengajuanQuery = query(
+      collection(db, "jadwalSidang"),
+      where("status", "==", "Aktif")
+    );
+
+    const unsubscribe = onSnapshot(
+      activeJadwalPengajuanQuery,
+      (jadwalPengajuanSnapshot) => {
+        if (!jadwalPengajuanSnapshot.empty) {
+          const jadwalData = jadwalPengajuanSnapshot.docs[0].data();
+          const jenisSidang = jadwalData.jenisSidang;
+          if (jenisSidang.includes("Kerja Praktek")) {
+            // Memeriksa jenis pengajuan
+            const periodePendaftaran = jadwalData.periodePendaftaran;
+            setTanggalBukaKP(periodePendaftaran.tanggalBuka.toDate());
+            setTanggalTutupKP(periodePendaftaran.tanggalTutup.toDate());
+            setTanggalSidangKP(jadwalData.tanggalSidang.toDate());
+          } else {
+            // Jenis sidang bukan Kerja Praktek
+            setTanggalBukaKP(false);
+            setTanggalTutupKP(false);
+          }
+          if (jenisSidang.includes("Seminar Proposal")) {
+            // Memeriksa jenis pengajuan
+            const periodePendaftaran = jadwalData.periodePendaftaran;
+            setTanggalBukaSempro(periodePendaftaran.tanggalBuka.toDate());
+            setTanggalTutupSempro(periodePendaftaran.tanggalTutup.toDate());
+            setTanggalSidangSempro(jadwalData.tanggalSidang.toDate());
+          } else {
+            // Jenis sidang bukan Kerja Praktek
+            setTanggalBukaSempro(false);
+            setTanggalTutupSempro(false);
+          }
+          if (jenisSidang.includes("Komprehensif")) {
+            // Memeriksa jenis pengajuan
+            const periodePendaftaran = jadwalData.periodePendaftaran;
+            setTanggalBukaKompre(periodePendaftaran.tanggalBuka.toDate());
+            setTanggalTutupKompre(periodePendaftaran.tanggalTutup.toDate());
+            setTanggalSidangKompre(jadwalData.tanggalSidang.toDate());
+          } else {
+            // Jenis sidang bukan Kerja Praktek
+            setTanggalBukaKompre(false);
+            setTanggalTutupKompre(false);
+          }
+          if (jenisSidang.includes("Skripsi")) {
+            // Memeriksa jenis pengajuan
+            const periodePendaftaran = jadwalData.periodePendaftaran;
+            setTanggalBukaSkripsi(periodePendaftaran.tanggalBuka.toDate());
+            setTanggalTutupSkripsi(periodePendaftaran.tanggalTutup.toDate());
+            setTanggalSidangSkripsi(jadwalData.tanggalSidang.toDate());
+          } else {
+            // Jenis sidang bukan Kerja Praktek
+            setTanggalBukaSkripsi(false);
+            setTanggalTutupSkripsi(false);
+          }
+        } else {
+          // Tidak ada jadwal sidang aktif
+          setTanggalBukaKP(false);
+          setTanggalTutupKP(false);
+        }
+      }
+    );
+
+    return unsubscribe;
+  };
+
+  const fetchJumlahPendaftar = () => {};
+
   useEffect(() => {
     if (loading) return;
     if (!user) return navigate("/login");
-    console.log(jumlahKP);
 
+    const unsubscribeKP = fetchSidang();
+    fetchJumlahPendaftar();
     fetchUserName();
+    // Fetch the number of Kerja Praktek submissions in real-time
+    return () => {
+      unsubscribeKP(); // Unsubscribe from Kerja Praktek updates
+    };
   }, [user, loading]);
 
   return (
@@ -109,6 +158,7 @@ export const Dashboard = () => {
         ) : (
           <>
             <Sidebar />
+
             <div className="flex flex-col w-full pl-[300px] overflow-y-auto pr-4 pb-4">
               <h1 className="m-2 p-6 bg-white mb-4 rounded-xl drop-shadow-xl text-xl text-slate-600 font-extrabold flex items-center">
                 Welcome Back, {username}
@@ -127,7 +177,7 @@ export const Dashboard = () => {
                       <FaToolbox className="mr-2" size={80} />
                       <div className="text-right">
                         <p>Pendaftar Sidang Kerja Praktek</p>
-                        <p>{jumlahKP}</p>
+                        <p>0</p>
                       </div>
                     </div>
                     <div className="p-4 bg-white m-2 flex items-center justify-center rounded-xl hover:transform hover:scale-110 transition-transform duration-300 ease-in-out">
@@ -171,61 +221,184 @@ export const Dashboard = () => {
                       <h3 className="font-bold text-md">
                         INFORMASI SEMINAR PROSPOSAL !
                       </h3>
-                      <p>
-                        Diberitahukan kepada mahasiswa/i Seminar Proporsal akan
-                        diadakan pada tanggal : <b>Jumat,23-06-2023</b>
-                      </p>
-                      <p>
-                        Pendaftaran dibuka Tanggal : <b>Selasa,13-06-2023</b>
-                      </p>
-                      <p>
-                        Pendaftaran ditutup Tanggal : <b>Senin,19-06-2023</b>
-                      </p>
+                      {tanggalBukaSempro && tanggalTutupSempro ? (
+                        <>
+                          <p>
+                            Diberitahukan kepada mahasiswa/i Seminar Proporsal
+                            akan diadakan pada tanggal :{" "}
+                            <b>
+                              {" "}
+                              {new Intl.DateTimeFormat("id-ID", {
+                                weekday: "long",
+                                day: "2-digit",
+                                month: "long",
+                                year: "numeric",
+                              }).format(tanggalSidangSempro)}
+                            </b>
+                          </p>
+                          <p>
+                            Pendaftaran dibuka Tanggal:{" "}
+                            <b>
+                              {new Intl.DateTimeFormat("id-ID", {
+                                weekday: "long",
+                                day: "2-digit",
+                                month: "long",
+                                year: "numeric",
+                              }).format(tanggalBukaSempro)}
+                            </b>
+                          </p>
+                          <p>
+                            Pendaftaran ditutup Tanggal:{" "}
+                            <b>
+                              {new Intl.DateTimeFormat("id-ID", {
+                                weekday: "long",
+                                day: "2-digit",
+                                month: "long",
+                                year: "numeric",
+                              }).format(tanggalTutupSempro)}
+                            </b>
+                          </p>
+                        </>
+                      ) : (
+                        <p>Pendaftaran Sedang Ditutup</p>
+                      )}
                     </div>
                     <div className="proporsal bg-white p-4 rounded-lg mb-4 hover:transform hover:scale-105 transition-transform duration-300 ease-in-out text-slate-600 drop-shadow-lg">
                       <h3 className="font-bold text-md">
                         INFORMASI SIDANG AKHIR SKRIPSI !
                       </h3>
-                      <p>
-                        Diberitahukan kepada mahasiswa/i Seminar Proporsal akan
-                        diadakan pada tanggal : <b>Jumat,23-06-2023</b>
-                      </p>
-                      <p>
-                        Pendaftaran dibuka Tanggal : <b>Selasa,13-06-2023</b>
-                      </p>
-                      <p>
-                        Pendaftaran ditutup Tanggal : <b>Senin,19-06-2023</b>
-                      </p>
+                      {tanggalBukaSkripsi && tanggalTutupSkripsi ? (
+                        <>
+                          <p>
+                            Diberitahukan kepada mahasiswa/i Seminar Proporsal
+                            akan diadakan pada tanggal :{" "}
+                            <b>
+                              {" "}
+                              {new Intl.DateTimeFormat("id-ID", {
+                                weekday: "long",
+                                day: "2-digit",
+                                month: "long",
+                                year: "numeric",
+                              }).format(tanggalSidangSkripsi)}
+                            </b>
+                          </p>
+                          <p>
+                            Pendaftaran dibuka Tanggal:{" "}
+                            <b>
+                              {new Intl.DateTimeFormat("id-ID", {
+                                weekday: "long",
+                                day: "2-digit",
+                                month: "long",
+                                year: "numeric",
+                              }).format(tanggalBukaSkripsi)}
+                            </b>
+                          </p>
+                          <p>
+                            Pendaftaran ditutup Tanggal:{" "}
+                            <b>
+                              {new Intl.DateTimeFormat("id-ID", {
+                                weekday: "long",
+                                day: "2-digit",
+                                month: "long",
+                                year: "numeric",
+                              }).format(tanggalTutupSkripsi)}
+                            </b>
+                          </p>
+                        </>
+                      ) : (
+                        <p>Pendaftaran Sedang Ditutup</p>
+                      )}
                     </div>
                     <div className="proporsal bg-white p-4 rounded-lg mb-4 hover:transform hover:scale-105 transition-transform duration-300 ease-in-out text-slate-600 drop-shadow-lg">
                       <h3 className="font-bold text-md">
                         INFORMASI SIDANG KERJA PRAKTEK !
                       </h3>
-                      <p>
-                        Diberitahukan kepada mahasiswa/i Seminar Proporsal akan
-                        diadakan pada tanggal : <b>Jumat,23-06-2023</b>
-                      </p>
-                      <p>
-                        Pendaftaran dibuka Tanggal : <b>Selasa,13-06-2023</b>
-                      </p>
-                      <p>
-                        Pendaftaran ditutup Tanggal : <b>Senin,19-06-2023</b>
-                      </p>
+                      {tanggalBukaKP && tanggalTutupKP ? (
+                        <>
+                          <p>
+                            Diberitahukan kepada mahasiswa/i Seminar Proporsal
+                            akan diadakan pada tanggal :{" "}
+                            <b>
+                              {new Intl.DateTimeFormat("id-ID", {
+                                weekday: "long",
+                                day: "2-digit",
+                                month: "long",
+                                year: "numeric",
+                              }).format(tanggalSidangKP)}
+                            </b>
+                          </p>
+                          <p>
+                            Pendaftaran dibuka Tanggal:{" "}
+                            <b>
+                              {new Intl.DateTimeFormat("id-ID", {
+                                weekday: "long",
+                                day: "2-digit",
+                                month: "long",
+                                year: "numeric",
+                              }).format(tanggalBukaKP)}
+                            </b>
+                          </p>
+                          <p>
+                            Pendaftaran ditutup Tanggal:{" "}
+                            <b>
+                              {new Intl.DateTimeFormat("id-ID", {
+                                weekday: "long",
+                                day: "2-digit",
+                                month: "long",
+                                year: "numeric",
+                              }).format(tanggalTutupKP)}
+                            </b>
+                          </p>
+                        </>
+                      ) : (
+                        <p>Pendaftaran Sedang Ditutup</p>
+                      )}
                     </div>
                     <div className="proporsal bg-white p-4 rounded-lg mb-4 hover:transform hover:scale-105 transition-transform duration-300 ease-in-out text-slate-600 drop-shadow-lg">
                       <h3 className="font-bold text-md">
                         INFORMASI SIDANG KOMPREHENSIF !
                       </h3>
-                      <p>
-                        Diberitahukan kepada mahasiswa/i Seminar Proporsal akan
-                        diadakan pada tanggal : <b>Jumat,23-06-2023</b>
-                      </p>
-                      <p>
-                        Pendaftaran dibuka Tanggal : <b>Selasa,13-06-2023</b>
-                      </p>
-                      <p>
-                        Pendaftaran ditutup Tanggal : <b>Senin,19-06-2023</b>
-                      </p>
+                      {tanggalBukaKompre && tanggalTutupKompre ? (
+                        <>
+                          <p>
+                            Diberitahukan kepada mahasiswa/i Seminar Proporsal
+                            akan diadakan pada tanggal :{" "}
+                            <b>
+                              {" "}
+                              {new Intl.DateTimeFormat("id-ID", {
+                                weekday: "long",
+                                day: "2-digit",
+                                month: "long",
+                                year: "numeric",
+                              }).format(tanggalSidangKompre)}
+                            </b>
+                          </p>
+                          <p>
+                            Pendaftaran dibuka Tanggal:{" "}
+                            <b>
+                              {new Intl.DateTimeFormat("id-ID", {
+                                weekday: "long",
+                                day: "2-digit",
+                                month: "long",
+                                year: "numeric",
+                              }).format(tanggalBukaKompre)}
+                            </b>
+                          </p>
+                          <p>
+                            Pendaftaran ditutup Tanggal:{" "}
+                            <b>
+                              {new Intl.DateTimeFormat("id-ID", {
+                                weekday: "long",
+                                day: "2-digit",
+                                month: "long",
+                                year: "numeric",
+                              }).format(tanggalTutupKompre)}
+                            </b>
+                          </p>
+                        </>
+                      ) : (
+                        <p>Pendaftaran Sedang Ditutup</p>
+                      )}
                     </div>
                   </div>
                 </div>

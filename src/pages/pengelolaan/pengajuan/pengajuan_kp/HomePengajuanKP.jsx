@@ -40,7 +40,7 @@ export const HomePengajuanKP = () => {
       query(
         collection(db, "pengajuan"),
         where("jenisPengajuan", "==", "Kerja Praktek"),
-        orderBy("createdAt", "asc")
+        orderBy("status", "asc")
       ),
       async (snapshot) => {
         const fetchedData = [];
@@ -56,6 +56,7 @@ export const HomePengajuanKP = () => {
           });
         }
         setData(fetchedData);
+        console.log(data);
         setIsLoading(false);
       }
     );
@@ -170,10 +171,9 @@ export const HomePengajuanKP = () => {
                         </td>
                         <td className="text-center">{item.status}</td>
                         <td className="text-center p-4">{item.catatan}</td>
-                        <td className="text-center p-6">
-                          {data.dosenPembimbingInfo
-                            ? data.dosenPembimbingInfo.nama
-                            : "-"}
+                        <td className="text-center p-6 whitespace-nowrap">
+                          {item.dosenPembimbingInfo &&
+                            item.dosenPembimbingInfo.nama}
                         </td>
                         <td className="text-center p-4">
                           <div className="flex">

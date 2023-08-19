@@ -67,13 +67,16 @@ export const HomePengajuanSkripsi = () => {
     return () => unsubscribe();
   }, [user, loading]);
 
-  const truncateTitle = (title, words = 7) => {
-    const wordsArray = title.split(" ");
-    if (wordsArray.length > words) {
-      return wordsArray.slice(0, words).join(" ") + "...";
-    }
-    return title;
-  };
+  // const truncateTitle = (title, words = 7) => {
+  //   if (title) {
+  //     const wordsArray = title.split(" ");
+  //     if (wordsArray.length > words) {
+  //       return wordsArray.slice(0, words).join(" ") + "...";
+  //     }
+  //     return title;
+  //   }
+  //   return ""; // Return empty string or any default value if title is undefined
+  // };
 
   const handleDelete = async (id) => {
     try {
@@ -165,8 +168,8 @@ export const HomePengajuanSkripsi = () => {
                         <td className="text-center">
                           {item.userInfo && item.userInfo.jurusan}
                         </td>
-                        <td className="text-center p-4">
-                          {truncateTitle(item.topikPenelitian, 7)}
+                        <td className="text-center p-4 whitespace-nowrap">
+                          {item.topik}
                         </td>
                         <td className="text-center">{item.status}</td>
                         <td className="text-center p-4">{item.catatan}</td>

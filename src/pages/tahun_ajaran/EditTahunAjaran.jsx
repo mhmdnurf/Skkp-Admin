@@ -105,13 +105,13 @@ export const EditTahunAjaran = () => {
       ) : (
         <>
           <Sidebar />
-          <div className="flex-1 p-8">
-            <h1 className="text-2xl text-white text-center shadow-md font-semibold rounded-lg p-4 m-4 mb-4 w-1/2 bg-slate-600">
+          <div className="flex flex-col w-full pl-[300px] overflow-y-auto pr-4 pb-4">
+            <h1 className="text-2xl text-white text-center shadow-md font-semibold rounded-lg p-4 m-4 mb-4 bg-slate-600">
               Ubah Tahun Ajaran
             </h1>
             <form
               onSubmit={handleFormEdit}
-              className="w-1/2 px-8 ml-4 py-10 drop-shadow-md rounded-lg bg-white"
+              className="px-8 m-4 py-10 drop-shadow-md rounded-lg bg-white"
             >
               <div className="mb-4">
                 <label className="block text-slate-600 font-bold mb-2">

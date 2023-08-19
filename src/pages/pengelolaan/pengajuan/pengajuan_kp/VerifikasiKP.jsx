@@ -49,6 +49,26 @@ export const VerifikasiKP = () => {
           navigate(`/pengajuan-kp/detail/${itemId}`);
         });
       }
+
+      const response = await fetch(
+        "http://localhost:3000/send-notification/hasil-verifikasi-kp",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            registrationToken:
+              "efjLkfYnTBu97mDH1aDtt3:APA91bEfMxhN6FKk5GW3DnHVoEoJP90GyanTAU1h-xeyfCS9sQFS19EMHViqXDXFu9iYyhfIOe-lMU0kmtuOaqcbqvs_3dnTMDRiZt_j7Mk7a-x8uu50sx6Jiqh3MG4UI5sUAWtWjYLt",
+          }),
+        }
+      );
+
+      if (response.ok) {
+        console.log("Notification sent successfully");
+      } else {
+        console.error("Failed to send notification");
+      }
     } catch (error) {
       console.error("Error updating document: ", error);
       setError("Error updating document");

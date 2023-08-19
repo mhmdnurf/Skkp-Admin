@@ -5,6 +5,7 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, db } from "../../../../utils/firebase";
 import { doc, getDoc } from "firebase/firestore";
+import Swal from "sweetalert2";
 
 export const DetailPengajuanKP = () => {
   const { itemId } = useParams();
@@ -22,6 +23,15 @@ export const DetailPengajuanKP = () => {
     }
     return null;
   };
+  const getPeriodeInfo = async (uid) => {
+    const userDocRef = doc(db, "jadwalPengajuan", uid);
+    const userDocSnapshot = await getDoc(userDocRef);
+
+    if (userDocSnapshot.exists()) {
+      return userDocSnapshot.data();
+    }
+    return null;
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -32,13 +42,18 @@ export const DetailPengajuanKP = () => {
         const itemData = itemDocSnapshot.data();
         const userInfo = await getUserInfo(itemData.uid);
         const dosenPembimbingInfo = await getUserInfo(itemData.dosenPembimbing);
+        const periodePendaftaranInfo = await getPeriodeInfo(
+          itemData.periodePendaftaran
+        );
 
         setData({
           id: itemDocSnapshot.id,
           ...itemData,
           userInfo: userInfo,
           dosenPembimbingInfo: dosenPembimbingInfo,
+          periodePendaftaranInfo: periodePendaftaranInfo,
         });
+        console.log(data);
       }
 
       setIsLoading(false);
@@ -61,6 +76,19 @@ export const DetailPengajuanKP = () => {
   if (!data) {
     return <p>Data not found.</p>;
   }
+
+  const handleButtonPembimbing = () => {
+    if (data.status != "Sah") {
+      Swal.fire({
+        title: "Error",
+        text: "Data belum diverifikasi",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
+    } else {
+      navigate(`/pengajuan-kp/dosen-pembimbing/${itemId}`);
+    }
+  };
 
   return (
     <>
@@ -86,21 +114,21 @@ export const DetailPengajuanKP = () => {
                 Transkip Nilai
               </Link>
               <Link
-                to={`${data.transkipNilai}`}
+                to={`${data.formKrs}`}
                 target="_blank"
                 className="p-2 bg-slate-300 hover:bg-slate-200 rounded-md text-slate-600  font-semibold hover:transform hover:scale-110 transition-transform duration-300 ease-in-out"
               >
                 Form KRS
               </Link>
               <Link
-                to={`${data.transkipNilai}`}
+                to={`${data.formPendaftaranKP}`}
                 target="_blank"
                 className="p-2 bg-slate-300 hover:bg-slate-200 rounded-md font-semibold text-slate-600 hover:transform hover:scale-110 transition-transform duration-300 ease-in-out"
               >
                 Form Pendaftaran KP
               </Link>
               <Link
-                to={`${data.transkipNilai}`}
+                to={`${data.slipPembayaranKP}`}
                 target="_blank"
                 className="p-2 bg-slate-300 hover:bg-slate-200 rounded-md text-slate-600  font-semibold hover:transform hover:scale-110 transition-transform duration-300 ease-in-out"
               >
@@ -120,23 +148,56 @@ export const DetailPengajuanKP = () => {
                 Tanggal Daftar
               </h1>
               <p className="mb-2">
-                {data.createdAt.toDate().toLocaleDateString()}
+                {data.createdAt.toDate().toLocaleDateString("id-ID", {
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                })}
               </p>
-              <p className="mb-2 text-lg font-bold text-slate-600">NIM</p>
+              <h1 className="text-lg font-bold text-slate-600 mb-2">
+                Periode Pendaftaran
+              </h1>
+              <p className="mb-2">
+                {data.periodePendaftaranInfo.periodePendaftaran.tanggalBuka &&
+                  new Date(
+                    data.periodePendaftaranInfo.periodePendaftaran.tanggalBuka.toDate()
+                  ).toLocaleDateString("id-ID", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                  })}{" "}
+                -{" "}
+                {data.periodePendaftaranInfo.periodePendaftaran.tanggalTutup &&
+                  new Date(
+                    data.periodePendaftaranInfo.periodePendaftaran.tanggalTutup.toDate()
+                  ).toLocaleDateString("id-ID", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                  })}{" "}
+              </p>
+              <h1 className="mb-2 text-lg font-bold text-slate-600">
+                Tahun Ajaran
+              </h1>
+              <p className="mb-2">
+                {data.periodePendaftaranInfo.tahunAjaran &&
+                  data.periodePendaftaranInfo.tahunAjaran}
+              </p>
+              <h1 className="mb-2 text-lg font-bold text-slate-600">NIM</h1>
               <p className="mb-2">{data.userInfo.nim}</p>
-              <p className="mb-2 text-lg font-bold text-slate-600">Nama</p>
+              <h1 className="mb-2 text-lg font-bold text-slate-600">Nama</h1>
               <p className="mb-2">{data.userInfo.nama}</p>
-              <p className="mb-2 text-lg font-bold text-slate-600">Jurusan</p>
+              <h1 className="mb-2 text-lg font-bold text-slate-600">Jurusan</h1>
               <p className="mb-2">{data.userInfo.jurusan}</p>
-              <p className="mb-2 text-lg font-bold text-slate-600">Judul</p>
+              <h1 className="mb-2 text-lg font-bold text-slate-600">Judul</h1>
               <p className="mb-2">{data.judul}</p>
-              <p className="mb-2 text-lg font-bold text-slate-600">Status</p>
+              <h1 className="mb-2 text-lg font-bold text-slate-600">Status</h1>
               <p className="mb-2">{data.status}</p>
-              <p className="mb-2 text-lg font-bold text-slate-600">Catatan</p>
+              <h1 className="mb-2 text-lg font-bold text-slate-600">Catatan</h1>
               <p className="mb-2">{data.catatan}</p>
-              <p className="mb-2 text-lg font-bold text-slate-600">
+              <h1 className="mb-2 text-lg font-bold text-slate-600">
                 Dosen Pembimbing
-              </p>
+              </h1>
               <p className="mb-2">
                 {" "}
                 {data.dosenPembimbingInfo ? (
@@ -154,12 +215,12 @@ export const DetailPengajuanKP = () => {
               >
                 Verifikasi
               </Link>
-              <Link
-                to={`/pengajuan-kp/dosen-pembimbing/${itemId}`}
+              <button
+                onClick={handleButtonPembimbing}
                 className="bg-blue-600 hover:bg-blue-500 p-2 m-2 rounded-lg w-[200px] text-center text-slate-100"
               >
                 Beri Dosen Pembimbing
-              </Link>
+              </button>
               <Link
                 to={"/pengajuan-kp"}
                 className="bg-red-400 hover:bg-red-300 p-2 m-2 rounded-lg w-[150px] text-center text-slate-100"
