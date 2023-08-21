@@ -14,10 +14,10 @@ import {
   query,
   where,
 } from "firebase/firestore";
-import { deleteObject, ref } from "firebase/storage";
 import Swal from "sweetalert2";
+import { deleteObject, ref } from "firebase/storage";
 
-export const HomePengajuanKP = () => {
+export const HomeSidangSkripsi = () => {
   const itemsPerPage = 5;
   const [data, setData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -39,8 +39,8 @@ export const HomePengajuanKP = () => {
   useEffect(() => {
     const unsubscribe = onSnapshot(
       query(
-        collection(db, "pengajuan"),
-        where("jenisPengajuan", "==", "Kerja Praktek"),
+        collection(db, "sidang"),
+        where("jenisSidang", "==", "Kerja Praktek"),
         orderBy("status", "asc")
       ),
       async (snapshot) => {
@@ -91,23 +91,25 @@ export const HomePengajuanKP = () => {
       });
 
       if (result.isConfirmed) {
-        const docRef = doc(db, "pengajuan", id);
+        const docRef = doc(db, "sidang", id);
         const docSnapshot = await getDoc(docRef);
         if (docSnapshot.exists()) {
           const data = docSnapshot.data();
-          const transkipNilaiFileName = `persyaratan/pengajuanKP/transkipNilai/${data.uid}`;
-          const formKrsFileName = `persyaratan/pengajuanKP/formKRS/${data.uid}`;
-          const pendaftaranKpFileName = `persyaratan/pengajuanKP/formPendaftaranKP/${data.uid}`;
-          const pembayaranKpFileName = `persyaratan/pengajuanKP/slipPembayaranKP/${data.uid}`;
-          const proporsalFileName = `persyaratan/pengajuanKP/proporsalKP/${data.uid}`;
-          await deleteObject(ref(storage, transkipNilaiFileName));
-          await deleteObject(ref(storage, formKrsFileName));
+          const persetujuanKPFileName = `persyaratan/sidangKP/formPersetujuanKP/${data.uid}`;
+          const penilaianPerusahaanFileName = `persyaratan/sidangKP/penilaianPerusahaan/${data.uid}`;
+          const pendaftaranKpFileName = `persyaratan/sidangKP/formPendaftaranKP/${data.uid}`;
+          const bimbinganKPFileName = `persyaratan/sidangKP/formBimbinganKP/${data.uid}`;
+          const sertifikatSeminarFileName = `persyaratan/sidangKP/sertifikatSeminar/${data.uid}`;
+          const sertifikatPSPTFileName = `persyaratan/sidangKP/sertifikatPSPT/${data.uid}`;
+          await deleteObject(ref(storage, persetujuanKPFileName));
+          await deleteObject(ref(storage, penilaianPerusahaanFileName));
           await deleteObject(ref(storage, pendaftaranKpFileName));
-          await deleteObject(ref(storage, pembayaranKpFileName));
-          await deleteObject(ref(storage, proporsalFileName));
+          await deleteObject(ref(storage, bimbinganKPFileName));
+          await deleteObject(ref(storage, sertifikatSeminarFileName));
+          await deleteObject(ref(storage, sertifikatPSPTFileName));
           await deleteDoc(docRef);
-          Swal.fire("Success", "Data Berhasil dihapus!", "success");
         }
+        Swal.fire("Success", "Data Berhasil dihapus!", "success");
       }
     } catch (error) {
       console.error("Error deleting data: ", error);
@@ -126,7 +128,7 @@ export const HomePengajuanKP = () => {
             <Sidebar />
             <div className="flex flex-col w-full pl-[300px] overflow-y-auto pr-4 pb-4">
               <h1 className="text-2xl text-white text-center shadow-md font-bold rounded-lg p-4 m-4 mb-10 bg-slate-600">
-                Data Pengajuan Kerja Praktek
+                Data Sidang Akhir Skripsi
               </h1>
               <div className="flex items-center mt-16 mb-2 mx-2 justify-end mr-4">
                 <input
@@ -194,7 +196,7 @@ export const HomePengajuanKP = () => {
                         <td className="text-center p-4">
                           <div className="flex">
                             <Link
-                              to={`/pengajuan-kp/detail/${item.id}`}
+                              to={`/sidang-kp/detail/${item.id}`}
                               className="p-2 bg-slate-200 rounded-md hover:bg-slate-300 mr-1"
                             >
                               Detail

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { Sidebar } from "../../components/sidebar/Sidebar";
-import { db } from "../../utils/firebase";
+import { Sidebar } from "../../../components/sidebar/Sidebar";
+import { db } from "../../../utils/firebase";
 import { addDoc, collection, getDocs, query, where } from "firebase/firestore";
 import { utcToZonedTime } from "date-fns-tz";
 import format from "date-fns-tz/format";
@@ -88,51 +88,53 @@ export const CreateTahunAjaran = () => {
 
   return (
     <div className="flex bg-slate-100 min-h-screen">
-      <Sidebar />
       {isLoading ? (
         <div className="flex-1 flex justify-center items-center">
           <InfinitySpin width="200" color="#475569" />
         </div>
       ) : (
-        <div className="flex-1 p-8">
-          <h1 className="text-2xl text-white text-center shadow-md font-semibold rounded-lg p-4 m-4 mb-4 w-full bg-slate-600">
-            Tambah Tahun Ajaran
-          </h1>
-          <form
-            onSubmit={handleFormSubmit}
-            className="w-full px-8 ml-4 py-10 drop-shadow-md rounded-lg bg-white"
-          >
-            <div className="mb-4">
-              <label className="block text-slate-600 font-bold mb-2">
-                Tahun Ajaran
-              </label>
-              <input
-                type="text"
-                className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-500"
-                placeholder="2022/2023"
-                value={tahunAjaran}
-                onChange={(e) => setTahunAjaran(e.target.value)}
-                required
-              />
-            </div>
-            <div className="flex justify-end">
-              <button
-                type="submit"
-                className="px-4 py-2 bg-slate-600 drop-shadow-lg text-white rounded-md hover:bg-slate-700"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? "Loading..." : "Submit"}
-              </button>
-              <Link
-                to="/tahun-ajaran"
-                className="px-4 py-2 bg-red-400 text-white rounded-md hover:bg-red-500 ml-1 drop-shadow-lg"
-              >
-                Cancel
-              </Link>
-            </div>
-            {error && <p className="text-red-600 mt-2">{error}</p>}
-          </form>
-        </div>
+        <>
+          <Sidebar />
+          <div className="flex flex-col w-full pl-[300px] overflow-y-auto pr-4 pb-4">
+            <h1 className="text-2xl text-white text-center shadow-md font-semibold rounded-lg p-4 m-4 mb-4 w-full bg-slate-600">
+              Tambah Tahun Ajaran
+            </h1>
+            <form
+              onSubmit={handleFormSubmit}
+              className="w-full px-8 ml-4 py-10 drop-shadow-md rounded-lg bg-white"
+            >
+              <div className="mb-4">
+                <label className="block text-slate-600 font-bold mb-2">
+                  Tahun Ajaran
+                </label>
+                <input
+                  type="text"
+                  className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-500"
+                  placeholder="2022/2023"
+                  value={tahunAjaran}
+                  onChange={(e) => setTahunAjaran(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="flex justify-end">
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-slate-600 drop-shadow-lg text-white rounded-md hover:bg-slate-700"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? "Loading..." : "Submit"}
+                </button>
+                <Link
+                  to="/tahun-ajaran"
+                  className="px-4 py-2 bg-red-400 text-white rounded-md hover:bg-red-500 ml-1 drop-shadow-lg"
+                >
+                  Cancel
+                </Link>
+              </div>
+              {error && <p className="text-red-600 mt-2">{error}</p>}
+            </form>
+          </div>
+        </>
       )}
     </div>
   );

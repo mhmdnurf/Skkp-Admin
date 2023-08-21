@@ -15,6 +15,7 @@ import {
   collection,
   doc,
   getDoc,
+  getDocs,
   onSnapshot,
   query,
   where,
@@ -39,6 +40,7 @@ export const Dashboard = () => {
   const [tanggalSidangSempro, setTanggalSidangSempro] = useState(null);
   const [tanggalSidangKompre, setTanggalSidangKompre] = useState(null);
   const [tanggalSidangSkripsi, setTanggalSidangSkripsi] = useState(null);
+  const [jumlahPendaftarKP, setJumlahPendaftarKP] = useState(0);
 
   const fetchUserName = async () => {
     try {
@@ -60,7 +62,38 @@ export const Dashboard = () => {
     }
   };
 
-  // Fetch the number of Kerja Praktek submissions in real-time
+  const fetchKerjaPraktek = async () => {
+    try {
+      const querySnapshot = await getDocs(
+        query(collection(db, "jadwalSidang"), where("status", "==", "Aktif"))
+      );
+
+      const kerjaPraktekUIDs = querySnapshot.docs
+        .filter((doc) => doc.data().jenisSidang.includes("Kerja Praktek"))
+        .map((doc) => doc.id);
+
+      console.log(kerjaPraktekUIDs);
+
+      const queryKerjaPraktek = await getDocs(
+        query(
+          collection(db, "sidang"),
+          where("jenisSidang", "==", "Kerja Praktek")
+        )
+      );
+      const data = queryKerjaPraktek.docs.map((doc) => doc.data());
+      const periodePendaftaran = data.map((data) => data.periodePendaftaran);
+
+      // Membandingkan isi array
+      const commonItems = kerjaPraktekUIDs.filter((uid) =>
+        periodePendaftaran.includes(uid)
+      );
+      console.log(commonItems.length);
+      setJumlahPendaftarKP(commonItems.length);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   const fetchSidang = () => {
     const activeJadwalPengajuanQuery = query(
       collection(db, "jadwalSidang"),
@@ -71,52 +104,38 @@ export const Dashboard = () => {
       activeJadwalPengajuanQuery,
       (jadwalPengajuanSnapshot) => {
         if (!jadwalPengajuanSnapshot.empty) {
-          const jadwalData = jadwalPengajuanSnapshot.docs[0].data();
-          const jenisSidang = jadwalData.jenisSidang;
-          if (jenisSidang.includes("Kerja Praktek")) {
-            // Memeriksa jenis pengajuan
-            const periodePendaftaran = jadwalData.periodePendaftaran;
-            setTanggalBukaKP(periodePendaftaran.tanggalBuka.toDate());
-            setTanggalTutupKP(periodePendaftaran.tanggalTutup.toDate());
-            setTanggalSidangKP(jadwalData.tanggalSidang.toDate());
-          } else {
-            // Jenis sidang bukan Kerja Praktek
-            setTanggalBukaKP(false);
-            setTanggalTutupKP(false);
-          }
-          if (jenisSidang.includes("Seminar Proposal")) {
-            // Memeriksa jenis pengajuan
-            const periodePendaftaran = jadwalData.periodePendaftaran;
-            setTanggalBukaSempro(periodePendaftaran.tanggalBuka.toDate());
-            setTanggalTutupSempro(periodePendaftaran.tanggalTutup.toDate());
-            setTanggalSidangSempro(jadwalData.tanggalSidang.toDate());
-          } else {
-            // Jenis sidang bukan Kerja Praktek
-            setTanggalBukaSempro(false);
-            setTanggalTutupSempro(false);
-          }
-          if (jenisSidang.includes("Komprehensif")) {
-            // Memeriksa jenis pengajuan
-            const periodePendaftaran = jadwalData.periodePendaftaran;
-            setTanggalBukaKompre(periodePendaftaran.tanggalBuka.toDate());
-            setTanggalTutupKompre(periodePendaftaran.tanggalTutup.toDate());
-            setTanggalSidangKompre(jadwalData.tanggalSidang.toDate());
-          } else {
-            // Jenis sidang bukan Kerja Praktek
-            setTanggalBukaKompre(false);
-            setTanggalTutupKompre(false);
-          }
-          if (jenisSidang.includes("Skripsi")) {
-            // Memeriksa jenis pengajuan
-            const periodePendaftaran = jadwalData.periodePendaftaran;
-            setTanggalBukaSkripsi(periodePendaftaran.tanggalBuka.toDate());
-            setTanggalTutupSkripsi(periodePendaftaran.tanggalTutup.toDate());
-            setTanggalSidangSkripsi(jadwalData.tanggalSidang.toDate());
-          } else {
-            // Jenis sidang bukan Kerja Praktek
-            setTanggalBukaSkripsi(false);
-            setTanggalTutupSkripsi(false);
-          }
+          jadwalPengajuanSnapshot.forEach((doc) => {
+            const jadwalData = doc.data();
+            const jenisSidang = jadwalData.jenisSidang;
+            if (jenisSidang.includes("Kerja Praktek")) {
+              // Memeriksa jenis pengajuan
+              const periodePendaftaran = jadwalData.periodePendaftaran;
+              setTanggalBukaKP(periodePendaftaran.tanggalBuka.toDate());
+              setTanggalTutupKP(periodePendaftaran.tanggalTutup.toDate());
+              setTanggalSidangKP(jadwalData.tanggalSidang.toDate());
+            }
+            if (jenisSidang.includes("Seminar Proposal")) {
+              // Memeriksa jenis pengajuan
+              const periodePendaftaran = jadwalData.periodePendaftaran;
+              setTanggalBukaSempro(periodePendaftaran.tanggalBuka.toDate());
+              setTanggalTutupSempro(periodePendaftaran.tanggalTutup.toDate());
+              setTanggalSidangSempro(jadwalData.tanggalSidang.toDate());
+            }
+            if (jenisSidang.includes("Komprehensif")) {
+              // Memeriksa jenis pengajuan
+              const periodePendaftaran = jadwalData.periodePendaftaran;
+              setTanggalBukaKompre(periodePendaftaran.tanggalBuka.toDate());
+              setTanggalTutupKompre(periodePendaftaran.tanggalTutup.toDate());
+              setTanggalSidangKompre(jadwalData.tanggalSidang.toDate());
+            }
+            if (jenisSidang.includes("Skripsi")) {
+              // Memeriksa jenis pengajuan
+              const periodePendaftaran = jadwalData.periodePendaftaran;
+              setTanggalBukaSkripsi(periodePendaftaran.tanggalBuka.toDate());
+              setTanggalTutupSkripsi(periodePendaftaran.tanggalTutup.toDate());
+              setTanggalSidangSkripsi(jadwalData.tanggalSidang.toDate());
+            }
+          });
         } else {
           // Tidak ada jadwal sidang aktif
           setTanggalBukaKP(false);
@@ -128,18 +147,15 @@ export const Dashboard = () => {
     return unsubscribe;
   };
 
-  const fetchJumlahPendaftar = () => {};
-
   useEffect(() => {
     if (loading) return;
     if (!user) return navigate("/login");
 
     const unsubscribeKP = fetchSidang();
-    fetchJumlahPendaftar();
     fetchUserName();
-    // Fetch the number of Kerja Praktek submissions in real-time
+    fetchKerjaPraktek();
     return () => {
-      unsubscribeKP(); // Unsubscribe from Kerja Praktek updates
+      unsubscribeKP();
     };
   }, [user, loading]);
 
@@ -177,7 +193,7 @@ export const Dashboard = () => {
                       <FaToolbox className="mr-2" size={80} />
                       <div className="text-right">
                         <p>Pendaftar Sidang Kerja Praktek</p>
-                        <p>0</p>
+                        <p>{jumlahPendaftarKP}</p>
                       </div>
                     </div>
                     <div className="p-4 bg-white m-2 flex items-center justify-center rounded-xl hover:transform hover:scale-110 transition-transform duration-300 ease-in-out">
@@ -260,7 +276,9 @@ export const Dashboard = () => {
                           </p>
                         </>
                       ) : (
-                        <p>Pendaftaran Sedang Ditutup</p>
+                        <p className="text-red-500 font-bold">
+                          Pendaftaran Sedang Ditutup
+                        </p>
                       )}
                     </div>
                     <div className="proporsal bg-white p-4 rounded-lg mb-4 hover:transform hover:scale-105 transition-transform duration-300 ease-in-out text-slate-600 drop-shadow-lg">
@@ -270,8 +288,8 @@ export const Dashboard = () => {
                       {tanggalBukaSkripsi && tanggalTutupSkripsi ? (
                         <>
                           <p>
-                            Diberitahukan kepada mahasiswa/i Seminar Proporsal
-                            akan diadakan pada tanggal :{" "}
+                            Diberitahukan kepada mahasiswa/i Sidang Skripsi akan
+                            diadakan pada tanggal :{" "}
                             <b>
                               {" "}
                               {new Intl.DateTimeFormat("id-ID", {
@@ -306,7 +324,9 @@ export const Dashboard = () => {
                           </p>
                         </>
                       ) : (
-                        <p>Pendaftaran Sedang Ditutup</p>
+                        <p className="text-red-500 font-bold">
+                          Pendaftaran Sedang Ditutup
+                        </p>
                       )}
                     </div>
                     <div className="proporsal bg-white p-4 rounded-lg mb-4 hover:transform hover:scale-105 transition-transform duration-300 ease-in-out text-slate-600 drop-shadow-lg">
@@ -316,8 +336,8 @@ export const Dashboard = () => {
                       {tanggalBukaKP && tanggalTutupKP ? (
                         <>
                           <p>
-                            Diberitahukan kepada mahasiswa/i Seminar Proporsal
-                            akan diadakan pada tanggal :{" "}
+                            Diberitahukan kepada mahasiswa/i Sidang Kerja
+                            Praktek akan diadakan pada tanggal :{" "}
                             <b>
                               {new Intl.DateTimeFormat("id-ID", {
                                 weekday: "long",
@@ -351,7 +371,9 @@ export const Dashboard = () => {
                           </p>
                         </>
                       ) : (
-                        <p>Pendaftaran Sedang Ditutup</p>
+                        <p className="text-red-500 font-bold">
+                          Pendaftaran Sedang Ditutup
+                        </p>
                       )}
                     </div>
                     <div className="proporsal bg-white p-4 rounded-lg mb-4 hover:transform hover:scale-105 transition-transform duration-300 ease-in-out text-slate-600 drop-shadow-lg">
@@ -361,7 +383,7 @@ export const Dashboard = () => {
                       {tanggalBukaKompre && tanggalTutupKompre ? (
                         <>
                           <p>
-                            Diberitahukan kepada mahasiswa/i Seminar Proporsal
+                            Diberitahukan kepada mahasiswa/i Sidang Komprehensif
                             akan diadakan pada tanggal :{" "}
                             <b>
                               {" "}
@@ -397,7 +419,9 @@ export const Dashboard = () => {
                           </p>
                         </>
                       ) : (
-                        <p>Pendaftaran Sedang Ditutup</p>
+                        <p className="text-red-500 font-bold">
+                          Pendaftaran Sedang Ditutup
+                        </p>
                       )}
                     </div>
                   </div>

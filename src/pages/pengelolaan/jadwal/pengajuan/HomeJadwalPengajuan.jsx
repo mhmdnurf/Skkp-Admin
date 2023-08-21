@@ -7,6 +7,8 @@ import {
   collection,
   deleteDoc,
   doc,
+  getDoc,
+  getDocs,
   onSnapshot,
   query,
 } from "firebase/firestore";
@@ -47,21 +49,44 @@ export const HomeJadwalPengajuan = () => {
 
   const handleDelete = async (id) => {
     try {
-      const result = await Swal.fire({
-        title: "Apakah Anda Yakin?",
-        text: "Data akan hilang permanen ketika dihapus",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#d33",
-        cancelButtonColor: "#3085d6",
-        cancelButtonText: "Batal",
-        confirmButtonText: "Confirm",
-      });
+      const docRef = doc(db, "jadwalPengajuan", id);
+      const docSnapshot = await getDoc(docRef);
 
-      if (result.isConfirmed) {
-        const docRef = doc(db, "jadwalPengajuan", id);
-        await deleteDoc(docRef);
-        Swal.fire("Success", "Data Berhasil dihapus!", "success");
+      if (docSnapshot.exists()) {
+        const pengajuanSnapshot = await getDocs(collection(db, "pengajuan"));
+
+        let isUsedInPengajuan = false;
+
+        pengajuanSnapshot.forEach((doc) => {
+          const pengajuanData = doc.data();
+          if (docRef.id === pengajuanData.periodePendaftaran) {
+            isUsedInPengajuan = true;
+          }
+        });
+
+        if (isUsedInPengajuan) {
+          Swal.fire(
+            "Error",
+            "Periode pendaftaran sudah digunakan di data pengajuan!",
+            "error"
+          );
+        } else {
+          const result = await Swal.fire({
+            title: "Apakah Anda Yakin?",
+            text: "Data akan hilang permanen ketika dihapus",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#d33",
+            cancelButtonColor: "#3085d6",
+            cancelButtonText: "Batal",
+            confirmButtonText: "Confirm",
+          });
+
+          if (result.isConfirmed) {
+            await deleteDoc(docRef);
+            Swal.fire("Success", "Data Berhasil dihapus!", "success");
+          }
+        }
       }
     } catch (error) {
       console.error("Error deleting data: ", error);
@@ -149,7 +174,7 @@ export const HomeJadwalPengajuan = () => {
                         <td className="p-2 px-6">
                           <div className="flex items-center justify-center">
                             <Link
-                              to={`/tahun-ajaran/edit/${item.id}`}
+                              to={`/kelola-jadwal/pengajuan/edit/${item.id}`}
                               className="p-2 bg-slate-200 rounded-md hover:bg-slate-300 mr-1"
                             >
                               Ubah

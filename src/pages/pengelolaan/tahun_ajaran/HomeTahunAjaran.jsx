@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { Sidebar } from "../../components/sidebar/Sidebar";
+import { Sidebar } from "../../../components/sidebar/Sidebar";
 import { InfinitySpin } from "react-loader-spinner";
-import { auth, db } from "../../utils/firebase";
+import { auth, db } from "../../../utils/firebase";
 import {
   collection,
   onSnapshot,

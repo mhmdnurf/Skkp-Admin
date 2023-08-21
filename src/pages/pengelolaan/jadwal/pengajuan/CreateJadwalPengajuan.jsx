@@ -73,42 +73,38 @@ export const CreateJadwalPengajuan = () => {
         cretedAt: new Date(),
       };
 
-      // Simpan data jadwal ke koleksi jadwal
-      const docRef = await addDoc(
-        collection(db, "jadwalPengajuan"),
-        jadwalData
-      );
-      console.log("Document written with ID: ", docRef.id);
-
-      // Kirim permintaan ke server untuk mengirim notifikasi
-      const response = await fetch(
-        "http://localhost:3000/send-notification/pengajuan",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            registrationToken:
-              "efjLkfYnTBu97mDH1aDtt3:APA91bEfMxhN6FKk5GW3DnHVoEoJP90GyanTAU1h-xeyfCS9sQFS19EMHViqXDXFu9iYyhfIOe-lMU0kmtuOaqcbqvs_3dnTMDRiZt_j7Mk7a-x8uu50sx6Jiqh3MG4UI5sUAWtWjYLt",
-          }),
-        }
-      );
-
-      if (response.ok) {
-        console.log("Notification sent successfully");
-      } else {
-        console.error("Failed to send notification");
-      }
-
-      Swal.fire({
-        title: "Success",
-        text: "Data berhasil ditambahkan",
-        icon: "success",
-        confirmButtonText: "OK",
-      }).then(() => {
-        navigate("/kelola-jadwal/pengajuan");
+      const result = await Swal.fire({
+        title: "Apakah Anda Yakin akan Membuka Jadwal?",
+        icon: "question",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#3085d6",
+        cancelButtonText: "Batal",
+        confirmButtonText: "Confirm",
       });
+      if (result.isConfirmed) {
+        await addDoc(collection(db, "jadwalPengajuan"), jadwalData);
+
+        // Kirim permintaan ke server untuk mengirim notifikasi
+        const response = await fetch(
+          "http://localhost:3000/send-notification-to-all",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (response.ok) {
+          console.log("Notifications sent successfully to all users");
+        } else {
+          console.error("Failed to send notifications to all users");
+        }
+        Swal.fire("Success", "Jadwal berhasil dibuka!", "success").then(() => {
+          navigate("/kelola-jadwal/pengajuan");
+        });
+      }
     } catch (error) {
       console.error("Error adding document: ", error);
       setError("Error adding document");

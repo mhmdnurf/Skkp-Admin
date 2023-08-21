@@ -130,7 +130,7 @@ export const DosenPembimbingSkripsi = () => {
                   {isSubmitting ? "Loading..." : "Submit"}
                 </button>
                 <Link
-                  to={`/pengajuan-kp/detail/${itemId}`}
+                  to={`/pengajuan-skripsi/detail/${itemId}`}
                   className="px-4 py-2 bg-red-400 text-white rounded-md hover:bg-red-500 ml-1 drop-shadow-lg"
                 >
                   Cancel

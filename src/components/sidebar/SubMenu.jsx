@@ -11,18 +11,18 @@ export const SubMenuPengajuan = () => (
   </div>
 );
 
-export const SubMenuPendaftaran = () => (
+export const SubMenuSidang = () => (
   <div className="ml-[65px] mt-2 flex flex-col justify-center">
-    <Link to="/pendaftaran" className="block py-2">
+    <Link to="/sidang-kp" className="block py-2">
       Sidang Kerja Praktek
     </Link>
-    <Link to="/pendaftaran" className="block py-2">
+    <Link to="/sidang-sempro" className="block py-2">
       Sidang Seminar Proposal
     </Link>
-    <Link to="/pendaftaran" className="block py-2">
+    <Link to="/sidang-kompre" className="block py-2">
       Sidang Komprehensif
     </Link>
-    <Link to="/pendaftaran" className="block py-2">
+    <Link to="/sidang-skripsi" className="block py-2">
       Sidang Akhir Skripsi
     </Link>
   </div>
@@ -38,6 +38,7 @@ export const SubMenuJadwal = () => (
     </Link>
   </div>
 );
+
 export const SubMenuPengguna = () => (
   <div className="ml-[65px] mt-2 flex flex-col justify-center">
     <Link to="/kelola-pengguna/mahasiswa" className="block py-2">
@@ -45,6 +46,30 @@ export const SubMenuPengguna = () => (
     </Link>
     <Link to="/kelola-pengguna/dosen" className="block py-2">
       Dosen
+    </Link>
+  </div>
+);
+
+export const SubMenuNilai = () => (
+  <div className="ml-[65px] mt-2 flex flex-col justify-center">
+    <Link to="/kelola-pengguna/mahasiswa" className="block py-2">
+      Kerja Praktek
+    </Link>
+    <Link to="/kelola-pengguna/dosen" className="block py-2">
+      Skripsi
+    </Link>
+  </div>
+);
+export const SubMenuTopik = () => (
+  <div className="ml-[65px] mt-2 flex flex-col justify-center">
+    <Link to="/kelola-pengguna/mahasiswa" className="block py-2">
+      Teknik Informatika
+    </Link>
+    <Link to="/kelola-pengguna/dosen" className="block py-2">
+      Sistem Informasi
+    </Link>
+    <Link to="/kelola-pengguna/dosen" className="block py-2">
+      Komputer Akuntansi
     </Link>
   </div>
 );

@@ -7,7 +7,7 @@ import { doc, getDoc, updateDoc } from "firebase/firestore";
 import Swal from "sweetalert2";
 import { useAuthState } from "react-firebase-hooks/auth";
 
-export const EditJadwalSidang = () => {
+export const EditJadwalPengajuan = () => {
   const navigate = useNavigate();
 
   const { itemId } = useParams();
@@ -21,7 +21,7 @@ export const EditJadwalSidang = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const docRef = doc(db, "jadwalSidang", itemId);
+        const docRef = doc(db, "jadwalPengajuan", itemId);
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
@@ -57,11 +57,11 @@ export const EditJadwalSidang = () => {
       setIsSubmitting(true);
 
       // Update data pada Firestore
-      const docRef = doc(db, "jadwalSidang", itemId);
+      const docRef = doc(db, "jadwalPengajuan", itemId);
       await updateDoc(docRef, { status: status });
       Swal.fire("Success", "Data Berhasil diubah!", "success");
       setIsSubmitting(false);
-      navigate("/kelola-jadwal/sidang");
+      navigate("/kelola-jadwal/pengajuan");
     } catch (error) {
       console.error("Error updating data: ", error);
       setError("Error updating data");
@@ -80,7 +80,7 @@ export const EditJadwalSidang = () => {
           <Sidebar />
           <div className="flex flex-col w-full pl-[300px] overflow-y-auto pr-4 pb-4">
             <h1 className="text-2xl text-white text-center shadow-md font-semibold rounded-lg p-4 m-4 mb-4 bg-slate-600">
-              Ubah Status Jadwal Sidang
+              Ubah Status Jadwal Pengajuan
             </h1>
             <form
               onSubmit={handleFormEdit}
@@ -112,7 +112,7 @@ export const EditJadwalSidang = () => {
                   {isSubmitting ? "Loading..." : "Submit"}
                 </button>
                 <Link
-                  to="/kelola-jadwal/sidang"
+                  to="/kelola-jadwal/pengajuan"
                   className="px-4 py-2 bg-red-400 text-white rounded-md hover:bg-red-500 ml-1 drop-shadow-lg"
                 >
                   Cancel

@@ -1,15 +1,25 @@
 import { useState, useEffect } from "react";
 import {
+  FaFileContract,
   FaHistory,
   FaHome,
   FaLinux,
   FaRegClock,
   FaRegFolderOpen,
+  FaServer,
   FaSignOutAlt,
+  FaUser,
   FaUserGraduate,
 } from "react-icons/fa";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { SubMenuPengajuan, SubMenuPendaftaran, SubMenuJadwal } from "./SubMenu";
+import {
+  SubMenuPengajuan,
+  SubMenuSidang,
+  SubMenuJadwal,
+  SubMenuPengguna,
+  SubMenuNilai,
+  SubMenuTopik,
+} from "./SubMenu";
 import { signOut } from "firebase/auth";
 import { auth } from "../../utils/firebase";
 import Swal from "sweetalert2";
@@ -21,18 +31,29 @@ export const Sidebar = () => {
   const location = useLocation();
   const [active, setActive] = useState("");
   const [subMenuPengajuan, setSubMenuPengajuan] = useState(false);
-  const [subMenuPendaftaran, setSubMenuPendaftaran] = useState(false);
+  const [subMenuSidang, setSubMenuSidang] = useState(false);
   const [subMenuJadwal, setSubMenuJadwal] = useState(false);
+  const [subMenuPengguna, setSubMenuPengguna] = useState(false);
+  const [subMenuNilai, setSubMenuNilai] = useState(false);
+  const [subMenuTopik, setSubMenuTopik] = useState(false);
 
   useEffect(() => {
     const path = location.pathname.slice(1);
 
     if (path.startsWith("pengajuan-")) {
       setActive("pengajuan");
-    } else if (path.startsWith("tahun-ajaran")) {
-      setActive("tahunAjaran");
+    } else if (path.startsWith("sidang-")) {
+      setActive("sidang");
     } else if (path.startsWith("kelola-jadwal")) {
       setActive("kelolaJadwal");
+    } else if (path.startsWith("kelola-nilai")) {
+      setActive("kelolaNilai");
+    } else if (path.startsWith("kelola-topik")) {
+      setActive("kelolaTopik");
+    } else if (path.startsWith("kelola-pengguna")) {
+      setActive("kelolaPengguna");
+    } else if (path.startsWith("tahun-ajaran")) {
+      setActive("tahunAjaran");
     } else {
       setActive("dashboard");
     }
@@ -40,8 +61,11 @@ export const Sidebar = () => {
     const closeDropdown = (event) => {
       if (!event.target.closest(".dropdown-container")) {
         setSubMenuPengajuan(false);
-        setSubMenuPendaftaran(false);
+        setSubMenuSidang(false);
         setSubMenuJadwal(false);
+        setSubMenuNilai(false);
+        setSubMenuTopik(false);
+        setSubMenuPengguna(false);
       }
     };
 
@@ -54,14 +78,29 @@ export const Sidebar = () => {
     setActive("pengajuan");
   };
 
-  const dropdownPendaftaran = () => {
-    setSubMenuPendaftaran(!subMenuPendaftaran);
-    setActive("pendaftaran");
+  const dropdownSidang = () => {
+    setSubMenuSidang(!subMenuSidang);
+    setActive("sidang");
   };
 
   const dropdownJadwal = () => {
     setSubMenuJadwal(!subMenuJadwal);
     setActive("kelolaJadwal");
+  };
+
+  const dropdownNilai = () => {
+    setSubMenuNilai(!subMenuNilai);
+    setActive("kelolaNilai");
+  };
+
+  const dropdownTopik = () => {
+    setSubMenuTopik(!subMenuTopik);
+    setActive("kelolaTopik");
+  };
+
+  const dropdownPengguna = () => {
+    setSubMenuPengguna(!subMenuPengguna);
+    setActive("kelolaPengguna");
   };
 
   const handleLogout = async () => {
@@ -130,21 +169,21 @@ export const Sidebar = () => {
         </div>
         {subMenuPengajuan && <SubMenuPengajuan />}
 
-        {/* Kelola Pendaftaran */}
+        {/* Kelola Sidang */}
         <div className="flex items-center justify-center mt-4 ">
           <div
-            onClick={dropdownPendaftaran}
+            onClick={dropdownSidang}
             className={`flex w-[200px] p-4 items-center cursor-pointer dropdown-container ${
-              active === "pendaftaran"
+              active === "sidang"
                 ? " bg-white rounded-md drop-shadow-lg"
                 : "opacity-50"
             }`}
           >
             <FaUserGraduate className="font-bold mr-2 text-lg" />
-            <h1 className="font-bold ">Kelola Pendaftaran</h1>
+            <h1 className="font-bold ">Kelola Sidang</h1>
           </div>
         </div>
-        {subMenuPendaftaran && <SubMenuPendaftaran />}
+        {subMenuSidang && <SubMenuSidang />}
 
         {/* Jadwal Pengajuan */}
         <div className="flex items-center justify-center mt-4">
@@ -161,6 +200,54 @@ export const Sidebar = () => {
           </div>
         </div>
         {subMenuJadwal && <SubMenuJadwal />}
+
+        {/* Jadwal Pengajuan */}
+        <div className="flex items-center justify-center mt-4">
+          <div
+            onClick={dropdownNilai}
+            className={`flex w-[200px] p-4 items-center cursor-pointer dropdown-container ${
+              active === "kelolaNilai"
+                ? " bg-white rounded-md drop-shadow-lg"
+                : "opacity-50"
+            }`}
+          >
+            <FaServer className="font-bold mr-2 text-lg" />
+            <h1 className="font-bold">Kelola Nilai</h1>
+          </div>
+        </div>
+        {subMenuNilai && <SubMenuNilai />}
+
+        {/* Jadwal Pengajuan */}
+        <div className="flex items-center justify-center mt-4">
+          <div
+            onClick={dropdownTopik}
+            className={`flex w-[200px] p-4 items-center cursor-pointer dropdown-container ${
+              active === "kelolaTopik"
+                ? " bg-white rounded-md drop-shadow-lg"
+                : "opacity-50"
+            }`}
+          >
+            <FaFileContract className="font-bold mr-2 text-lg" />
+            <h1 className="font-bold">Kelola Topik</h1>
+          </div>
+        </div>
+        {subMenuTopik && <SubMenuTopik />}
+
+        {/* Jadwal Pengajuan */}
+        <div className="flex items-center justify-center mt-4">
+          <div
+            onClick={dropdownPengguna}
+            className={`flex w-[200px] p-4 items-center cursor-pointer dropdown-container ${
+              active === "kelolaPengguna"
+                ? " bg-white rounded-md drop-shadow-lg"
+                : "opacity-50"
+            }`}
+          >
+            <FaUser className="font-bold mr-2 text-lg" />
+            <h1 className="font-bold">Kelola Pengguna</h1>
+          </div>
+        </div>
+        {subMenuPengguna && <SubMenuPengguna />}
 
         {/* Tahun Ajaran */}
         <div className="flex items-center justify-center mt-4">
