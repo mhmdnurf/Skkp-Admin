@@ -59,7 +59,7 @@ export const HomeJadwalSidang = () => {
 
         pengajuanSnapshot.forEach((doc) => {
           const pengajuanData = doc.data();
-          if (docRef.id === pengajuanData.periodePendaftaran) {
+          if (docRef.id === pengajuanData.jadwalSidang_uid) {
             isUsedInPengajuan = true;
           }
         });

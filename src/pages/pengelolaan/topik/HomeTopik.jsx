@@ -1,40 +1,36 @@
 import { useEffect, useState } from "react";
-import { Sidebar } from "../../../../components/sidebar/Sidebar";
+import { Sidebar } from "../../../components/sidebar/Sidebar";
 import { InfinitySpin } from "react-loader-spinner";
-import { Link, useNavigate } from "react-router-dom";
-import { db, auth } from "../../../../utils/firebase";
+import { auth, db } from "../../../utils/firebase";
 import {
   collection,
-  deleteDoc,
-  doc,
-  getDoc,
-  getDocs,
   onSnapshot,
   query,
+  deleteDoc,
+  doc,
 } from "firebase/firestore";
+import { Link, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { useAuthState } from "react-firebase-hooks/auth";
 
-export const HomeJadwalPengajuan = () => {
-  const [user, loading] = useAuthState(auth);
+export const HomeTopik = () => {
+  const itemsPerPage = 5;
+  const [data, setData] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [searchText, setSearchText] = useState("");
-  const itemsPerPage = 5;
-  const [currentPage, setCurrentPage] = useState(1);
-  const [data, setData] = useState([]);
-
   const navigate = useNavigate();
+  const [user, loading] = useAuthState(auth);
 
   useEffect(() => {
     const unsubscribe = onSnapshot(
-      query(collection(db, "jadwalPengajuan")),
+      query(collection(db, "topikPenelitian")),
       (snapshot) => {
         const fetchedData = snapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         }));
         setData(fetchedData);
-        console.log(data);
         setIsLoading(false);
       }
     );
@@ -42,50 +38,27 @@ export const HomeJadwalPengajuan = () => {
     if (loading) return;
     if (!user) return navigate("/login");
 
-    // Cleanup the subscription when component unmounts
+    // Cleanup: unsubscribe when the component unmounts or when the effect re-runs
     return () => unsubscribe();
   }, [user, loading]);
 
   const handleDelete = async (id) => {
     try {
-      const docRef = doc(db, "jadwalPengajuan", id);
-      const docSnapshot = await getDoc(docRef);
+      const result = await Swal.fire({
+        title: "Apakah Anda Yakin?",
+        text: "Data akan hilang permanen ketika dihapus",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#3085d6",
+        cancelButtonText: "Batal",
+        confirmButtonText: "Confirm",
+      });
 
-      if (docSnapshot.exists()) {
-        const pengajuanSnapshot = await getDocs(collection(db, "pengajuan"));
-
-        let isUsedInPengajuan = false;
-
-        pengajuanSnapshot.forEach((doc) => {
-          const pengajuanData = doc.data();
-          if (docRef.id === pengajuanData.jadwalPengajuan_uid) {
-            isUsedInPengajuan = true;
-          }
-        });
-
-        if (isUsedInPengajuan) {
-          Swal.fire(
-            "Error",
-            "Periode pendaftaran sudah digunakan di data pengajuan!",
-            "error"
-          );
-        } else {
-          const result = await Swal.fire({
-            title: "Apakah Anda Yakin?",
-            text: "Data akan hilang permanen ketika dihapus",
-            icon: "warning",
-            showCancelButton: true,
-            confirmButtonColor: "#d33",
-            cancelButtonColor: "#3085d6",
-            cancelButtonText: "Batal",
-            confirmButtonText: "Confirm",
-          });
-
-          if (result.isConfirmed) {
-            await deleteDoc(docRef);
-            Swal.fire("Success", "Data Berhasil dihapus!", "success");
-          }
-        }
+      if (result.isConfirmed) {
+        const docRef = doc(db, "topikPenelitian", id);
+        await deleteDoc(docRef);
+        Swal.fire("Success", "Data Berhasil dihapus!", "success");
       }
     } catch (error) {
       console.error("Error deleting data: ", error);
@@ -100,19 +73,20 @@ export const HomeJadwalPengajuan = () => {
         </div>
       ) : (
         <>
-          <div className="flex bg-slate-100 h-screen">
+          <div className="flex bg-slate-100 min-h-screen">
             <Sidebar />
             <div className="flex flex-col w-full pl-[300px] overflow-y-auto pr-4 pb-4">
               <h1 className="text-2xl text-white text-center shadow-md font-semibold rounded-lg p-4 m-4 mb-10 bg-slate-600">
-                Kelola Jadwal Pengajuan
+                Data Topik Penelitian
               </h1>
+
               <div className="flex justify-between mt-16">
-                <div className="flex items-center ml-4 ">
+                <div className="flex items-center ml-4">
                   <Link
-                    to={"/kelola-jadwal/pengajuan/create"}
-                    className="px-4 py-2 border w-[250px] rounded-md drop-shadow-lg bg-slate-600 text-white font-bold hover:bg-slate-700 text-center"
+                    to={"/kelola-topik/create"}
+                    className="px-4 py-2 border rounded-md drop-shadow-lg bg-slate-600 text-white font-bold hover:bg-slate-700"
                   >
-                    Buka Jadwal Pengajuan
+                    Tambah Topik Penelitian
                   </Link>
                 </div>
                 <div className="flex items-center mr-4">
@@ -126,61 +100,38 @@ export const HomeJadwalPengajuan = () => {
                 </div>
               </div>
 
-              {/* Tabel Data */}
               <div className="overflow-x-auto flex flex-col px-4 mt-2">
                 <table className="w-full bg-white rounded-t-lg text-slate-700 drop-shadow-md">
                   <thead className="shadow-sm font-extralight text-sm">
                     <tr>
-                      <th className="p-2 px-6 text-center">No</th>
-                      <th className="p-2 px-6 text-center">Tanggal Periode</th>
-                      <th className="p-2 px-6 text-center">Jenis Pengajuan</th>
-                      <th className="p-2 px-6 text-center">Status</th>
-                      <th className="p-2 px-6 text-center">Action</th>
+                      <th className="p-2 px-6">No</th>
+                      <th className="p-2 px-6">Nama Topik</th>
+                      <th className="p-2 px-6">Program Studi</th>
+                      <th className="p-2 px-6">Action</th>
                     </tr>
                   </thead>
-                  <tbody className="rounded-b-md text-sm text-center">
+                  <tbody className="rounded-b-md text-sm">
                     {data.map((item, index) => (
-                      <tr key={item.id}>
-                        <td className="p-2 px-6">{index + 1}</td>
-                        <td className="p-2 px-6">
-                          {item.periodePendaftaran.tanggalBuka &&
-                            new Date(
-                              item.periodePendaftaran.tanggalBuka.toDate()
-                            ).toLocaleDateString("id-ID", {
-                              day: "2-digit",
-                              month: "2-digit",
-                              year: "numeric",
-                            })}{" "}
-                          -{" "}
-                          {item.periodePendaftaran.tanggalTutup &&
-                            new Date(
-                              item.periodePendaftaran.tanggalTutup.toDate()
-                            ).toLocaleDateString("id-ID", {
-                              day: "2-digit",
-                              month: "2-digit",
-                              year: "numeric",
-                            })}
+                      <tr
+                        key={item.id}
+                        className="hover:bg-slate-100 border-b border-t border-slate-300"
+                      >
+                        <td className="text-center">{index + 1}</td>
+                        <td className="text-center">{item.namaTopik}</td>
+                        <td className="text-center">
+                          {item.prodiTopik.join(", ")}
                         </td>
-                        <td className="p-2 px-6">
-                          <ul className="list-none">
-                            {item.jenisPengajuan.map((jenis) => (
-                              <li key={jenis}>{jenis}</li>
-                            ))}
-                          </ul>
-                        </td>
-                        <td className="p-2 px-6">{item.status}</td>
-
-                        <td className="p-2 px-6">
-                          <div className="flex items-center justify-center">
+                        <td className="text-center p-4">
+                          <div className="flex justify-center items-center">
                             <Link
-                              to={`/kelola-jadwal/pengajuan/edit/${item.id}`}
+                              to={`/kelola-topik/edit/${item.id}`}
                               className="p-2 bg-slate-200 rounded-md hover:bg-slate-300 mr-1"
                             >
                               Ubah
                             </Link>
                             <button
-                              onClick={() => handleDelete(item.id)}
                               className="p-2 bg-red-200 rounded-md hover:bg-red-300"
+                              onClick={() => handleDelete(item.id)}
                             >
                               Hapus
                             </button>

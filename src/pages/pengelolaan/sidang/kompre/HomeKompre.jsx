@@ -22,7 +22,7 @@ export const HomeKompre = () => {
   const [data, setData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
-  // const [searchText, setSearchText] = useState("");
+  const [searchText, setSearchText] = useState("");
   const navigate = useNavigate();
   const [user, loading] = useAuthState(auth);
 
@@ -35,28 +35,63 @@ export const HomeKompre = () => {
     }
     return null;
   };
+  const getPengajuanInfo = async (uid) => {
+    const userDocRef = doc(db, "pengajuan", uid);
+    const userDocSnapshot = await getDoc(userDocRef);
+
+    if (userDocSnapshot.exists()) {
+      return userDocSnapshot.data();
+    }
+    return null;
+  };
 
   useEffect(() => {
     const unsubscribe = onSnapshot(
       query(
         collection(db, "sidang"),
-        where("jenisSidang", "==", "Kerja Praktek"),
+        where("jenisSidang", "==", "Komprehensif"),
         orderBy("status", "asc")
       ),
       async (snapshot) => {
         const fetchedData = [];
         for (const doc of snapshot.docs) {
           const data = doc.data();
-          const userInfo = await getUserInfo(data.uid);
-          const dosenPembimbingInfo = await getUserInfo(data.dosenPembimbing);
+          const userInfo = await getUserInfo(data.user_uid);
+          const pengajuanInfo = await getPengajuanInfo(data.pengajuan_uid);
+          const dosenPembimbingInfo = await getUserInfo(
+            pengajuanInfo.pembimbing_uid
+          );
           fetchedData.push({
             id: doc.id,
             ...data,
             userInfo: userInfo,
             dosenPembimbingInfo: dosenPembimbingInfo,
+            pengajuanInfo: pengajuanInfo,
           });
         }
-        setData(fetchedData);
+        const filteredData = fetchedData.filter(
+          (item) =>
+            item.userInfo.nama
+              .toLowerCase()
+              .includes(searchText.toLowerCase()) ||
+            item.userInfo.jurusan
+              .toLowerCase()
+              .includes(searchText.toLowerCase()) ||
+            item.userInfo.nim
+              .toLowerCase()
+              .includes(searchText.toLowerCase()) ||
+            item.status.toLowerCase().includes(searchText.toLowerCase()) ||
+            item.dosenPembimbingInfo.nama
+              .toLowerCase()
+              .includes(searchText.toLowerCase()) ||
+            new Date(item.createdAt.seconds * 1000)
+              .toLocaleDateString("en-US")
+              .includes(searchText) ||
+            item.pengajuanInfo.topikPenelitian
+              .toLowerCase()
+              .includes(searchText.toLowerCase())
+        );
+        setData(filteredData);
         console.log(data);
         setIsLoading(false);
       }
@@ -67,9 +102,9 @@ export const HomeKompre = () => {
 
     // Cleanup: unsubscribe when the component unmounts or when the effect re-runs
     return () => unsubscribe();
-  }, [user, loading]);
+  }, [user, loading, navigate, data, searchText]);
 
-  const truncateTitle = (title, words = 7) => {
+  const truncateTitle = (title, words = 3) => {
     const wordsArray = title.split(" ");
     if (wordsArray.length > words) {
       return wordsArray.slice(0, words).join(" ") + "...";
@@ -135,6 +170,8 @@ export const HomeKompre = () => {
                   type="text"
                   className="px-4 py-2 border w-[400px] rounded-md drop-shadow-sm"
                   placeholder="Search..."
+                  value={searchText}
+                  onChange={(e) => setSearchText(e.target.value)}
                 />
               </div>
 
@@ -183,20 +220,22 @@ export const HomeKompre = () => {
                         <td className="text-center">
                           {item.userInfo && item.userInfo.jurusan}
                         </td>
-                        <td className="text-center p-4">
-                          {truncateTitle(item.judul, 7)}
+                        <td className="text-center p-4 whitespace-nowrap">
+                          {truncateTitle(item.pengajuanInfo.topikPenelitian, 3)}
                         </td>
-                        <td className="text-center">{item.status}</td>
+                        <td className="text-center whitespace-nowrap">
+                          {item.status}
+                        </td>
                         <td className="text-center p-4">{item.catatan}</td>
                         <td className="text-center p-6 whitespace-nowrap">
-                          {item.dosenPembimbingInfo
+                          {item.pengajuanInfo
                             ? item.dosenPembimbingInfo.nama
-                            : item.dosenPembimbing}
+                            : "-"}
                         </td>
                         <td className="text-center p-4">
                           <div className="flex">
                             <Link
-                              to={`/sidang-kp/detail/${item.id}`}
+                              to={`/sidang-kompre/detail/${item.id}`}
                               className="p-2 bg-slate-200 rounded-md hover:bg-slate-300 mr-1"
                             >
                               Detail

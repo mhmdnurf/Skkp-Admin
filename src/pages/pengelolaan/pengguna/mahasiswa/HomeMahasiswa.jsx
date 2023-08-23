@@ -1,21 +1,20 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Sidebar } from "../../../../components/sidebar/Sidebar";
 import { InfinitySpin } from "react-loader-spinner";
-import { Link, useNavigate } from "react-router-dom";
-import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, db } from "../../../../utils/firebase";
 import {
   collection,
-  deleteDoc,
-  doc,
-  getDoc,
   onSnapshot,
   query,
+  deleteDoc,
+  doc,
   where,
 } from "firebase/firestore";
+import { Link, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
+import { useAuthState } from "react-firebase-hooks/auth";
 
-export const HomePengajuanSkripsi = () => {
+export const HomeMahasiswa = () => {
   const itemsPerPage = 5;
   const [data, setData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -24,64 +23,15 @@ export const HomePengajuanSkripsi = () => {
   const navigate = useNavigate();
   const [user, loading] = useAuthState(auth);
 
-  const getUserInfo = async (uid) => {
-    const userDocRef = doc(db, "users", uid);
-    const userDocSnapshot = await getDoc(userDocRef);
-
-    if (userDocSnapshot.exists()) {
-      return userDocSnapshot.data();
-    }
-    return null;
-  };
-
   useEffect(() => {
     const unsubscribe = onSnapshot(
-      query(
-        collection(db, "pengajuan"),
-        where("jenisPengajuan", "==", "Skripsi")
-      ),
-      async (snapshot) => {
-        const fetchedData = [];
-        for (const doc of snapshot.docs) {
-          const data = doc.data();
-          const userInfo = await getUserInfo(data.user_uid);
-          let dosenPembimbingInfo = null;
-
-          // Cek jika pembimbing_uid tidak sama dengan "-"
-          if (data.pembimbing_uid !== "-") {
-            dosenPembimbingInfo = await getUserInfo(data.pembimbing_uid);
-          }
-          fetchedData.push({
-            id: doc.id,
-            ...data,
-            userInfo: userInfo,
-            dosenPembimbingInfo: dosenPembimbingInfo,
-          });
-        }
-
-        const filteredData = fetchedData.filter(
-          (item) =>
-            item.userInfo.nama
-              .toLowerCase()
-              .includes(searchText.toLowerCase()) ||
-            item.userInfo.jurusan
-              .toLowerCase()
-              .includes(searchText.toLowerCase()) ||
-            item.userInfo.nim
-              .toLowerCase()
-              .includes(searchText.toLowerCase()) ||
-            item.status.toLowerCase().includes(searchText.toLowerCase()) ||
-            item.dosenPembimbingInfo.nama
-              .toLowerCase()
-              .includes(searchText.toLowerCase()) ||
-            new Date(item.createdAt.seconds * 1000)
-              .toLocaleDateString("en-US")
-              .includes(searchText) ||
-            item.topikPenelitian
-              .toLowerCase()
-              .includes(searchText.toLowerCase())
-        );
-        setData(filteredData);
+      query(collection(db, "users"), where("role", "==", "Mahasiswa")),
+      (snapshot) => {
+        const fetchedData = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setData(fetchedData);
         setIsLoading(false);
       }
     );
@@ -107,7 +57,7 @@ export const HomePengajuanSkripsi = () => {
       });
 
       if (result.isConfirmed) {
-        const docRef = doc(db, "pengajuan", id);
+        const docRef = doc(db, "users", id);
         await deleteDoc(docRef);
         Swal.fire("Success", "Data Berhasil dihapus!", "success");
       }
@@ -124,36 +74,35 @@ export const HomePengajuanSkripsi = () => {
         </div>
       ) : (
         <>
-          <div className="flex bg-slate-100 h-screen">
+          <div className="flex bg-slate-100 min-h-screen">
             <Sidebar />
             <div className="flex flex-col w-full pl-[300px] overflow-y-auto pr-4 pb-4">
-              <h1 className="text-2xl text-white text-center shadow-md font-bold rounded-lg p-4 m-4 mb-10 bg-slate-600">
-                Data Pengajuan Skripsi
+              <h1 className="text-2xl text-white text-center shadow-md font-semibold rounded-lg p-4 m-4 mb-10 bg-slate-600">
+                Data Mahasiswa
               </h1>
-              <div className="flex items-center mt-16 mb-2 mx-2 justify-end mr-4">
-                <input
-                  type="text"
-                  className="px-4 py-2 border w-[400px] rounded-md drop-shadow-sm"
-                  placeholder="Search..."
-                  value={searchText}
-                  onChange={(e) => setSearchText(e.target.value)}
-                />
+
+              <div className="flex justify-between mt-16">
+                <div className="flex items-center ml-4 " />
+                <div className="flex items-center mr-4">
+                  <input
+                    type="text"
+                    className="px-4 py-2 border w-[400px] rounded-md drop-shadow-sm"
+                    placeholder="Search..."
+                    value={searchText}
+                    onChange={(e) => setSearchText(e.target.value)}
+                  />
+                </div>
               </div>
 
-              {/* Tabel Data */}
-              <div className="flex flex-col px-4 mt-2">
-                <table className="overflow-x-auto block bg-white rounded-t-lg text-slate-700 drop-shadow-md">
-                  <thead className=" shadow-sm font-extralight text-sm">
-                    <tr className="">
+              <div className="overflow-x-auto flex flex-col px-4 mt-2">
+                <table className="w-full bg-white rounded-t-lg text-slate-700 drop-shadow-md">
+                  <thead className="shadow-sm font-extralight text-sm">
+                    <tr>
                       <th className="p-2 px-6">No</th>
-                      <th className="p-2 px-6">Tanggal Daftar</th>
                       <th className="p-2 px-6">NIM</th>
                       <th className="p-2 px-6">Nama</th>
                       <th className="p-2 px-6">Jurusan</th>
-                      <th className="p-2 px-6">Topik Penelitian</th>
-                      <th className="p-2 px-6">Status</th>
-                      <th className="p-2 px-6">Catatan</th>
-                      <th className="p-2 px-6">Pembimbing</th>
+                      <th className="p-2 px-6">Email</th>
                       <th className="p-2 px-6">Action</th>
                     </tr>
                   </thead>
@@ -164,41 +113,16 @@ export const HomePengajuanSkripsi = () => {
                         className="hover:bg-slate-100 border-b border-t border-slate-300"
                       >
                         <td className="text-center">{index + 1}</td>
-                        <td className="text-center">
-                          {item.createdAt &&
-                            new Date(
-                              item.createdAt.seconds * 1000
-                            ).toLocaleDateString("id-ID", {
-                              day: "2-digit",
-                              month: "2-digit",
-                              year: "numeric",
-                            })}
-
-                          {item.tanggalDaftar}
-                        </td>
-                        <td className="text-center">
-                          {item.userInfo && item.userInfo.nim}
-                        </td>
+                        <td className="text-center">{item.nim}</td>
                         <td className="text-center whitespace-nowrap">
-                          {item.userInfo && item.userInfo.nama}
+                          {item.nama}
                         </td>
-                        <td className="text-center">
-                          {item.userInfo && item.userInfo.jurusan}
-                        </td>
-                        <td className="text-center p-4 whitespace-nowrap">
-                          {item.topikPenelitian}
-                        </td>
-                        <td className="text-center">{item.status}</td>
-                        <td className="text-center p-4">{item.catatan}</td>
-                        <td className="text-center p-6">
-                          {item.dosenPembimbingInfo
-                            ? item.dosenPembimbingInfo.nama
-                            : "-"}
-                        </td>
+                        <td className="text-center">{item.jurusan}</td>
+                        <td className="text-center">{item.email}</td>
                         <td className="text-center p-4">
-                          <div className="flex">
+                          <div className="flex justify-center items-center">
                             <Link
-                              to={`/pengajuan-skripsi/detail/${item.id}`}
+                              to={`/pengajuan-kp/detail/${item.id}`}
                               className="p-2 bg-slate-200 rounded-md hover:bg-slate-300 mr-1"
                             >
                               Detail
@@ -246,8 +170,8 @@ export const HomePengajuanSkripsi = () => {
                     </button>
                   </div>
                 </div>
+                <div className="mb-10" />
               </div>
-              <div className="mb-10" />
             </div>
           </div>
         </>

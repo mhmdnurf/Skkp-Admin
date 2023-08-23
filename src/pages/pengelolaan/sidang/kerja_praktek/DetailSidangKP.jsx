@@ -33,6 +33,16 @@ export const DetailSidangKP = () => {
     return null;
   };
 
+  const getPengajuanInfo = async (uid) => {
+    const userDocRef = doc(db, "pengajuan", uid);
+    const userDocSnapshot = await getDoc(userDocRef);
+
+    if (userDocSnapshot.exists()) {
+      return userDocSnapshot.data();
+    }
+    return null;
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       const itemDocRef = doc(db, "sidang", itemId);
@@ -40,10 +50,15 @@ export const DetailSidangKP = () => {
 
       if (itemDocSnapshot.exists()) {
         const itemData = itemDocSnapshot.data();
-        const userInfo = await getUserInfo(itemData.uid);
-        const dosenPembimbingInfo = await getUserInfo(itemData.dosenPembimbing);
+        const userInfo = await getUserInfo(itemData.user_uid);
+        const pengajuanInfo = await getPengajuanInfo(itemData.pengajuan_uid);
+        const dosenPembimbingInfo = await getUserInfo(
+          pengajuanInfo.pembimbing_uid
+        );
+        const pengujiSatuInfo = await getUserInfo(itemData.pengujiSatu_uid);
+        const pengujiDuaInfo = await getUserInfo(itemData.pengujiDua_uid);
         const periodePendaftaranInfo = await getPeriodeInfo(
-          itemData.periodePendaftaran
+          itemData.jadwalSidang_uid
         );
 
         setData({
@@ -51,6 +66,9 @@ export const DetailSidangKP = () => {
           ...itemData,
           userInfo: userInfo,
           dosenPembimbingInfo: dosenPembimbingInfo,
+          pengujiSatuInfo: pengujiSatuInfo,
+          pengujiDuaInfo: pengujiDuaInfo,
+          pengajuanInfo: pengajuanInfo,
           periodePendaftaranInfo: periodePendaftaranInfo,
         });
         console.log(data);
@@ -86,7 +104,7 @@ export const DetailSidangKP = () => {
         confirmButtonText: "OK",
       });
     } else {
-      navigate(`/pengajuan-kp/dosen-pembimbing/${itemId}`);
+      navigate(`/sidang-kp/penguji/${itemId}`);
     }
   };
 
@@ -197,7 +215,7 @@ export const DetailSidangKP = () => {
               <h1 className="mb-2 text-lg font-bold text-slate-600">Jurusan</h1>
               <p className="mb-2">{data.userInfo.jurusan}</p>
               <h1 className="mb-2 text-lg font-bold text-slate-600">Judul</h1>
-              <p className="mb-2">{data.judul}</p>
+              <p className="mb-2">{data.pengajuanInfo.judul}</p>
               <h1 className="mb-2 text-lg font-bold text-slate-600">Status</h1>
               <p className="mb-2">{data.status}</p>
               <h1 className="mb-2 text-lg font-bold text-slate-600">Catatan</h1>
@@ -213,11 +231,33 @@ export const DetailSidangKP = () => {
                   <p className="mb-2 ">-</p>
                 )}
               </p>
+              <h1 className="mb-2 text-lg font-bold text-slate-600">
+                Penguji Satu
+              </h1>
+              <p className="mb-2">
+                {" "}
+                {data.pengujiSatuInfo ? (
+                  <p className="mb-2">{data.pengujiSatuInfo.nama}</p>
+                ) : (
+                  <p className="mb-2 ">-</p>
+                )}
+              </p>
+              <h1 className="mb-2 text-lg font-bold text-slate-600">
+                Penguji Dua
+              </h1>
+              <p className="mb-2">
+                {" "}
+                {data.pengujiDuaInfo ? (
+                  <p className="mb-2">{data.pengujiDuaInfo.nama}</p>
+                ) : (
+                  <p className="mb-2 ">-</p>
+                )}
+              </p>
             </div>
 
             <div className="flex flex-1 justify-end p-4">
               <Link
-                to={`/pengajuan-kp/verifikasi/${itemId}`}
+                to={`/sidang-kp/verifikasi/${itemId}`}
                 className="bg-green-600 hover:bg-green-500 p-2 m-2 rounded-lg w-[150px] text-center text-slate-100 drop-shadow-xl"
               >
                 Verifikasi
@@ -226,10 +266,10 @@ export const DetailSidangKP = () => {
                 onClick={handleButtonPembimbing}
                 className="bg-blue-600 hover:bg-blue-500 p-2 m-2 rounded-lg w-[200px] text-center text-slate-100"
               >
-                Beri Dosen Pembimbing
+                Beri Dosen Penguji
               </button>
               <Link
-                to={"/pengajuan-kp"}
+                to={"/sidang-kp"}
                 className="bg-red-400 hover:bg-red-300 p-2 m-2 rounded-lg w-[150px] text-center text-slate-100"
               >
                 Kembali

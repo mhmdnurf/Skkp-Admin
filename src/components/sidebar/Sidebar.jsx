@@ -18,7 +18,6 @@ import {
   SubMenuJadwal,
   SubMenuPengguna,
   SubMenuNilai,
-  SubMenuTopik,
 } from "./SubMenu";
 import { signOut } from "firebase/auth";
 import { auth } from "../../utils/firebase";
@@ -35,7 +34,6 @@ export const Sidebar = () => {
   const [subMenuJadwal, setSubMenuJadwal] = useState(false);
   const [subMenuPengguna, setSubMenuPengguna] = useState(false);
   const [subMenuNilai, setSubMenuNilai] = useState(false);
-  const [subMenuTopik, setSubMenuTopik] = useState(false);
 
   useEffect(() => {
     const path = location.pathname.slice(1);
@@ -64,7 +62,6 @@ export const Sidebar = () => {
         setSubMenuSidang(false);
         setSubMenuJadwal(false);
         setSubMenuNilai(false);
-        setSubMenuTopik(false);
         setSubMenuPengguna(false);
       }
     };
@@ -91,11 +88,6 @@ export const Sidebar = () => {
   const dropdownNilai = () => {
     setSubMenuNilai(!subMenuNilai);
     setActive("kelolaNilai");
-  };
-
-  const dropdownTopik = () => {
-    setSubMenuTopik(!subMenuTopik);
-    setActive("kelolaTopik");
   };
 
   const dropdownPengguna = () => {
@@ -219,9 +211,9 @@ export const Sidebar = () => {
 
         {/* Jadwal Pengajuan */}
         <div className="flex items-center justify-center mt-4">
-          <div
-            onClick={dropdownTopik}
-            className={`flex w-[200px] p-4 items-center cursor-pointer dropdown-container ${
+          <Link
+            to="/kelola-topik"
+            className={`flex w-[200px] p-4 items-center cursor-pointer ${
               active === "kelolaTopik"
                 ? " bg-white rounded-md drop-shadow-lg"
                 : "opacity-50"
@@ -229,9 +221,8 @@ export const Sidebar = () => {
           >
             <FaFileContract className="font-bold mr-2 text-lg" />
             <h1 className="font-bold">Kelola Topik</h1>
-          </div>
+          </Link>
         </div>
-        {subMenuTopik && <SubMenuTopik />}
 
         {/* Jadwal Pengajuan */}
         <div className="flex items-center justify-center mt-4">

@@ -29,6 +29,19 @@ import { VerifikasiSempro } from "./pages/pengelolaan/sidang/sempro/VerifikasiSe
 import { HomeKompre } from "./pages/pengelolaan/sidang/kompre/HomeKompre";
 import { DetailKompre } from "./pages/pengelolaan/sidang/kompre/DetailKompre";
 import { VerifikasiKompre } from "./pages/pengelolaan/sidang/kompre/VerifikasiKompre";
+import { HomeMahasiswa } from "./pages/pengelolaan/pengguna/mahasiswa/HomeMahasiswa";
+import { HomeDosen } from "./pages/pengelolaan/pengguna/dosen/HomeDosen";
+import { HomeTopik } from "./pages/pengelolaan/topik/HomeTopik";
+import { HomeNilaiKP } from "./pages/pengelolaan/nilai/kerja_praktek/HomeNilaiKP";
+import { HomeNilaiSkripsi } from "./pages/pengelolaan/nilai/skripsi/HomeNilaiSkripsi";
+import { DosenPengujiKP } from "./pages/pengelolaan/sidang/kerja_praktek/DosenPengujiKP";
+import { VerifikasiSidangKP } from "./pages/pengelolaan/sidang/kerja_praktek/VerifikasiSidangKP";
+import { DosenPengujiSkripsi } from "./pages/pengelolaan/sidang/skripsi/DosenPengujiSkripsi";
+import { DosenPengujiSempro } from "./pages/pengelolaan/sidang/sempro/DosenPengujiSempro";
+import { CreateDosen } from "./pages/pengelolaan/pengguna/dosen/CreateDosen";
+import { EditNilaiKP } from "./pages/pengelolaan/nilai/kerja_praktek/EditNilaiKP";
+import { EditTopik } from "./pages/pengelolaan/topik/EditTopik";
+import { CreateTopik } from "./pages/pengelolaan/topik/CreateTopik";
 
 export default function App() {
   return (
@@ -93,6 +106,13 @@ export default function App() {
             element={<CreateJadwalPengajuan />}
           />
 
+          {/* Rute Kelola Nilai KP */}
+          <Route path="/kelola-nilai/kp" element={<HomeNilaiKP />} />
+          <Route path="/kelola-nilai/kp/:itemId" element={<EditNilaiKP />} />
+
+          {/* Rute Kelola Nilai Skripsi */}
+          <Route path="/kelola-nilai/skripsi" element={<HomeNilaiSkripsi />} />
+
           {/* Rute Sidang KP */}
           <Route path="/sidang-kp/" element={<HomeSidangKP />} />
           <Route
@@ -101,7 +121,11 @@ export default function App() {
           />
           <Route
             path="/sidang-kp/verifikasi/:itemId"
-            element={<VerifikasiKP />}
+            element={<VerifikasiSidangKP />}
+          />
+          <Route
+            path="/sidang-kp/penguji/:itemId"
+            element={<DosenPengujiKP />}
           />
 
           {/* Rute Sempro */}
@@ -113,6 +137,10 @@ export default function App() {
           <Route
             path="/sidang-sempro/verifikasi/:itemId"
             element={<VerifikasiSempro />}
+          />
+          <Route
+            path="/sidang-sempro/penguji/:itemId"
+            element={<DosenPengujiSempro />}
           />
 
           {/* Rute Komprehensif */}
@@ -135,6 +163,28 @@ export default function App() {
           <Route
             path="/sidang-skripsi/verifikasi/:itemId"
             element={<VerifikasiSidangSkripsi />}
+          />
+          <Route
+            path="/sidang-skripsi/verifikasi/:itemId"
+            element={<DosenPengujiSkripsi />}
+          />
+
+          {/* Rute Kelola Topik */}
+          <Route path="/kelola-topik" element={<HomeTopik />} />
+          <Route path="/kelola-topik/edit/:itemId" element={<EditTopik />} />
+          <Route path="/kelola-topik/create" element={<CreateTopik />} />
+
+          {/* Rute Pengguna Mahasiswa */}
+          <Route
+            path="/kelola-pengguna/mahasiswa"
+            element={<HomeMahasiswa />}
+          />
+
+          {/* Rute Dosen */}
+          <Route path="/kelola-pengguna/dosen" element={<HomeDosen />} />
+          <Route
+            path="/kelola-pengguna/dosen/create"
+            element={<CreateDosen />}
           />
         </Routes>
       </BrowserRouter>

@@ -40,10 +40,10 @@ export const DetailPengajuanKP = () => {
 
       if (itemDocSnapshot.exists()) {
         const itemData = itemDocSnapshot.data();
-        const userInfo = await getUserInfo(itemData.uid);
-        const dosenPembimbingInfo = await getUserInfo(itemData.dosenPembimbing);
+        const userInfo = await getUserInfo(itemData.user_uid);
+        const dosenPembimbingInfo = await getUserInfo(itemData.pembimbing_uid);
         const periodePendaftaranInfo = await getPeriodeInfo(
-          itemData.periodePendaftaran
+          itemData.jadwalPengajuan_uid
         );
 
         setData({

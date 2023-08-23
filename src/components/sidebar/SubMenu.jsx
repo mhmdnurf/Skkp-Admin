@@ -52,24 +52,11 @@ export const SubMenuPengguna = () => (
 
 export const SubMenuNilai = () => (
   <div className="ml-[65px] mt-2 flex flex-col justify-center">
-    <Link to="/kelola-pengguna/mahasiswa" className="block py-2">
+    <Link to="/kelola-nilai/kp" className="block py-2">
       Kerja Praktek
     </Link>
-    <Link to="/kelola-pengguna/dosen" className="block py-2">
+    <Link to="/kelola-nilai/skripsi" className="block py-2">
       Skripsi
-    </Link>
-  </div>
-);
-export const SubMenuTopik = () => (
-  <div className="ml-[65px] mt-2 flex flex-col justify-center">
-    <Link to="/kelola-pengguna/mahasiswa" className="block py-2">
-      Teknik Informatika
-    </Link>
-    <Link to="/kelola-pengguna/dosen" className="block py-2">
-      Sistem Informasi
-    </Link>
-    <Link to="/kelola-pengguna/dosen" className="block py-2">
-      Komputer Akuntansi
     </Link>
   </div>
 );

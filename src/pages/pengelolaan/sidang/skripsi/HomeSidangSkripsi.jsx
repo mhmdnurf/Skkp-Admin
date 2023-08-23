@@ -35,6 +35,15 @@ export const HomeSidangSkripsi = () => {
     }
     return null;
   };
+  const getPengajuanInfo = async (uid) => {
+    const userDocRef = doc(db, "pengajuan", uid);
+    const userDocSnapshot = await getDoc(userDocRef);
+
+    if (userDocSnapshot.exists()) {
+      return userDocSnapshot.data();
+    }
+    return null;
+  };
 
   useEffect(() => {
     const unsubscribe = onSnapshot(
@@ -47,13 +56,21 @@ export const HomeSidangSkripsi = () => {
         const fetchedData = [];
         for (const doc of snapshot.docs) {
           const data = doc.data();
-          const userInfo = await getUserInfo(data.uid);
-          const dosenPembimbingInfo = await getUserInfo(data.dosenPembimbing);
+          const userInfo = await getUserInfo(data.user_uid);
+          const pengajuanInfo = await getPengajuanInfo(data.pengajuan_uid);
+          const dosenPembimbingInfo = await getUserInfo(
+            pengajuanInfo.pembimbing_uid
+          );
+          const pengujiSatuInfo = await getUserInfo(data.pengujiSatu_uid);
+          const pengujiDuaInfo = await getUserInfo(data.pengujiDua_uid);
           fetchedData.push({
             id: doc.id,
             ...data,
             userInfo: userInfo,
             dosenPembimbingInfo: dosenPembimbingInfo,
+            pengujiSatuInfo: pengujiSatuInfo,
+            pengujiDuaInfo: pengujiDuaInfo,
+            pengajuanInfo: pengajuanInfo,
           });
         }
         setData(fetchedData);
@@ -69,7 +86,7 @@ export const HomeSidangSkripsi = () => {
     return () => unsubscribe();
   }, [user, loading]);
 
-  const truncateTitle = (title, words = 7) => {
+  const truncateTitle = (title, words = 3) => {
     const wordsArray = title.split(" ");
     if (wordsArray.length > words) {
       return wordsArray.slice(0, words).join(" ") + "...";
@@ -128,7 +145,7 @@ export const HomeSidangSkripsi = () => {
             <Sidebar />
             <div className="flex flex-col w-full pl-[300px] overflow-y-auto pr-4 pb-4">
               <h1 className="text-2xl text-white text-center shadow-md font-bold rounded-lg p-4 m-4 mb-10 bg-slate-600">
-                Data Sidang Akhir Skripsi
+                Data Sidang Skripsi
               </h1>
               <div className="flex items-center mt-16 mb-2 mx-2 justify-end mr-4">
                 <input
@@ -152,6 +169,8 @@ export const HomeSidangSkripsi = () => {
                       <th className="p-2 px-6">Status</th>
                       <th className="p-2 px-6">Catatan</th>
                       <th className="p-2 px-6">Pembimbing</th>
+                      <th className="p-2 px-6 whitespace-nowrap">Penguji 1</th>
+                      <th className="p-2 px-6 whitespace-nowrap">Penguji 2</th>
                       <th className="p-2 px-6">Action</th>
                     </tr>
                   </thead>
@@ -183,15 +202,25 @@ export const HomeSidangSkripsi = () => {
                         <td className="text-center">
                           {item.userInfo && item.userInfo.jurusan}
                         </td>
-                        <td className="text-center p-4">
-                          {truncateTitle(item.judul, 7)}
+                        <td className="text-center p-4 whitespace-nowrap">
+                          {truncateTitle(item.pengajuanInfo.judul, 3)}
                         </td>
-                        <td className="text-center">{item.status}</td>
+                        <td className="text-center whitespace-nowrap">
+                          {item.status}
+                        </td>
                         <td className="text-center p-4">{item.catatan}</td>
                         <td className="text-center p-6 whitespace-nowrap">
-                          {item.dosenPembimbingInfo
+                          {item.pengajuanInfo
                             ? item.dosenPembimbingInfo.nama
-                            : item.dosenPembimbing}
+                            : "-"}
+                        </td>
+                        <td className="text-center p-6 whitespace-nowrap">
+                          {item.pengujiSatuInfo
+                            ? item.pengujiSatuInfo.nama
+                            : "-"}
+                        </td>
+                        <td className="text-center p-6 whitespace-nowrap">
+                          {item.pengujiDuaInfo ? item.pengujiDuaInfo.nama : "-"}
                         </td>
                         <td className="text-center p-4">
                           <div className="flex">

@@ -41,6 +41,9 @@ export const Dashboard = () => {
   const [tanggalSidangKompre, setTanggalSidangKompre] = useState(null);
   const [tanggalSidangSkripsi, setTanggalSidangSkripsi] = useState(null);
   const [jumlahPendaftarKP, setJumlahPendaftarKP] = useState(0);
+  const [jumlahPendaftarSempro, setJumlahPendaftarSempro] = useState(0);
+  const [jumlahPendaftarKompre, setJumlahPendaftarKompre] = useState(0);
+  const [jumlahPendaftarSkripsi, setJumlahPendaftarSkripsi] = useState(0);
 
   const fetchUserName = async () => {
     try {
@@ -80,15 +83,100 @@ export const Dashboard = () => {
           where("jenisSidang", "==", "Kerja Praktek")
         )
       );
-      const data = queryKerjaPraktek.docs.map((doc) => doc.data());
-      const periodePendaftaran = data.map((data) => data.periodePendaftaran);
+      const periodePendaftaran = queryKerjaPraktek.docs
+        .filter((doc) => kerjaPraktekUIDs.includes(doc.data().jadwalSidang_uid))
+        .map((doc) => doc.data().periodePendaftaran);
 
       // Membandingkan isi array
-      const commonItems = kerjaPraktekUIDs.filter((uid) =>
-        periodePendaftaran.includes(uid)
+      const jumlahPendaftarKP = periodePendaftaran.length;
+      setJumlahPendaftarKP(jumlahPendaftarKP);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+  const fetchSeminarProposal = async () => {
+    try {
+      const querySnapshot = await getDocs(
+        query(collection(db, "jadwalSidang"), where("status", "==", "Aktif"))
       );
-      console.log(commonItems.length);
-      setJumlahPendaftarKP(commonItems.length);
+
+      const seminarProposalUIDs = querySnapshot.docs
+        .filter((doc) => doc.data().jenisSidang.includes("Seminar Proposal"))
+        .map((doc) => doc.id);
+
+      console.log(seminarProposalUIDs);
+
+      const querySempro = await getDocs(
+        query(
+          collection(db, "sidang"),
+          where("jenisSidang", "==", "Seminar Proposal")
+        )
+      );
+      const periodePendaftaran = querySempro.docs
+        .filter((doc) =>
+          seminarProposalUIDs.includes(doc.data().jadwalSidang_uid)
+        )
+        .map((doc) => doc.data().periodePendaftaran);
+
+      // Membandingkan isi array
+      const jumlahPendaftarSempro = periodePendaftaran.length;
+      setJumlahPendaftarSempro(jumlahPendaftarSempro);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const fetchSkripsi = async () => {
+    try {
+      const querySnapshot = await getDocs(
+        query(collection(db, "jadwalSidang"), where("status", "==", "Aktif"))
+      );
+
+      const skripsiUIDs = querySnapshot.docs
+        .filter((doc) => doc.data().jenisSidang.includes("Skripsi"))
+        .map((doc) => doc.id);
+
+      console.log(skripsiUIDs);
+
+      const querySkripsi = await getDocs(
+        query(collection(db, "sidang"), where("jenisSidang", "==", "Skripsi"))
+      );
+      const periodePendaftaran = querySkripsi.docs
+        .filter((doc) => skripsiUIDs.includes(doc.data().jadwalSidang_uid))
+        .map((doc) => doc.data().periodePendaftaran);
+
+      // Membandingkan isi array
+      const jumlahPendaftarSkripsi = periodePendaftaran.length;
+      setJumlahPendaftarSkripsi(jumlahPendaftarSkripsi);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+  const fetchKomprehensif = async () => {
+    try {
+      const querySnapshot = await getDocs(
+        query(collection(db, "jadwalSidang"), where("status", "==", "Aktif"))
+      );
+
+      const kompreUIDs = querySnapshot.docs
+        .filter((doc) => doc.data().jenisSidang.includes("Komprehensif"))
+        .map((doc) => doc.id);
+
+      console.log(kompreUIDs);
+
+      const queryKompre = await getDocs(
+        query(
+          collection(db, "sidang"),
+          where("jenisSidang", "==", "Komprehensif")
+        )
+      );
+      const periodePendaftaran = queryKompre.docs
+        .filter((doc) => kompreUIDs.includes(doc.data().jadwalSidang_uid))
+        .map((doc) => doc.data().periodePendaftaran);
+
+      // Membandingkan isi array
+      const jumlahPendaftarKompre = periodePendaftaran.length;
+      setJumlahPendaftarKompre(jumlahPendaftarKompre);
     } catch (error) {
       console.error(error);
     }
@@ -154,6 +242,9 @@ export const Dashboard = () => {
     const unsubscribeKP = fetchSidang();
     fetchUserName();
     fetchKerjaPraktek();
+    fetchSeminarProposal();
+    fetchKomprehensif();
+    fetchSkripsi();
     return () => {
       unsubscribeKP();
     };
@@ -200,7 +291,7 @@ export const Dashboard = () => {
                       <FaRegFileAlt className="mr-2" size={80} />
                       <div className="text-right">
                         <p>Pendaftar Seminar Proposal</p>
-                        <p>0</p>
+                        <p>{jumlahPendaftarSempro}</p>
                       </div>
                     </div>
                   </div>
@@ -210,14 +301,14 @@ export const Dashboard = () => {
                       <FaLaptopCode className="mr-2" size={80} />
                       <div className="text-right">
                         <p>Pendaftar Sidang Komprehensif</p>
-                        <p>0</p>
+                        <p>{jumlahPendaftarKompre}</p>
                       </div>
                     </div>
                     <div className="p-4 bg-white m-2 flex items-center justify-center rounded-xl hover:transform hover:scale-110 transition-transform duration-300 ease-in-out">
                       <FaUserGraduate className="mr-2" size={80} />
                       <div className="text-right">
                         <p>Pendaftar Sidang Akhir Skripsi</p>
-                        <p>0</p>
+                        <p>{jumlahPendaftarSkripsi}</p>
                       </div>
                     </div>
                   </div>

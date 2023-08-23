@@ -22,6 +22,15 @@ export const DetailPengajuanSkripsi = () => {
     }
     return null;
   };
+  const getPeriodeInfo = async (uid) => {
+    const userDocRef = doc(db, "jadwalPengajuan", uid);
+    const userDocSnapshot = await getDoc(userDocRef);
+
+    if (userDocSnapshot.exists()) {
+      return userDocSnapshot.data();
+    }
+    return null;
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -30,14 +39,18 @@ export const DetailPengajuanSkripsi = () => {
 
       if (itemDocSnapshot.exists()) {
         const itemData = itemDocSnapshot.data();
-        const userInfo = await getUserInfo(itemData.uid);
-        const dosenPembimbingInfo = await getUserInfo(itemData.dosenPembimbing);
+        const userInfo = await getUserInfo(itemData.user_uid);
+        const dosenPembimbingInfo = await getUserInfo(itemData.pembimbing_uid);
+        const periodePendaftaranInfo = await getPeriodeInfo(
+          itemData.jadwalPengajuan_uid
+        );
 
         setData({
           id: itemDocSnapshot.id,
           ...itemData,
           userInfo: userInfo,
           dosenPembimbingInfo: dosenPembimbingInfo,
+          periodePendaftaranInfo: periodePendaftaranInfo,
         });
       }
 
@@ -93,21 +106,21 @@ export const DetailPengajuanSkripsi = () => {
                 Form KRS
               </Link>
               <Link
-                to={`${data.slipPembayaranSkripsi}`}
+                to={`${data.transkipNilai}`}
                 target="_blank"
                 className="p-2 bg-slate-300 hover:bg-slate-200 rounded-md font-semibold text-slate-600 hover:transform hover:scale-110 transition-transform duration-300 ease-in-out"
               >
                 Transkip Nilai
               </Link>
               <Link
-                to={`${data.transkipNilai}`}
+                to={`${data.slipPembayaranSkripsi}`}
                 target="_blank"
                 className="p-2 bg-slate-300 hover:bg-slate-200 rounded-md text-slate-600  font-semibold hover:transform hover:scale-110 transition-transform duration-300 ease-in-out"
               >
                 Slip Pembayaran Skripsi
               </Link>
               <Link
-                to={`${data.sertifikatPSPT}`}
+                to={`${data.fileSertifikatPSPT}`}
                 target="_blank"
                 className="p-2 bg-slate-300 hover:bg-slate-200 rounded-md text-slate-600  font-semibold hover:transform hover:scale-110 transition-transform duration-300 ease-in-out"
               >
@@ -125,6 +138,35 @@ export const DetailPengajuanSkripsi = () => {
                   month: "2-digit",
                   year: "numeric",
                 })}
+              </p>
+              <h1 className="text-lg font-bold text-slate-600 mb-2">
+                Periode Pendaftaran
+              </h1>
+              <p className="mb-2">
+                {data.periodePendaftaranInfo.periodePendaftaran.tanggalBuka &&
+                  new Date(
+                    data.periodePendaftaranInfo.periodePendaftaran.tanggalBuka.toDate()
+                  ).toLocaleDateString("id-ID", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                  })}{" "}
+                -{" "}
+                {data.periodePendaftaranInfo.periodePendaftaran.tanggalTutup &&
+                  new Date(
+                    data.periodePendaftaranInfo.periodePendaftaran.tanggalTutup.toDate()
+                  ).toLocaleDateString("id-ID", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                  })}{" "}
+              </p>
+              <h1 className="mb-2 text-lg font-bold text-slate-600">
+                Tahun Ajaran
+              </h1>
+              <p className="mb-2">
+                {data.periodePendaftaranInfo.tahunAjaran &&
+                  data.periodePendaftaranInfo.tahunAjaran}
               </p>
               <p className="mb-2 text-lg font-bold text-slate-600">NIM</p>
               <p className="mb-2">{data.userInfo.nim}</p>

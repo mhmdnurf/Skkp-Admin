@@ -1,59 +1,33 @@
 import { useEffect, useState } from "react";
-import { Sidebar } from "../../../../components/sidebar/Sidebar";
-import { db, auth } from "../../../../utils/firebase";
-import { addDoc, collection, getDocs } from "firebase/firestore";
+import { Sidebar } from "../../../components/sidebar/Sidebar";
+import { db, auth } from "../../../utils/firebase";
+import { addDoc, collection } from "firebase/firestore";
 import { InfinitySpin } from "react-loader-spinner";
 import { Link, useNavigate } from "react-router-dom";
-import Datepicker from "react-tailwindcss-datepicker";
 import Swal from "sweetalert2";
 import { useAuthState } from "react-firebase-hooks/auth";
 
-export const CreateJadwalPengajuan = () => {
+export const CreateTopik = () => {
   const [user, loading] = useAuthState(auth);
-  const [tahunAjaran, setTahunAjaran] = useState("");
+  const [namaTopik, setNamaTopik] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [availableTahunAjaran, setAvailableTahunAjaran] = useState([]);
-  const [periodePengajuan, setPeriodePengajuan] = useState({
-    startDate: new Date(),
-    endDate: new Date().setMonth(11),
-  });
   const [selectedJenisPengajuan, setSelectedJenisPengajuan] = useState([]);
 
   const jenisPengajuanOptions = [
-    { id: 1, value: "Kerja Praktek", label: "Pengajuan Kerja Praktek" },
-    { id: 2, value: "Skripsi", label: "Pengajuan Skripsi" },
+    { id: 1, value: "IF", label: "Teknik Informatika" },
+    { id: 2, value: "SI", label: "Sistem Informasi" },
+    { id: 3, value: "KA", label: "Komputer Akuntansi" },
   ];
 
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchTahunAjaran = async () => {
-      try {
-        const querySnapshot = await getDocs(collection(db, "tahunAjaran"));
-        const tahunAjaranOptions = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        setAvailableTahunAjaran(tahunAjaranOptions);
-        setIsLoading(false);
-      } catch (error) {
-        console.error("Error fetching tahun ajaran data: ", error);
-        setError("Error fetching data");
-        setIsLoading(false);
-      }
-    };
     if (loading) return;
     if (!user) return navigate("/login");
-
-    fetchTahunAjaran();
+    setIsLoading(false);
   }, [loading, user]);
-
-  const handleValueChange = (newValue) => {
-    console.log("newValue:", newValue);
-    setPeriodePengajuan(newValue);
-  };
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
@@ -62,19 +36,14 @@ export const CreateJadwalPengajuan = () => {
       setIsSubmitting(true);
 
       // Dapatkan data yang akan disimpan
-      const jadwalData = {
-        tahunAjaran: tahunAjaran,
-        periodePendaftaran: {
-          tanggalBuka: new Date(periodePengajuan.startDate),
-          tanggalTutup: new Date(periodePengajuan.endDate),
-        },
-        jenisPengajuan: selectedJenisPengajuan,
-        status: "Aktif",
+      const topikPenelitian = {
+        namaTopik: namaTopik,
+        prodiTopik: selectedJenisPengajuan,
         cretedAt: new Date(),
       };
 
       const result = await Swal.fire({
-        title: "Apakah Anda Yakin akan Membuka Jadwal?",
+        title: "Apakah Anda Yakin akan Menambahkan Topik?",
         icon: "question",
         showCancelButton: true,
         confirmButtonColor: "#d33",
@@ -83,26 +52,13 @@ export const CreateJadwalPengajuan = () => {
         confirmButtonText: "Confirm",
       });
       if (result.isConfirmed) {
-        await addDoc(collection(db, "jadwalPengajuan"), jadwalData);
-
-        // Kirim permintaan ke server untuk mengirim notifikasi
-        // const response = await fetch(
-        //   "http://localhost:3000/send-notification/pengajuan",
-        //   {
-        //     method: "POST",
-        //     headers: {
-        //       "Content-Type": "application/json",
-        //     },
-        //   }
-        // );
-
-        // if (response.ok) {
-        //   console.log("Notifications sent successfully to all users");
-        // } else {
-        //   console.error("Failed to send notifications to all users");
-        // }
-        Swal.fire("Success", "Jadwal berhasil dibuka!", "success").then(() => {
-          navigate("/kelola-jadwal/pengajuan");
+        await addDoc(collection(db, "topikPenelitian"), topikPenelitian);
+        Swal.fire(
+          "Success",
+          "Topik Penelitian berhasil ditambahkan!",
+          "success"
+        ).then(() => {
+          navigate("/kelola-topik");
         });
       }
     } catch (error) {
@@ -143,38 +99,19 @@ export const CreateJadwalPengajuan = () => {
               >
                 <div className="mb-4">
                   <label className="block text-slate-600 font-bold mb-2">
-                    Tahun Ajaran
+                    Nama Topik
                   </label>
-                  <select
-                    className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring focus:border-slate-300 bg-white"
-                    value={tahunAjaran}
-                    onChange={(e) => setTahunAjaran(e.target.value)}
+                  <input
+                    type="text"
+                    className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-500"
+                    placeholder="Masukkan nama topik"
+                    value={namaTopik}
+                    onChange={(e) => setNamaTopik(e.target.value)}
                     required
-                  >
-                    <option value="" disabled>
-                      Pilih Tahun Ajaran
-                    </option>
-                    {availableTahunAjaran.map((tahun) => (
-                      <option key={tahun.id} value={tahun.tahun}>
-                        {tahun.tahun}
-                      </option>
-                    ))}
-                  </select>
-                  <div className="mb-4 relative mt-2">
-                    <label className="block text-slate-600 font-bold">
-                      Periode Pengajuan
-                    </label>
-                    <div>
-                      <Datepicker
-                        value={periodePengajuan}
-                        onChange={handleValueChange}
-                      />
-                    </div>
-                  </div>
-
+                  />
                   <div className="border-4 p-2 border-slate-200 rounded-md mt-2">
                     <label className="block text-slate-600 font-bold">
-                      Jenis Pengajuan
+                      Program Studi
                     </label>
                     <div className="flex justify-evenly mt-2">
                       {jenisPengajuanOptions.map((option) => (
@@ -207,7 +144,7 @@ export const CreateJadwalPengajuan = () => {
                     {isSubmitting ? "Loading..." : "Submit"}
                   </button>
                   <Link
-                    to="/kelola-jadwal/pengajuan"
+                    to="/kelola-topik"
                     className="px-4 py-2 bg-red-400 text-white rounded-md hover:bg-red-500 ml-1 drop-shadow-lg"
                   >
                     Cancel

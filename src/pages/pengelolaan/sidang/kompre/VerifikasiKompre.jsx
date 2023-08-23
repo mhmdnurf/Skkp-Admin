@@ -29,7 +29,7 @@ export const VerifikasiKompre = () => {
 
     try {
       // Get the existing document data
-      const itemDocRef = doc(db, "pengajuan", itemId);
+      const itemDocRef = doc(db, "sidang", itemId);
       const itemDocSnapshot = await getDoc(itemDocRef);
 
       if (itemDocSnapshot.exists()) {
@@ -46,29 +46,29 @@ export const VerifikasiKompre = () => {
           icon: "success",
           confirmButtonText: "OK",
         }).then(() => {
-          navigate(`/pengajuan-kp/detail/${itemId}`);
+          navigate(`/sidang-kompre/detail/${itemId}`);
         });
       }
 
-      const response = await fetch(
-        "http://localhost:3000/send-notification/hasil-verifikasi-kp",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            registrationToken:
-              "efjLkfYnTBu97mDH1aDtt3:APA91bEfMxhN6FKk5GW3DnHVoEoJP90GyanTAU1h-xeyfCS9sQFS19EMHViqXDXFu9iYyhfIOe-lMU0kmtuOaqcbqvs_3dnTMDRiZt_j7Mk7a-x8uu50sx6Jiqh3MG4UI5sUAWtWjYLt",
-          }),
-        }
-      );
+      // const response = await fetch(
+      //   "http://localhost:3000/send-notification/hasil-verifikasi-kp",
+      //   {
+      //     method: "POST",
+      //     headers: {
+      //       "Content-Type": "application/json",
+      //     },
+      //     body: JSON.stringify({
+      //       registrationToken:
+      //         "efjLkfYnTBu97mDH1aDtt3:APA91bEfMxhN6FKk5GW3DnHVoEoJP90GyanTAU1h-xeyfCS9sQFS19EMHViqXDXFu9iYyhfIOe-lMU0kmtuOaqcbqvs_3dnTMDRiZt_j7Mk7a-x8uu50sx6Jiqh3MG4UI5sUAWtWjYLt",
+      //     }),
+      //   }
+      // );
 
-      if (response.ok) {
-        console.log("Notification sent successfully");
-      } else {
-        console.error("Failed to send notification");
-      }
+      // if (response.ok) {
+      //   console.log("Notification sent successfully");
+      // } else {
+      //   console.error("Failed to send notification");
+      // }
     } catch (error) {
       console.error("Error updating document: ", error);
       setError("Error updating document");
@@ -131,7 +131,7 @@ export const VerifikasiKompre = () => {
                   {isSubmitting ? "Loading..." : "Submit"}
                 </button>
                 <Link
-                  to={`/pengajuan-kp/detail/${itemId}`}
+                  to={`/sidang-kompre/detail/${itemId}`}
                   className="px-4 py-2 bg-red-400 text-white rounded-md hover:bg-red-500 ml-1 drop-shadow-lg"
                 >
                   Cancel

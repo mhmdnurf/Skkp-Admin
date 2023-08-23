@@ -9,6 +9,7 @@ import {
   deleteDoc,
   doc,
   getDoc,
+  getDocs,
   onSnapshot,
   orderBy,
   query,
@@ -22,7 +23,7 @@ export const HomePengajuanKP = () => {
   const [data, setData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
-  // const [searchText, setSearchText] = useState("");
+  const [searchText, setSearchText] = useState("");
   const navigate = useNavigate();
   const [user, loading] = useAuthState(auth);
 
@@ -47,8 +48,14 @@ export const HomePengajuanKP = () => {
         const fetchedData = [];
         for (const doc of snapshot.docs) {
           const data = doc.data();
-          const userInfo = await getUserInfo(data.uid);
-          const dosenPembimbingInfo = await getUserInfo(data.dosenPembimbing);
+          const userInfo = await getUserInfo(data.user_uid);
+          let dosenPembimbingInfo = null;
+
+          // Cek jika pembimbing_uid tidak sama dengan "-"
+          if (data.pembimbing_uid !== "-") {
+            dosenPembimbingInfo = await getUserInfo(data.pembimbing_uid);
+          }
+
           fetchedData.push({
             id: doc.id,
             ...data,
@@ -56,8 +63,27 @@ export const HomePengajuanKP = () => {
             dosenPembimbingInfo: dosenPembimbingInfo,
           });
         }
-        setData(fetchedData);
-        console.log(data);
+        const filteredData = fetchedData.filter(
+          (item) =>
+            item.userInfo.nama
+              .toLowerCase()
+              .includes(searchText.toLowerCase()) ||
+            item.userInfo.jurusan
+              .toLowerCase()
+              .includes(searchText.toLowerCase()) ||
+            item.userInfo.nim
+              .toLowerCase()
+              .includes(searchText.toLowerCase()) ||
+            item.status.toLowerCase().includes(searchText.toLowerCase()) ||
+            item.dosenPembimbingInfo.nama
+              .toLowerCase()
+              .includes(searchText.toLowerCase()) ||
+            new Date(item.createdAt.seconds * 1000)
+              .toLocaleDateString("en-US")
+              .includes(searchText) ||
+            item.judul.toLowerCase().includes(searchText.toLowerCase())
+        );
+        setData(filteredData);
         setIsLoading(false);
       }
     );
@@ -67,9 +93,9 @@ export const HomePengajuanKP = () => {
 
     // Cleanup: unsubscribe when the component unmounts or when the effect re-runs
     return () => unsubscribe();
-  }, [user, loading]);
+  }, [user, loading, navigate, searchText]);
 
-  const truncateTitle = (title, words = 7) => {
+  const truncateTitle = (title, words = 3) => {
     const wordsArray = title.split(" ");
     if (wordsArray.length > words) {
       return wordsArray.slice(0, words).join(" ") + "...";
@@ -79,34 +105,46 @@ export const HomePengajuanKP = () => {
 
   const handleDelete = async (id) => {
     try {
-      const result = await Swal.fire({
-        title: "Apakah Anda Yakin?",
-        text: "Data akan hilang permanen ketika dihapus",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#d33",
-        cancelButtonColor: "#3085d6",
-        cancelButtonText: "Batal",
-        confirmButtonText: "Confirm",
-      });
+      const docRef = doc(db, "pengajuan", id);
+      const docSnapshot = await getDoc(docRef);
+      const data = docSnapshot.data();
+      if (docSnapshot.exists()) {
+        const pengajuanSnapshot = await getDocs(collection(db, "sidang"));
+        let isUsedInPengajuan = false;
+        pengajuanSnapshot.forEach((doc) => {
+          const sidangData = doc.data();
+          if (docRef.id === sidangData.jadwalSidang_uid) {
+            isUsedInPengajuan = true;
+          }
+        });
+        if (isUsedInPengajuan) {
+          Swal.fire("Error", "Kerja Praktek sudah disidangkan!", "error");
+        } else {
+          const result = await Swal.fire({
+            title: "Apakah Anda Yakin?",
+            text: "Data akan hilang permanen ketika dihapus",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#d33",
+            cancelButtonColor: "#3085d6",
+            cancelButtonText: "Batal",
+            confirmButtonText: "Confirm",
+          });
 
-      if (result.isConfirmed) {
-        const docRef = doc(db, "pengajuan", id);
-        const docSnapshot = await getDoc(docRef);
-        if (docSnapshot.exists()) {
-          const data = docSnapshot.data();
-          const transkipNilaiFileName = `persyaratan/pengajuanKP/transkipNilai/${data.uid}`;
-          const formKrsFileName = `persyaratan/pengajuanKP/formKRS/${data.uid}`;
-          const pendaftaranKpFileName = `persyaratan/pengajuanKP/formPendaftaranKP/${data.uid}`;
-          const pembayaranKpFileName = `persyaratan/pengajuanKP/slipPembayaranKP/${data.uid}`;
-          const proporsalFileName = `persyaratan/pengajuanKP/proporsalKP/${data.uid}`;
-          await deleteObject(ref(storage, transkipNilaiFileName));
-          await deleteObject(ref(storage, formKrsFileName));
-          await deleteObject(ref(storage, pendaftaranKpFileName));
-          await deleteObject(ref(storage, pembayaranKpFileName));
-          await deleteObject(ref(storage, proporsalFileName));
-          await deleteDoc(docRef);
-          Swal.fire("Success", "Data Berhasil dihapus!", "success");
+          if (result.isConfirmed) {
+            const transkipNilaiFileName = `persyaratan/pengajuanKP/transkipNilai/${data.user_uid}`;
+            const formKrsFileName = `persyaratan/pengajuanKP/formKRS/${data.user_uid}`;
+            const pendaftaranKpFileName = `persyaratan/pengajuanKP/formPendaftaranKP/${data.user_uid}`;
+            const pembayaranKpFileName = `persyaratan/pengajuanKP/slipPembayaranKP/${data.user_uid}`;
+            const proporsalFileName = `persyaratan/pengajuanKP/proporsalKP/${data.user_uid}`;
+            await deleteObject(ref(storage, transkipNilaiFileName));
+            await deleteObject(ref(storage, formKrsFileName));
+            await deleteObject(ref(storage, pendaftaranKpFileName));
+            await deleteObject(ref(storage, pembayaranKpFileName));
+            await deleteObject(ref(storage, proporsalFileName));
+            await deleteDoc(docRef);
+            Swal.fire("Success", "Data Berhasil dihapus!", "success");
+          }
         }
       }
     } catch (error) {
@@ -133,6 +171,8 @@ export const HomePengajuanKP = () => {
                   type="text"
                   className="px-4 py-2 border w-[400px] rounded-md drop-shadow-sm"
                   placeholder="Search..."
+                  value={searchText}
+                  onChange={(e) => setSearchText(e.target.value)}
                 />
               </div>
 
@@ -181,15 +221,15 @@ export const HomePengajuanKP = () => {
                         <td className="text-center">
                           {item.userInfo && item.userInfo.jurusan}
                         </td>
-                        <td className="text-center p-4">
-                          {truncateTitle(item.judul, 7)}
+                        <td className="text-center p-4 whitespace-nowrap">
+                          {truncateTitle(item.judul, 3)}
                         </td>
                         <td className="text-center">{item.status}</td>
                         <td className="text-center p-4">{item.catatan}</td>
                         <td className="text-center p-6 whitespace-nowrap">
                           {item.dosenPembimbingInfo
                             ? item.dosenPembimbingInfo.nama
-                            : item.dosenPembimbing}
+                            : "-"}
                         </td>
                         <td className="text-center p-4">
                           <div className="flex">

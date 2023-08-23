@@ -15,14 +15,15 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import Swal from "sweetalert2";
 import { useAuthState } from "react-firebase-hooks/auth";
 
-export const DosenPembimbingKP = () => {
+export const DosenPengujiSempro = () => {
   const { itemId } = useParams();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [user, loading] = useAuthState(auth);
   const [availableDosen, setAvailableDosen] = useState([]);
-  const [dosenPembimbing, setDosenPembimbing] = useState("");
+  const [dosenPengujiSatu, setDosenPengujiSatu] = useState("");
+  const [dosenPengujiDua, setDosenPengujiDua] = useState("");
 
   const navigate = useNavigate();
 
@@ -58,13 +59,14 @@ export const DosenPembimbingKP = () => {
 
     try {
       // Get the existing document data
-      const itemDocRef = doc(db, "pengajuan", itemId);
+      const itemDocRef = doc(db, "sidang", itemId);
       const itemDocSnapshot = await getDoc(itemDocRef);
 
       if (itemDocSnapshot.exists()) {
         // Update the document with new status and catatan
         await updateDoc(itemDocRef, {
-          pembimbing_uid: dosenPembimbing,
+          pengujiSatu_uid: dosenPengujiSatu,
+          pengujiDua_uid: dosenPengujiDua,
           catatan: "-",
         });
 
@@ -74,7 +76,7 @@ export const DosenPembimbingKP = () => {
           icon: "success",
           confirmButtonText: "OK",
         }).then(() => {
-          navigate(`/pengajuan-kp/detail/${itemId}`);
+          navigate(`/sidang-kp/detail/${itemId}`);
         });
       }
 
@@ -116,7 +118,7 @@ export const DosenPembimbingKP = () => {
         ) : (
           <div className="flex-1 p-8">
             <h1 className="text-2xl text-white text-center shadow-md font-semibold rounded-lg p-4 m-4 mb-4 w-full bg-slate-600">
-              Verifikasi Pengajuan Kerja Praktek
+              Verifikasi Pendaftaran Sidang Kerja Praktek
             </h1>
             <form
               onSubmit={handleFormSubmit}
@@ -124,17 +126,36 @@ export const DosenPembimbingKP = () => {
             >
               <div className="mb-4">
                 <label className="block text-slate-600 font-bold mb-2">
-                  Dosen Pembimbing
+                  Dosen Penguji 1
                 </label>
                 <select
-                  className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring focus:border-slate-300 bg-white"
-                  value={dosenPembimbing}
-                  onChange={(e) => setDosenPembimbing(e.target.value)}
+                  className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring focus:border-slate-300 bg-white mb-4"
+                  value={dosenPengujiSatu}
+                  onChange={(e) => setDosenPengujiSatu(e.target.value)}
                   required
                 >
                   <option value="" disabled>
-                    Pilih Dosen Pembimbing
+                    Pilih Dosen Penguji
                   </option>
+                  {availableDosen.map((dosen) => (
+                    <option key={dosen.id} value={dosen.uid}>
+                      {dosen.nama}
+                    </option>
+                  ))}
+                </select>
+                <label className="block text-slate-600 font-bold mb-2">
+                  Dosen Penguji 2
+                </label>
+                <select
+                  className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring focus:border-slate-300 bg-white"
+                  value={dosenPengujiDua}
+                  onChange={(e) => setDosenPengujiDua(e.target.value)}
+                  required
+                >
+                  <option value="" disabled>
+                    Pilih Dosen Penguji
+                  </option>
+                  <option value="-">-</option>
                   {availableDosen.map((dosen) => (
                     <option key={dosen.id} value={dosen.uid}>
                       {dosen.nama}
@@ -151,7 +172,7 @@ export const DosenPembimbingKP = () => {
                   {isSubmitting ? "Loading..." : "Submit"}
                 </button>
                 <Link
-                  to={`/pengajuan-kp/detail/${itemId}`}
+                  to={`/sidang-kp/detail/${itemId}`}
                   className="px-4 py-2 bg-red-400 text-white rounded-md hover:bg-red-500 ml-1 drop-shadow-lg"
                 >
                   Cancel

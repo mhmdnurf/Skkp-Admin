@@ -30,7 +30,7 @@ export const DosenPembimbingSkripsi = () => {
     const fetchDosen = async () => {
       try {
         const querySnapshot = await getDocs(
-          query(collection(db, "users"), where("role", "==", "dosen"))
+          query(collection(db, "users"), where("role", "==", "Dosen"))
         );
         console.log(querySnapshot);
         const dosenOptions = querySnapshot.docs.map((doc) => ({
@@ -64,7 +64,8 @@ export const DosenPembimbingSkripsi = () => {
       if (itemDocSnapshot.exists()) {
         // Update the document with new status and catatan
         await updateDoc(itemDocRef, {
-          dosenPembimbing: dosenPembimbing,
+          catatan: "-",
+          pembimbing_uid: dosenPembimbing,
         });
 
         Swal.fire({

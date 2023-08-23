@@ -22,12 +22,21 @@ export const HomeSidangKP = () => {
   const [data, setData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
-  // const [searchText, setSearchText] = useState("");
+  const [searchText, setSearchText] = useState("");
   const navigate = useNavigate();
   const [user, loading] = useAuthState(auth);
 
   const getUserInfo = async (uid) => {
     const userDocRef = doc(db, "users", uid);
+    const userDocSnapshot = await getDoc(userDocRef);
+
+    if (userDocSnapshot.exists()) {
+      return userDocSnapshot.data();
+    }
+    return null;
+  };
+  const getPengajuanInfo = async (uid) => {
+    const userDocRef = doc(db, "pengajuan", uid);
     const userDocSnapshot = await getDoc(userDocRef);
 
     if (userDocSnapshot.exists()) {
@@ -47,17 +56,54 @@ export const HomeSidangKP = () => {
         const fetchedData = [];
         for (const doc of snapshot.docs) {
           const data = doc.data();
-          const userInfo = await getUserInfo(data.uid);
-          const dosenPembimbingInfo = await getUserInfo(data.dosenPembimbing);
+          const userInfo = await getUserInfo(data.user_uid);
+          const pengajuanInfo = await getPengajuanInfo(data.pengajuan_uid);
+          const dosenPembimbingInfo = await getUserInfo(
+            pengajuanInfo.pembimbing_uid
+          );
+          const pengujiSatuInfo = await getUserInfo(data.pengujiSatu_uid);
+          const pengujiDuaInfo = await getUserInfo(data.pengujiDua_uid);
           fetchedData.push({
             id: doc.id,
             ...data,
             userInfo: userInfo,
             dosenPembimbingInfo: dosenPembimbingInfo,
+            pengujiSatuInfo: pengujiSatuInfo,
+            pengujiDuaInfo: pengujiDuaInfo,
+            pengajuanInfo: pengajuanInfo,
           });
         }
-        setData(fetchedData);
-        console.log(data);
+        const filteredData = fetchedData.filter(
+          (item) =>
+            item.userInfo.nama
+              .toLowerCase()
+              .includes(searchText.toLowerCase()) ||
+            item.userInfo.jurusan
+              .toLowerCase()
+              .includes(searchText.toLowerCase()) ||
+            item.userInfo.nim
+              .toLowerCase()
+              .includes(searchText.toLowerCase()) ||
+            item.status.toLowerCase().includes(searchText.toLowerCase()) ||
+            item.dosenPembimbingInfo.nama
+              .toLowerCase()
+              .includes(searchText.toLowerCase()) ||
+            (item.pengujiSatuInfo &&
+              item.pengujiSatuInfo.nama
+                .toLowerCase()
+                .includes(searchText.toLowerCase())) ||
+            (item.pengujiDuaInfo &&
+              item.pengujiDuaInfo.nama
+                .toLowerCase()
+                .includes(searchText.toLowerCase())) ||
+            new Date(item.createdAt.seconds * 1000)
+              .toLocaleDateString("en-US")
+              .includes(searchText) ||
+            item.pengajuanInfo.judul
+              .toLowerCase()
+              .includes(searchText.toLowerCase())
+        );
+        setData(filteredData);
         setIsLoading(false);
       }
     );
@@ -67,9 +113,9 @@ export const HomeSidangKP = () => {
 
     // Cleanup: unsubscribe when the component unmounts or when the effect re-runs
     return () => unsubscribe();
-  }, [user, loading]);
+  }, [user, loading, navigate, searchText]);
 
-  const truncateTitle = (title, words = 7) => {
+  const truncateTitle = (title, words = 3) => {
     const wordsArray = title.split(" ");
     if (wordsArray.length > words) {
       return wordsArray.slice(0, words).join(" ") + "...";
@@ -135,6 +181,8 @@ export const HomeSidangKP = () => {
                   type="text"
                   className="px-4 py-2 border w-[400px] rounded-md drop-shadow-sm"
                   placeholder="Search..."
+                  value={searchText}
+                  onChange={(e) => setSearchText(e.target.value)}
                 />
               </div>
 
@@ -152,6 +200,8 @@ export const HomeSidangKP = () => {
                       <th className="p-2 px-6">Status</th>
                       <th className="p-2 px-6">Catatan</th>
                       <th className="p-2 px-6">Pembimbing</th>
+                      <th className="p-2 px-6 whitespace-nowrap">Penguji 1</th>
+                      <th className="p-2 px-6 whitespace-nowrap">Penguji 2</th>
                       <th className="p-2 px-6">Action</th>
                     </tr>
                   </thead>
@@ -183,15 +233,25 @@ export const HomeSidangKP = () => {
                         <td className="text-center">
                           {item.userInfo && item.userInfo.jurusan}
                         </td>
-                        <td className="text-center p-4">
-                          {truncateTitle(item.judul, 7)}
+                        <td className="text-center p-4 whitespace-nowrap">
+                          {truncateTitle(item.pengajuanInfo.judul, 3)}
                         </td>
-                        <td className="text-center">{item.status}</td>
+                        <td className="text-center whitespace-nowrap">
+                          {item.status}
+                        </td>
                         <td className="text-center p-4">{item.catatan}</td>
                         <td className="text-center p-6 whitespace-nowrap">
-                          {item.dosenPembimbingInfo
+                          {item.pengajuanInfo
                             ? item.dosenPembimbingInfo.nama
-                            : item.dosenPembimbing}
+                            : "-"}
+                        </td>
+                        <td className="text-center p-6 whitespace-nowrap">
+                          {item.pengujiSatuInfo
+                            ? item.pengujiSatuInfo.nama
+                            : "-"}
+                        </td>
+                        <td className="text-center p-6 whitespace-nowrap">
+                          {item.pengujiDuaInfo ? item.pengujiDuaInfo.nama : "-"}
                         </td>
                         <td className="text-center p-4">
                           <div className="flex">
