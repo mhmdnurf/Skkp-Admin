@@ -29,7 +29,7 @@ export const VerifikasiSempro = () => {
 
     try {
       // Get the existing document data
-      const itemDocRef = doc(db, "pengajuan", itemId);
+      const itemDocRef = doc(db, "sidang", itemId);
       const itemDocSnapshot = await getDoc(itemDocRef);
 
       if (itemDocSnapshot.exists()) {
@@ -46,28 +46,34 @@ export const VerifikasiSempro = () => {
           icon: "success",
           confirmButtonText: "OK",
         }).then(() => {
-          navigate(`/pengajuan-kp/detail/${itemId}`);
+          navigate(`/sidang-sempro/detail/${itemId}`);
         });
       }
 
-      const response = await fetch(
-        "http://localhost:3000/send-notification/hasil-verifikasi-kp",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            registrationToken:
-              "efjLkfYnTBu97mDH1aDtt3:APA91bEfMxhN6FKk5GW3DnHVoEoJP90GyanTAU1h-xeyfCS9sQFS19EMHViqXDXFu9iYyhfIOe-lMU0kmtuOaqcbqvs_3dnTMDRiZt_j7Mk7a-x8uu50sx6Jiqh3MG4UI5sUAWtWjYLt",
-          }),
-        }
-      );
+      const user_uid = itemDocSnapshot.data().user_uid;
+      const userDocRef = doc(db, "users", user_uid);
+      const userDocSnapshot = await getDoc(userDocRef);
+      if (userDocSnapshot.exists()) {
+        const registrationToken = userDocSnapshot.data().registrationToken;
 
-      if (response.ok) {
-        console.log("Notification sent successfully");
-      } else {
-        console.error("Failed to send notification");
+        const response = await fetch(
+          `http://localhost:3000/send-notification/hasil-verifikasi-sempro/${user_uid}`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              registrationToken: registrationToken,
+            }),
+          }
+        );
+
+        if (response.ok) {
+          console.log("Notification sent successfully");
+        } else {
+          console.error("Failed to send notification");
+        }
       }
     } catch (error) {
       console.error("Error updating document: ", error);
@@ -88,7 +94,7 @@ export const VerifikasiSempro = () => {
         ) : (
           <div className="flex-1 p-8">
             <h1 className="text-2xl text-white text-center shadow-md font-semibold rounded-lg p-4 m-4 mb-4 w-full bg-slate-600">
-              Verifikasi Pengajuan Kerja Praktek
+              Verifikasi Sidang Seminar Proposal
             </h1>
             <form
               onSubmit={handleFormSubmit}
@@ -131,7 +137,7 @@ export const VerifikasiSempro = () => {
                   {isSubmitting ? "Loading..." : "Submit"}
                 </button>
                 <Link
-                  to={`/pengajuan-kp/detail/${itemId}`}
+                  to={`/sidang-sempro/detail/${itemId}`}
                   className="px-4 py-2 bg-red-400 text-white rounded-md hover:bg-red-500 ml-1 drop-shadow-lg"
                 >
                   Cancel

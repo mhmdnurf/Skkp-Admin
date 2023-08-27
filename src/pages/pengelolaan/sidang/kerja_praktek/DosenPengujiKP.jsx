@@ -61,12 +61,13 @@ export const DosenPengujiKP = () => {
       // Get the existing document data
       const itemDocRef = doc(db, "sidang", itemId);
       const itemDocSnapshot = await getDoc(itemDocRef);
-
+      const penguji = dosenPengujiDua
+        ? [dosenPengujiSatu, dosenPengujiDua]
+        : [dosenPengujiSatu];
       if (itemDocSnapshot.exists()) {
         // Update the document with new status and catatan
         await updateDoc(itemDocRef, {
-          pengujiSatu_uid: dosenPengujiSatu,
-          pengujiDua_uid: dosenPengujiDua,
+          penguji: penguji,
           catatan: "-",
         });
 

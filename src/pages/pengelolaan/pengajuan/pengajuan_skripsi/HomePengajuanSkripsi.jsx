@@ -3,17 +3,19 @@ import { Sidebar } from "../../../../components/sidebar/Sidebar";
 import { InfinitySpin } from "react-loader-spinner";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { auth, db } from "../../../../utils/firebase";
+import { auth, db, storage } from "../../../../utils/firebase";
 import {
   collection,
   deleteDoc,
   doc,
   getDoc,
+  getDocs,
   onSnapshot,
   query,
   where,
 } from "firebase/firestore";
 import Swal from "sweetalert2";
+import { deleteObject, ref } from "firebase/storage";
 
 export const HomePengajuanSkripsi = () => {
   const itemsPerPage = 5;
@@ -71,9 +73,10 @@ export const HomePengajuanSkripsi = () => {
               .toLowerCase()
               .includes(searchText.toLowerCase()) ||
             item.status.toLowerCase().includes(searchText.toLowerCase()) ||
-            item.dosenPembimbingInfo.nama
-              .toLowerCase()
-              .includes(searchText.toLowerCase()) ||
+            (item.dosenPembimbingInfo &&
+              item.dosenPembimbingInfo.nama
+                .toLowerCase()
+                .includes(searchText.toLowerCase())) ||
             new Date(item.createdAt.seconds * 1000)
               .toLocaleDateString("en-US")
               .includes(searchText) ||
@@ -91,30 +94,59 @@ export const HomePengajuanSkripsi = () => {
 
     // Cleanup: unsubscribe when the component unmounts or when the effect re-runs
     return () => unsubscribe();
-  }, [user, loading]);
+  }, [user, loading, navigate, searchText]);
 
   const handleDelete = async (id) => {
     try {
-      const result = await Swal.fire({
-        title: "Apakah Anda Yakin?",
-        text: "Data akan hilang permanen ketika dihapus",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#d33",
-        cancelButtonColor: "#3085d6",
-        cancelButtonText: "Batal",
-        confirmButtonText: "Confirm",
-      });
+      const docRef = doc(db, "pengajuan", id);
+      const docSnapshot = await getDoc(docRef);
+      const data = docSnapshot.data();
+      if (docSnapshot.exists()) {
+        const pengajuanSnapshot = await getDocs(collection(db, "sidang"));
+        let isUsedInPengajuan = false;
+        pengajuanSnapshot.forEach((doc) => {
+          const sidangData = doc.data();
+          if (docRef.id === sidangData.jadwalSidang_uid) {
+            isUsedInPengajuan = true;
+          }
+        });
+        if (isUsedInPengajuan) {
+          Swal.fire("Error", "Kerja Praktek sudah disidangkan!", "error");
+        } else {
+          const result = await Swal.fire({
+            title: "Apakah Anda Yakin?",
+            text: "Data akan hilang permanen ketika dihapus",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#d33",
+            cancelButtonColor: "#3085d6",
+            cancelButtonText: "Batal",
+            confirmButtonText: "Confirm",
+          });
 
-      if (result.isConfirmed) {
-        const docRef = doc(db, "pengajuan", id);
-        await deleteDoc(docRef);
-        Swal.fire("Success", "Data Berhasil dihapus!", "success");
+          if (result.isConfirmed) {
+            const transkipNilaiFileName = `persyaratan/pengajuanSkripsi/transkipNilai/${data.user_uid}`;
+            const formKrsFileName = `persyaratan/pengajuanSkripsi/formKRS/${data.user_uid}`;
+            const formTopikFileName = `persyaratan/pengajuanSkripsi/formTopik/${data.user_uid}`;
+            const pembayaranSkripsiFileName = `persyaratan/pengajuanSkripsi/slipPembayaranSkripsi/${data.user_uid}`;
+            const sertifikatFileName = `persyaratan/pengajuanSkripsi/sertifikatPSPT/${data.user_uid}`;
+            await deleteObject(ref(storage, transkipNilaiFileName));
+            await deleteObject(ref(storage, formKrsFileName));
+            await deleteObject(ref(storage, formTopikFileName));
+            await deleteObject(ref(storage, pembayaranSkripsiFileName));
+            await deleteObject(ref(storage, sertifikatFileName));
+            const docRef = doc(db, "pengajuan", id);
+            await deleteDoc(docRef);
+            Swal.fire("Success", "Data Berhasil dihapus!", "success");
+          }
+        }
       }
     } catch (error) {
       console.error("Error deleting data: ", error);
     }
   };
+  const startIdx = (currentPage - 1) * itemsPerPage;
+  const endIdx = currentPage * itemsPerPage;
 
   return (
     <>
@@ -158,12 +190,12 @@ export const HomePengajuanSkripsi = () => {
                     </tr>
                   </thead>
                   <tbody className="rounded-b-md text-sm">
-                    {data.map((item, index) => (
+                    {data.slice(startIdx, endIdx).map((item, index) => (
                       <tr
                         key={item.id}
                         className="hover:bg-slate-100 border-b border-t border-slate-300"
                       >
-                        <td className="text-center">{index + 1}</td>
+                        <td className="text-center">{startIdx + index + 1}</td>
                         <td className="text-center">
                           {item.createdAt &&
                             new Date(

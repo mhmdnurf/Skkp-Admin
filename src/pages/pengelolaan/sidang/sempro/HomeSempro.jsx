@@ -117,7 +117,7 @@ export const HomeSempro = () => {
 
     // Cleanup: unsubscribe when the component unmounts or when the effect re-runs
     return () => unsubscribe();
-  }, [user, loading, navigate, searchText, data]);
+  }, [user, loading, navigate, searchText]);
 
   const truncateTitle = (title, words = 3) => {
     const wordsArray = title.split(" ");
@@ -145,18 +145,16 @@ export const HomeSempro = () => {
         const docSnapshot = await getDoc(docRef);
         if (docSnapshot.exists()) {
           const data = docSnapshot.data();
-          const persetujuanKPFileName = `persyaratan/sidangKP/formPersetujuanKP/${data.uid}`;
-          const penilaianPerusahaanFileName = `persyaratan/sidangKP/penilaianPerusahaan/${data.uid}`;
-          const pendaftaranKpFileName = `persyaratan/sidangKP/formPendaftaranKP/${data.uid}`;
-          const bimbinganKPFileName = `persyaratan/sidangKP/formBimbinganKP/${data.uid}`;
-          const sertifikatSeminarFileName = `persyaratan/sidangKP/sertifikatSeminar/${data.uid}`;
-          const sertifikatPSPTFileName = `persyaratan/sidangKP/sertifikatPSPT/${data.uid}`;
-          await deleteObject(ref(storage, persetujuanKPFileName));
-          await deleteObject(ref(storage, penilaianPerusahaanFileName));
-          await deleteObject(ref(storage, pendaftaranKpFileName));
-          await deleteObject(ref(storage, bimbinganKPFileName));
-          await deleteObject(ref(storage, sertifikatSeminarFileName));
-          await deleteObject(ref(storage, sertifikatPSPTFileName));
+          const transkipNilaiFileName = `persyaratan/sidangSempro/transkipNilai/${data.user_uid}`;
+          const pendaftaranSemproFileName = `persyaratan/sidangSempro/formPendaftaran/${data.user_uid}`;
+          const persetujuanSemproFileName = `persyaratan/sidangSempro/formPersetujuan/${data.user_uid}`;
+          const sertifikatKeahlianFileName = `persyaratan/sidangSempro/sertifikatKeahlian/${data.user_uid}`;
+          const menghadiriSidangFileName = `persyaratan/sidangSempro/formMenghadiriSidang/${data.user_uid}`;
+          await deleteObject(ref(storage, transkipNilaiFileName));
+          await deleteObject(ref(storage, pendaftaranSemproFileName));
+          await deleteObject(ref(storage, persetujuanSemproFileName));
+          await deleteObject(ref(storage, sertifikatKeahlianFileName));
+          await deleteObject(ref(storage, menghadiriSidangFileName));
           await deleteDoc(docRef);
         }
         Swal.fire("Success", "Data Berhasil dihapus!", "success");
@@ -165,6 +163,9 @@ export const HomeSempro = () => {
       console.error("Error deleting data: ", error);
     }
   };
+
+  const startIdx = (currentPage - 1) * itemsPerPage;
+  const endIdx = currentPage * itemsPerPage;
 
   return (
     <>
@@ -210,12 +211,12 @@ export const HomeSempro = () => {
                     </tr>
                   </thead>
                   <tbody className="rounded-b-md text-sm">
-                    {data.map((item, index) => (
+                    {data.slice(startIdx, endIdx).map((item, index) => (
                       <tr
                         key={item.id}
                         className="hover:bg-slate-100 border-b border-t border-slate-300"
                       >
-                        <td className="text-center">{index + 1}</td>
+                        <td className="text-center">{startIdx + index + 1}</td>
                         <td className="text-center">
                           {item.createdAt &&
                             new Date(

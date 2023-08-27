@@ -92,6 +92,9 @@ export const HomeJadwalPengajuan = () => {
     }
   };
 
+  const startIdx = (currentPage - 1) * itemsPerPage;
+  const endIdx = currentPage * itemsPerPage;
+
   return (
     <>
       {isLoading ? (
@@ -139,9 +142,9 @@ export const HomeJadwalPengajuan = () => {
                     </tr>
                   </thead>
                   <tbody className="rounded-b-md text-sm text-center">
-                    {data.map((item, index) => (
+                    {data.slice(startIdx, endIdx).map((item, index) => (
                       <tr key={item.id}>
-                        <td className="p-2 px-6">{index + 1}</td>
+                        <td className="p-2 px-6">{startIdx + index + 1}</td>
                         <td className="p-2 px-6">
                           {item.periodePendaftaran.tanggalBuka &&
                             new Date(

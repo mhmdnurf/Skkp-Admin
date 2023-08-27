@@ -30,7 +30,7 @@ export const CreateDosen = () => {
     if (loading) return;
     if (!user) return navigate("/login");
     setIsLoading(false);
-  }, [user, loading]);
+  }, [user, loading, navigate]);
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
@@ -76,6 +76,7 @@ export const CreateDosen = () => {
         icon: "success",
         confirmButtonText: "OK",
       });
+      navigate("/login");
     } catch (error) {
       console.error("Error adding document: ", error);
     }

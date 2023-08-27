@@ -7,7 +7,6 @@ import {
   FaToolbox,
   FaUserGraduate,
 } from "react-icons/fa";
-import { Sidebar } from "../components/sidebar/Sidebar";
 import { InfinitySpin } from "react-loader-spinner";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useNavigate } from "react-router-dom";
@@ -20,10 +19,10 @@ import {
   query,
   where,
 } from "firebase/firestore";
-import { db } from "../utils/firebase";
-import { auth } from "../utils/firebase";
+import { db, auth } from "../../utils/firebase";
+import { SidebarDosen } from "../../components/sidebar/SidebarDosen";
 
-export const Dashboard = () => {
+export const DashboardDosen = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   const [username, setUsername] = useState("");
@@ -55,7 +54,7 @@ export const Dashboard = () => {
         setUsername(userData.nama);
         setIsLoading(false);
 
-        if (userData.role !== "prodi") {
+        if (userData.role !== "Dosen") {
           navigate("/login"); // Redirect jika peran bukan "prodi"
         }
       }
@@ -264,7 +263,7 @@ export const Dashboard = () => {
           </div>
         ) : (
           <>
-            <Sidebar />
+            <SidebarDosen />
 
             <div className="flex flex-col w-full pl-[300px] overflow-y-auto pr-4 pb-4">
               <h1 className="m-2 p-6 bg-white mb-4 rounded-xl drop-shadow-xl text-xl text-slate-600 font-extrabold flex items-center">

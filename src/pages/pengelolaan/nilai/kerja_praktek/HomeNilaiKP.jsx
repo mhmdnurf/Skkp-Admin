@@ -35,21 +35,12 @@ export const HomeNilaiKP = () => {
     }
     return null;
   };
-  const getPengajuanInfo = async (uid) => {
-    const userDocRef = doc(db, "pengajuan", uid);
-    const userDocSnapshot = await getDoc(userDocRef);
-
-    if (userDocSnapshot.exists()) {
-      return userDocSnapshot.data();
-    }
-    return null;
-  };
 
   useEffect(() => {
     const unsubscribe = onSnapshot(
       query(
-        collection(db, "sidang"),
-        where("jenisSidang", "==", "Kerja Praktek"),
+        collection(db, "pengajuan"),
+        where("jenisPengajuan", "==", "Kerja Praktek"),
         orderBy("status", "asc")
       ),
       async (snapshot) => {
@@ -57,20 +48,18 @@ export const HomeNilaiKP = () => {
         for (const doc of snapshot.docs) {
           const data = doc.data();
           const userInfo = await getUserInfo(data.user_uid);
-          const pengajuanInfo = await getPengajuanInfo(data.pengajuan_uid);
-          const dosenPembimbingInfo = await getUserInfo(
-            pengajuanInfo.pembimbing_uid
-          );
-          const pengujiSatuInfo = await getUserInfo(data.pengujiSatu_uid);
-          const pengujiDuaInfo = await getUserInfo(data.pengujiDua_uid);
+          // const pengajuanInfo = await getPengajuanInfo(data.pengajuan_uid);
+          const dosenPembimbingInfo = await getUserInfo(data.pembimbing_uid);
+          // const pengujiSatuInfo = await getUserInfo(data.pengujiSatu_uid);
+          // const pengujiDuaInfo = await getUserInfo(data.pengujiDua_uid);
           fetchedData.push({
             id: doc.id,
             ...data,
             userInfo: userInfo,
             dosenPembimbingInfo: dosenPembimbingInfo,
-            pengujiSatuInfo: pengujiSatuInfo,
-            pengujiDuaInfo: pengujiDuaInfo,
-            pengajuanInfo: pengajuanInfo,
+            // pengujiSatuInfo: pengujiSatuInfo,
+            // pengujiDuaInfo: pengujiDuaInfo,
+            // pengajuanInfo: pengajuanInfo,
           });
         }
         setData(fetchedData);
@@ -84,7 +73,7 @@ export const HomeNilaiKP = () => {
 
     // Cleanup: unsubscribe when the component unmounts or when the effect re-runs
     return () => unsubscribe();
-  }, [user, loading]);
+  }, [user, loading, navigate]);
 
   const truncateTitle = (title, words = 3) => {
     const wordsArray = title.split(" ");
@@ -93,6 +82,9 @@ export const HomeNilaiKP = () => {
     }
     return title;
   };
+
+  const startIdx = (currentPage - 1) * itemsPerPage;
+  const endIdx = currentPage * itemsPerPage;
 
   const handleDelete = async (id) => {
     try {
@@ -167,20 +159,18 @@ export const HomeNilaiKP = () => {
                       <th className="p-2 px-6">Judul</th>
                       <th className="p-2 px-6">Catatan</th>
                       <th className="p-2 px-6">Pembimbing</th>
-                      <th className="p-2 px-6 whitespace-nowrap">Penguji 1</th>
-                      <th className="p-2 px-6 whitespace-nowrap">Penguji 2</th>
                       <th className="p-2 px-6 whitespace-nowrap">Nilai</th>
                       <th className="p-2 px-6 whitespace-nowrap">Indeks</th>
                       <th className="p-2 px-6">Action</th>
                     </tr>
                   </thead>
                   <tbody className="rounded-b-md text-sm">
-                    {data.map((item, index) => (
+                    {data.slice(startIdx, endIdx).map((item, index) => (
                       <tr
                         key={item.id}
                         className="hover:bg-slate-100 border-b border-t border-slate-300"
                       >
-                        <td className="text-center">{index + 1}</td>
+                        <td className="text-center">{startIdx + index + 1}</td>
                         <td className="text-center">
                           {item.userInfo && item.userInfo.nim}
                         </td>
@@ -191,21 +181,13 @@ export const HomeNilaiKP = () => {
                           {item.userInfo && item.userInfo.jurusan}
                         </td>
                         <td className="text-center p-4 whitespace-nowrap">
-                          {truncateTitle(item.pengajuanInfo.judul, 3)}
+                          {truncateTitle(item.judul, 3)}
                         </td>
                         <td className="text-center p-4">{item.catatan}</td>
                         <td className="text-center p-6 whitespace-nowrap">
-                          {item.pengajuanInfo
+                          {item.dosenPembimbingInfo
                             ? item.dosenPembimbingInfo.nama
                             : "-"}
-                        </td>
-                        <td className="text-center p-6 whitespace-nowrap">
-                          {item.pengujiSatuInfo
-                            ? item.pengujiSatuInfo.nama
-                            : "-"}
-                        </td>
-                        <td className="text-center p-6 whitespace-nowrap">
-                          {item.pengujiDuaInfo ? item.pengujiDuaInfo.nama : "-"}
                         </td>
                         <td className="text-center p-6 whitespace-nowrap">
                           {item.nilaiAkhir ? item.nilaiAkhir : "-"}

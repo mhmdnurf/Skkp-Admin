@@ -65,6 +65,9 @@ export const HomeTopik = () => {
     }
   };
 
+  const startIdx = (currentPage - 1) * itemsPerPage;
+  const endIdx = currentPage * itemsPerPage;
+
   return (
     <>
       {isLoading ? (
@@ -111,12 +114,12 @@ export const HomeTopik = () => {
                     </tr>
                   </thead>
                   <tbody className="rounded-b-md text-sm">
-                    {data.map((item, index) => (
+                    {data.slice(startIdx, endIdx).map((item, index) => (
                       <tr
                         key={item.id}
                         className="hover:bg-slate-100 border-b border-t border-slate-300"
                       >
-                        <td className="text-center">{index + 1}</td>
+                        <td className="text-center">{startIdx + index + 1}</td>
                         <td className="text-center">{item.namaTopik}</td>
                         <td className="text-center">
                           {item.prodiTopik.join(", ")}

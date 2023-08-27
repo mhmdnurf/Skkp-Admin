@@ -41,7 +41,7 @@ export const HomeTahunAjaran = () => {
 
     // Cleanup: unsubscribe when the component unmounts or when the effect re-runs
     return () => unsubscribe();
-  }, [user, loading]);
+  }, [user, loading, navigate]);
 
   const handleDelete = async (id) => {
     try {

@@ -23,9 +23,12 @@ export const Login = () => {
 
         if (userDoc.exists()) {
           const userData = userDoc.data();
-          if (userData.role === "prodi") {
+          if (userData.role === "prodi" || userData.role === "Dosen") {
             await Swal.fire("Success", "Login Berhasil!", "success");
             navigate("/");
+            // } else if (userData.role === "Dosen") {
+            //   await Swal.fire("Success", "Login Berhasil!", "success");
+            //   navigate("/");
           } else {
             await Swal.fire(
               "Error",

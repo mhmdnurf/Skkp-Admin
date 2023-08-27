@@ -45,7 +45,7 @@ export const HomeJadwalSidang = () => {
 
     // Cleanup the subscription when component unmounts
     return () => unsubscribe();
-  }, [loading, user]);
+  }, [loading, user, navigate]);
 
   const handleDelete = async (id) => {
     try {
@@ -92,6 +92,9 @@ export const HomeJadwalSidang = () => {
       console.error("Error deleting data: ", error);
     }
   };
+
+  const startIdx = (currentPage - 1) * itemsPerPage;
+  const endIdx = currentPage * itemsPerPage;
 
   return (
     <>
@@ -141,9 +144,9 @@ export const HomeJadwalSidang = () => {
                     </tr>
                   </thead>
                   <tbody className="rounded-b-md text-sm text-center">
-                    {data.map((item, index) => (
+                    {data.slice(startIdx, endIdx).map((item, index) => (
                       <tr key={item.id}>
-                        <td className="p-2 px-6">{index + 1}</td>
+                        <td className="p-2 px-6">{startIdx + index + 1}</td>
                         <td className="p-2 px-6">
                           {item.periodePendaftaran.tanggalBuka &&
                             new Date(

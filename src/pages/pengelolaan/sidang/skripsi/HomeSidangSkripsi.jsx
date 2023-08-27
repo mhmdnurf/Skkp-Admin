@@ -22,7 +22,7 @@ export const HomeSidangSkripsi = () => {
   const [data, setData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
-  // const [searchText, setSearchText] = useState("");
+  const [searchText, setSearchText] = useState("");
   const navigate = useNavigate();
   const [user, loading] = useAuthState(auth);
 
@@ -49,7 +49,7 @@ export const HomeSidangSkripsi = () => {
     const unsubscribe = onSnapshot(
       query(
         collection(db, "sidang"),
-        where("jenisSidang", "==", "Kerja Praktek"),
+        where("jenisSidang", "==", "Skripsi"),
         orderBy("status", "asc")
       ),
       async (snapshot) => {
@@ -68,12 +68,45 @@ export const HomeSidangSkripsi = () => {
             ...data,
             userInfo: userInfo,
             dosenPembimbingInfo: dosenPembimbingInfo,
+            pengajuanInfo: pengajuanInfo,
             pengujiSatuInfo: pengujiSatuInfo,
             pengujiDuaInfo: pengujiDuaInfo,
-            pengajuanInfo: pengajuanInfo,
           });
         }
-        setData(fetchedData);
+        const filteredData = fetchedData.filter(
+          (item) =>
+            item.userInfo.nama
+              .toLowerCase()
+              .includes(searchText.toLowerCase()) ||
+            item.userInfo.jurusan
+              .toLowerCase()
+              .includes(searchText.toLowerCase()) ||
+            item.userInfo.nim
+              .toLowerCase()
+              .includes(searchText.toLowerCase()) ||
+            item.status.toLowerCase().includes(searchText.toLowerCase()) ||
+            item.dosenPembimbingInfo.nama
+              .toLowerCase()
+              .includes(searchText.toLowerCase()) ||
+            (item.pengujiSatuInfo &&
+              item.pengujiSatuInfo.nama
+                .toLowerCase()
+                .includes(searchText.toLowerCase())) ||
+            (item.pengujiDuaInfo &&
+              item.pengujiDuaInfo.nama
+                .toLowerCase()
+                .includes(searchText.toLowerCase())) ||
+            new Date(item.createdAt.seconds * 1000)
+              .toLocaleDateString("en-US")
+              .includes(searchText) ||
+            item.pengajuanInfo.judul
+              .toLowerCase()
+              .includes(searchText.toLowerCase()) ||
+            item.pengajuanInfo.topikPenelitian
+              .toLowerCase()
+              .includes(searchText.toLowerCase())
+        );
+        setData(filteredData);
         console.log(data);
         setIsLoading(false);
       }
@@ -84,7 +117,7 @@ export const HomeSidangSkripsi = () => {
 
     // Cleanup: unsubscribe when the component unmounts or when the effect re-runs
     return () => unsubscribe();
-  }, [user, loading]);
+  }, [user, loading, navigate, searchText, navigate]);
 
   const truncateTitle = (title, words = 3) => {
     const wordsArray = title.split(" ");
@@ -112,18 +145,16 @@ export const HomeSidangSkripsi = () => {
         const docSnapshot = await getDoc(docRef);
         if (docSnapshot.exists()) {
           const data = docSnapshot.data();
-          const persetujuanKPFileName = `persyaratan/sidangKP/formPersetujuanKP/${data.uid}`;
-          const penilaianPerusahaanFileName = `persyaratan/sidangKP/penilaianPerusahaan/${data.uid}`;
-          const pendaftaranKpFileName = `persyaratan/sidangKP/formPendaftaranKP/${data.uid}`;
-          const bimbinganKPFileName = `persyaratan/sidangKP/formBimbinganKP/${data.uid}`;
-          const sertifikatSeminarFileName = `persyaratan/sidangKP/sertifikatSeminar/${data.uid}`;
-          const sertifikatPSPTFileName = `persyaratan/sidangKP/sertifikatPSPT/${data.uid}`;
-          await deleteObject(ref(storage, persetujuanKPFileName));
-          await deleteObject(ref(storage, penilaianPerusahaanFileName));
-          await deleteObject(ref(storage, pendaftaranKpFileName));
-          await deleteObject(ref(storage, bimbinganKPFileName));
-          await deleteObject(ref(storage, sertifikatSeminarFileName));
-          await deleteObject(ref(storage, sertifikatPSPTFileName));
+          const transkipNilaiFileName = `persyaratan/sidangSempro/transkipNilai/${data.user_uid}`;
+          const pendaftaranSemproFileName = `persyaratan/sidangSempro/formPendaftaran/${data.user_uid}`;
+          const persetujuanSemproFileName = `persyaratan/sidangSempro/formPersetujuan/${data.user_uid}`;
+          const sertifikatKeahlianFileName = `persyaratan/sidangSempro/sertifikatKeahlian/${data.user_uid}`;
+          const menghadiriSidangFileName = `persyaratan/sidangSempro/formMenghadiriSidang/${data.user_uid}`;
+          await deleteObject(ref(storage, transkipNilaiFileName));
+          await deleteObject(ref(storage, pendaftaranSemproFileName));
+          await deleteObject(ref(storage, persetujuanSemproFileName));
+          await deleteObject(ref(storage, sertifikatKeahlianFileName));
+          await deleteObject(ref(storage, menghadiriSidangFileName));
           await deleteDoc(docRef);
         }
         Swal.fire("Success", "Data Berhasil dihapus!", "success");
@@ -132,6 +163,9 @@ export const HomeSidangSkripsi = () => {
       console.error("Error deleting data: ", error);
     }
   };
+
+  const startIdx = (currentPage - 1) * itemsPerPage;
+  const endIdx = currentPage * itemsPerPage;
 
   return (
     <>
@@ -152,6 +186,8 @@ export const HomeSidangSkripsi = () => {
                   type="text"
                   className="px-4 py-2 border w-[400px] rounded-md drop-shadow-sm"
                   placeholder="Search..."
+                  value={searchText}
+                  onChange={(e) => setSearchText(e.target.value)}
                 />
               </div>
 
@@ -165,7 +201,7 @@ export const HomeSidangSkripsi = () => {
                       <th className="p-2 px-6">NIM</th>
                       <th className="p-2 px-6">Nama</th>
                       <th className="p-2 px-6">Jurusan</th>
-                      <th className="p-2 px-6">Judul</th>
+                      <th className="p-2 px-6">Kelompok Keilmuan</th>
                       <th className="p-2 px-6">Status</th>
                       <th className="p-2 px-6">Catatan</th>
                       <th className="p-2 px-6">Pembimbing</th>
@@ -175,12 +211,12 @@ export const HomeSidangSkripsi = () => {
                     </tr>
                   </thead>
                   <tbody className="rounded-b-md text-sm">
-                    {data.map((item, index) => (
+                    {data.slice(startIdx, endIdx).map((item, index) => (
                       <tr
                         key={item.id}
                         className="hover:bg-slate-100 border-b border-t border-slate-300"
                       >
-                        <td className="text-center">{index + 1}</td>
+                        <td className="text-center">{startIdx + index + 1}</td>
                         <td className="text-center">
                           {item.createdAt &&
                             new Date(
@@ -203,7 +239,7 @@ export const HomeSidangSkripsi = () => {
                           {item.userInfo && item.userInfo.jurusan}
                         </td>
                         <td className="text-center p-4 whitespace-nowrap">
-                          {truncateTitle(item.pengajuanInfo.judul, 3)}
+                          {truncateTitle(item.pengajuanInfo.topikPenelitian, 3)}
                         </td>
                         <td className="text-center whitespace-nowrap">
                           {item.status}
@@ -225,7 +261,7 @@ export const HomeSidangSkripsi = () => {
                         <td className="text-center p-4">
                           <div className="flex">
                             <Link
-                              to={`/sidang-kp/detail/${item.id}`}
+                              to={`/sidang-sempro/detail/${item.id}`}
                               className="p-2 bg-slate-200 rounded-md hover:bg-slate-300 mr-1"
                             >
                               Detail

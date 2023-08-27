@@ -43,7 +43,7 @@ export const EditJadwalPengajuan = () => {
     if (!user) return navigate("/login");
 
     fetchData();
-  }, [itemId, user, loading]);
+  }, [itemId, user, loading, navigate]);
 
   const handleFormEdit = async (e) => {
     e.preventDefault();
@@ -59,6 +59,24 @@ export const EditJadwalPengajuan = () => {
       // Update data pada Firestore
       const docRef = doc(db, "jadwalPengajuan", itemId);
       await updateDoc(docRef, { status: status });
+      if (status === "Tidak Aktif") {
+        // Kirim permintaan ke server untuk mengirim notifikasi
+        const response = await fetch(
+          "http://localhost:3000/send-notification/pengajuanTutup",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (response.ok) {
+          console.log("Notifications sent successfully to all users");
+        } else {
+          console.error("Failed to send notifications to all users");
+        }
+      }
       Swal.fire("Success", "Data Berhasil diubah!", "success");
       setIsSubmitting(false);
       navigate("/kelola-jadwal/pengajuan");

@@ -48,6 +48,31 @@ export const VerifikasiSkripsi = () => {
           navigate(`/pengajuan-skripsi/detail/${itemId}`);
         });
       }
+      const user_uid = itemDocSnapshot.data().user_uid;
+      const userDocRef = doc(db, "users", user_uid);
+      const userDocSnapshot = await getDoc(userDocRef);
+      if (userDocSnapshot.exists()) {
+        const registrationToken = userDocSnapshot.data().registrationToken;
+
+        const response = await fetch(
+          `http://localhost:3000/send-notification/hasil-verifikasi-skripsi/${user_uid}`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              registrationToken: registrationToken,
+            }),
+          }
+        );
+
+        if (response.ok) {
+          console.log("Notification sent successfully");
+        } else {
+          console.error("Failed to send notification");
+        }
+      }
     } catch (error) {
       console.error("Error updating document: ", error);
       setError("Error updating document");

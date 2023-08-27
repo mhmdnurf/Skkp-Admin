@@ -1,44 +1,35 @@
 import { useState, useEffect } from "react";
-import { Sidebar } from "../../../../components/sidebar/Sidebar";
-import { auth, db } from "../../../../utils/firebase";
-import {
-  collection,
-  doc,
-  getDoc,
-  getDocs,
-  query,
-  updateDoc,
-  where,
-} from "firebase/firestore";
+import { auth, db } from "../../../../../utils/firebase";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { InfinitySpin } from "react-loader-spinner";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import Swal from "sweetalert2";
 import { useAuthState } from "react-firebase-hooks/auth";
+import { SidebarDosen } from "../../../../../components/sidebar/SidebarDosen";
 
-export const DosenPembimbingSkripsi = () => {
+export const EditNilaiBimbingan = () => {
   const { itemId } = useParams();
+  const [nilaiBimbingan, setNilaiBimbingan] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [user, loading] = useAuthState(auth);
-  const [availableDosen, setAvailableDosen] = useState([]);
-  const [dosenPembimbing, setDosenPembimbing] = useState("");
 
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchDosen = async () => {
+    const fetchData = async () => {
       try {
-        const querySnapshot = await getDocs(
-          query(collection(db, "users"), where("role", "==", "Dosen"))
-        );
-        console.log(querySnapshot);
-        const dosenOptions = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        console.log(dosenOptions);
-        setAvailableDosen(dosenOptions);
+        const docRef = doc(db, "pengajuan", itemId);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          setNilaiBimbingan(data.nilaiBimbingan);
+        } else {
+          setError("Data not found");
+        }
+
         setIsLoading(false);
       } catch (error) {
         console.error("Error fetching data: ", error);
@@ -46,11 +37,10 @@ export const DosenPembimbingSkripsi = () => {
         setIsLoading(false);
       }
     };
-
     if (loading) return;
     if (!user) return navigate("/login");
-    fetchDosen();
-  }, [user, loading, navigate]);
+    fetchData();
+  }, [itemId, user, loading, navigate]);
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
@@ -62,10 +52,10 @@ export const DosenPembimbingSkripsi = () => {
       const itemDocSnapshot = await getDoc(itemDocRef);
 
       if (itemDocSnapshot.exists()) {
-        // Update the document with new status and catatan
+        // Update the document with new nilaiBimbingan and nilaiPerusahaan
         await updateDoc(itemDocRef, {
-          catatan: "-",
-          pembimbing_uid: dosenPembimbing,
+          nilaiBimbingan: nilaiBimbingan,
+          editedAt: new Date(),
         });
 
         Swal.fire({
@@ -74,33 +64,8 @@ export const DosenPembimbingSkripsi = () => {
           icon: "success",
           confirmButtonText: "OK",
         }).then(() => {
-          navigate(`/pengajuan-skripsi/detail/${itemId}`);
+          navigate(`/bimbingan-kp`);
         });
-      }
-      const user_uid = itemDocSnapshot.data().user_uid;
-      const userDocRef = doc(db, "users", user_uid);
-      const userDocSnapshot = await getDoc(userDocRef);
-      if (userDocSnapshot.exists()) {
-        const registrationToken = userDocSnapshot.data().registrationToken;
-
-        const response = await fetch(
-          `http://localhost:3000/send-notification/dosen-pembimbing-skripsi/${user_uid}`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              registrationToken: registrationToken,
-            }),
-          }
-        );
-
-        if (response.ok) {
-          console.log("Notification sent successfully");
-        } else {
-          console.error("Failed to send notification");
-        }
       }
     } catch (error) {
       console.error("Error updating document: ", error);
@@ -112,7 +77,7 @@ export const DosenPembimbingSkripsi = () => {
 
   return (
     <div className="flex bg-slate-100 min-h-screen">
-      <Sidebar />
+      <SidebarDosen />
       <div className="flex flex-col w-full pl-[300px] overflow-y-auto pr-4 pb-4">
         {isLoading ? (
           <div className="flex-1 flex justify-center items-center">
@@ -121,7 +86,7 @@ export const DosenPembimbingSkripsi = () => {
         ) : (
           <div className="flex-1 p-8">
             <h1 className="text-2xl text-white text-center shadow-md font-semibold rounded-lg p-4 m-4 mb-4 w-full bg-slate-600">
-              Verifikasi Pengajuan Skripsi
+              Nilai Bimbingan Kerja Praktek
             </h1>
             <form
               onSubmit={handleFormSubmit}
@@ -129,23 +94,16 @@ export const DosenPembimbingSkripsi = () => {
             >
               <div className="mb-4">
                 <label className="block text-slate-600 font-bold mb-2">
-                  Dosen Pembimbing
+                  Nilai Bimbingan
                 </label>
-                <select
-                  className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring focus:border-slate-300 bg-white"
-                  value={dosenPembimbing}
-                  onChange={(e) => setDosenPembimbing(e.target.value)}
+                <input
+                  type="text"
+                  className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-500"
+                  placeholder="Masukkan Nilai"
+                  value={nilaiBimbingan}
+                  onChange={(e) => setNilaiBimbingan(e.target.value)}
                   required
-                >
-                  <option value="" disabled>
-                    Pilih Dosen Pembimbing
-                  </option>
-                  {availableDosen.map((dosen) => (
-                    <option key={dosen.id} value={dosen.uid}>
-                      {dosen.nama}
-                    </option>
-                  ))}
-                </select>
+                />
               </div>
               <div className="flex justify-end">
                 <button
@@ -156,7 +114,7 @@ export const DosenPembimbingSkripsi = () => {
                   {isSubmitting ? "Loading..." : "Submit"}
                 </button>
                 <Link
-                  to={`/pengajuan-skripsi/detail/${itemId}`}
+                  to={`/bimbingan-kp/detail/${itemId}`}
                   className="px-4 py-2 bg-red-400 text-white rounded-md hover:bg-red-500 ml-1 drop-shadow-lg"
                 >
                   Cancel

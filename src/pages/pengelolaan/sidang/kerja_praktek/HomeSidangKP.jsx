@@ -9,6 +9,7 @@ import {
   deleteDoc,
   doc,
   getDoc,
+  getDocs,
   onSnapshot,
   orderBy,
   query,
@@ -123,39 +124,55 @@ export const HomeSidangKP = () => {
     return title;
   };
 
+  const startIdx = (currentPage - 1) * itemsPerPage;
+  const endIdx = currentPage * itemsPerPage;
+
   const handleDelete = async (id) => {
     try {
-      const result = await Swal.fire({
-        title: "Apakah Anda Yakin?",
-        text: "Data akan hilang permanen ketika dihapus",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#d33",
-        cancelButtonColor: "#3085d6",
-        cancelButtonText: "Batal",
-        confirmButtonText: "Confirm",
-      });
+      const docRef = doc(db, "sidang", id);
+      const docSnapshot = await getDoc(docRef);
+      const data = docSnapshot.data();
+      if (docSnapshot.exists()) {
+        const pengajuanSnapshot = await getDocs(collection(db, "sidang"));
+        let isUsedInPengajuan = false;
+        pengajuanSnapshot.forEach((doc) => {
+          const sidangData = doc.data();
+          if (docRef.id === sidangData.jadwalSidang_uid) {
+            isUsedInPengajuan = true;
+          }
+        });
+        if (isUsedInPengajuan) {
+          Swal.fire("Error", "Kerja Praktek sudah disidangkan!", "error");
+        } else {
+          const result = await Swal.fire({
+            title: "Apakah Anda Yakin?",
+            text: "Data akan hilang permanen ketika dihapus",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#d33",
+            cancelButtonColor: "#3085d6",
+            cancelButtonText: "Batal",
+            confirmButtonText: "Confirm",
+          });
 
-      if (result.isConfirmed) {
-        const docRef = doc(db, "sidang", id);
-        const docSnapshot = await getDoc(docRef);
-        if (docSnapshot.exists()) {
-          const data = docSnapshot.data();
-          const persetujuanKPFileName = `persyaratan/sidangKP/formPersetujuanKP/${data.uid}`;
-          const penilaianPerusahaanFileName = `persyaratan/sidangKP/penilaianPerusahaan/${data.uid}`;
-          const pendaftaranKpFileName = `persyaratan/sidangKP/formPendaftaranKP/${data.uid}`;
-          const bimbinganKPFileName = `persyaratan/sidangKP/formBimbinganKP/${data.uid}`;
-          const sertifikatSeminarFileName = `persyaratan/sidangKP/sertifikatSeminar/${data.uid}`;
-          const sertifikatPSPTFileName = `persyaratan/sidangKP/sertifikatPSPT/${data.uid}`;
-          await deleteObject(ref(storage, persetujuanKPFileName));
-          await deleteObject(ref(storage, penilaianPerusahaanFileName));
-          await deleteObject(ref(storage, pendaftaranKpFileName));
-          await deleteObject(ref(storage, bimbinganKPFileName));
-          await deleteObject(ref(storage, sertifikatSeminarFileName));
-          await deleteObject(ref(storage, sertifikatPSPTFileName));
-          await deleteDoc(docRef);
+          if (result.isConfirmed) {
+            const persetujuanKPFileName = `persyaratan/sidangKP/formPersetujuanKP/${data.user_uid}`;
+            const penilaianPerusahaanFileName = `persyaratan/sidangKP/penilaianPerusahaan/${data.user_uid}`;
+            const pendaftaranKpFileName = `persyaratan/sidangKP/formPendaftaranKP/${data.user_uid}`;
+            const bimbinganKPFileName = `persyaratan/sidangKP/formBimbinganKP/${data.user_uid}`;
+            const sertifikatSeminarFileName = `persyaratan/sidangKP/sertifikatSeminar/${data.user_uid}`;
+            const sertifikatPSPTFileName = `persyaratan/sidangKP/sertifikatPSPT/${data.user_uid}`;
+            await deleteObject(ref(storage, persetujuanKPFileName));
+            await deleteObject(ref(storage, penilaianPerusahaanFileName));
+            await deleteObject(ref(storage, pendaftaranKpFileName));
+            await deleteObject(ref(storage, bimbinganKPFileName));
+            await deleteObject(ref(storage, sertifikatSeminarFileName));
+            await deleteObject(ref(storage, sertifikatPSPTFileName));
+            await deleteDoc(docRef);
+
+            Swal.fire("Success", "Data Berhasil dihapus!", "success");
+          }
         }
-        Swal.fire("Success", "Data Berhasil dihapus!", "success");
       }
     } catch (error) {
       console.error("Error deleting data: ", error);
@@ -206,12 +223,12 @@ export const HomeSidangKP = () => {
                     </tr>
                   </thead>
                   <tbody className="rounded-b-md text-sm">
-                    {data.map((item, index) => (
+                    {data.slice(startIdx, endIdx).map((item, index) => (
                       <tr
                         key={item.id}
                         className="hover:bg-slate-100 border-b border-t border-slate-300"
                       >
-                        <td className="text-center">{index + 1}</td>
+                        <td className="text-center">{startIdx + index + 1}</td>
                         <td className="text-center">
                           {item.createdAt &&
                             new Date(

@@ -48,7 +48,7 @@ export const CreateJadwalPengajuan = () => {
     if (!user) return navigate("/login");
 
     fetchTahunAjaran();
-  }, [loading, user]);
+  }, [loading, user, navigate]);
 
   const handleValueChange = (newValue) => {
     console.log("newValue:", newValue);
@@ -86,21 +86,21 @@ export const CreateJadwalPengajuan = () => {
         await addDoc(collection(db, "jadwalPengajuan"), jadwalData);
 
         // Kirim permintaan ke server untuk mengirim notifikasi
-        // const response = await fetch(
-        //   "http://localhost:3000/send-notification/pengajuan",
-        //   {
-        //     method: "POST",
-        //     headers: {
-        //       "Content-Type": "application/json",
-        //     },
-        //   }
-        // );
+        const response = await fetch(
+          "http://localhost:3000/send-notification/pengajuan",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
 
-        // if (response.ok) {
-        //   console.log("Notifications sent successfully to all users");
-        // } else {
-        //   console.error("Failed to send notifications to all users");
-        // }
+        if (response.ok) {
+          console.log("Notifications sent successfully to all users");
+        } else {
+          console.error("Failed to send notifications to all users");
+        }
         Swal.fire("Success", "Jadwal berhasil dibuka!", "success").then(() => {
           navigate("/kelola-jadwal/pengajuan");
         });

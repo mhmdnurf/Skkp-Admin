@@ -9,6 +9,7 @@ import {
   deleteDoc,
   doc,
   where,
+  orderBy,
 } from "firebase/firestore";
 import { Link, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
@@ -25,7 +26,11 @@ export const HomeDosen = () => {
 
   useEffect(() => {
     const unsubscribe = onSnapshot(
-      query(collection(db, "users"), where("role", "==", "Dosen")),
+      query(
+        collection(db, "users"),
+        where("role", "==", "Dosen"),
+        orderBy("nama", "asc")
+      ),
       (snapshot) => {
         const fetchedData = snapshot.docs.map((doc) => ({
           id: doc.id,
@@ -39,7 +44,6 @@ export const HomeDosen = () => {
         );
 
         setData(filteredData);
-        // setData(fetchedData);
         setIsLoading(false);
       }
     );
@@ -73,6 +77,9 @@ export const HomeDosen = () => {
       console.error("Error deleting data: ", error);
     }
   };
+
+  const startIdx = (currentPage - 1) * itemsPerPage;
+  const endIdx = currentPage * itemsPerPage;
 
   return (
     <>
@@ -120,12 +127,12 @@ export const HomeDosen = () => {
                     </tr>
                   </thead>
                   <tbody className="rounded-b-md text-sm">
-                    {data.map((item, index) => (
+                    {data.slice(startIdx, endIdx).map((item, index) => (
                       <tr
                         key={item.id}
                         className="hover:bg-slate-100 border-b border-t border-slate-300"
                       >
-                        <td className="text-center">{index + 1}</td>
+                        <td className="text-center">{startIdx + index + 1}</td>
                         <td className="text-center whitespace-nowrap">
                           {item.nama}
                         </td>
@@ -147,26 +154,30 @@ export const HomeDosen = () => {
                 {/* Pagination */}
                 <div className="flex justify-between items-center bg-white drop-shadow-md rounded-b-lg p-2">
                   <p className="text-xs text-slate-600 ml-2">
-                    Showing{" "}
-                    {Math.min(
-                      (currentPage - 1) * itemsPerPage + 1,
-                      data.length
-                    )}{" "}
-                    to {Math.min(currentPage * itemsPerPage, data.length)} of{" "}
-                    {data.length} results
+                    Showing {Math.min(startIdx + 1, data.length)} to{" "}
+                    {Math.min(endIdx, data.length)} of {data.length} results
                   </p>
 
                   <div className="flex">
                     <button
                       className="px-3 py-2 text-xs bg-slate-300 text-slate-600 rounded-md hover:bg-slate-400 mr-1"
-                      onClick={() => setCurrentPage(currentPage - 1)}
+                      onClick={() =>
+                        setCurrentPage((prevPage) => Math.max(prevPage - 1, 1))
+                      }
                       disabled={currentPage === 1}
                     >
                       Previous
                     </button>
                     <button
                       className="px-3 py-2 text-xs text-slate-600 bg-slate-300 rounded-md hover:bg-slate-400"
-                      onClick={() => setCurrentPage(currentPage + 1)}
+                      onClick={() =>
+                        setCurrentPage((prevPage) =>
+                          Math.min(
+                            prevPage + 1,
+                            Math.ceil(data.length / itemsPerPage)
+                          )
+                        )
+                      }
                       disabled={
                         currentPage === Math.ceil(data.length / itemsPerPage)
                       }

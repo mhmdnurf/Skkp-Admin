@@ -1,37 +1,80 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { Sidebar } from "../../../../components/sidebar/Sidebar";
 import { InfinitySpin } from "react-loader-spinner";
-import { auth, db } from "../../../../utils/firebase";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuthState } from "react-firebase-hooks/auth";
+import { auth, db, storage } from "../../../../utils/firebase";
 import {
   collection,
-  onSnapshot,
-  query,
   deleteDoc,
   doc,
+  getDoc,
+  onSnapshot,
+  orderBy,
+  query,
   where,
 } from "firebase/firestore";
-import { Link, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
-import { useAuthState } from "react-firebase-hooks/auth";
+import { deleteObject, ref } from "firebase/storage";
 
 export const HomeNilaiSkripsi = () => {
   const itemsPerPage = 5;
   const [data, setData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
-  const [searchText, setSearchText] = useState("");
+  // const [searchText, setSearchText] = useState("");
   const navigate = useNavigate();
   const [user, loading] = useAuthState(auth);
 
+  const getUserInfo = async (uid) => {
+    const userDocRef = doc(db, "users", uid);
+    const userDocSnapshot = await getDoc(userDocRef);
+
+    if (userDocSnapshot.exists()) {
+      return userDocSnapshot.data();
+    }
+    return null;
+  };
+  const getPengajuanInfo = async (uid) => {
+    const userDocRef = doc(db, "pengajuan", uid);
+    const userDocSnapshot = await getDoc(userDocRef);
+
+    if (userDocSnapshot.exists()) {
+      return userDocSnapshot.data();
+    }
+    return null;
+  };
+
   useEffect(() => {
     const unsubscribe = onSnapshot(
-      query(collection(db, "users"), where("role", "==", "Mahasiswa")),
-      (snapshot) => {
-        const fetchedData = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
+      query(
+        collection(db, "sidang"),
+        where("jenisSidang", "==", "Skripsi"),
+        orderBy("status", "asc")
+      ),
+      async (snapshot) => {
+        const fetchedData = [];
+        for (const doc of snapshot.docs) {
+          const data = doc.data();
+          const userInfo = await getUserInfo(data.user_uid);
+          const pengajuanInfo = await getPengajuanInfo(data.pengajuan_uid);
+          const dosenPembimbingInfo = await getUserInfo(
+            pengajuanInfo.pembimbing_uid
+          );
+          const pengujiSatuInfo = await getUserInfo(data.pengujiSatu_uid);
+          const pengujiDuaInfo = await getUserInfo(data.pengujiDua_uid);
+          fetchedData.push({
+            id: doc.id,
+            ...data,
+            userInfo: userInfo,
+            dosenPembimbingInfo: dosenPembimbingInfo,
+            pengujiSatuInfo: pengujiSatuInfo,
+            pengujiDuaInfo: pengujiDuaInfo,
+            pengajuanInfo: pengajuanInfo,
+          });
+        }
         setData(fetchedData);
+        console.log(data);
         setIsLoading(false);
       }
     );
@@ -42,6 +85,14 @@ export const HomeNilaiSkripsi = () => {
     // Cleanup: unsubscribe when the component unmounts or when the effect re-runs
     return () => unsubscribe();
   }, [user, loading]);
+
+  const truncateTitle = (title, words = 3) => {
+    const wordsArray = title.split(" ");
+    if (wordsArray.length > words) {
+      return wordsArray.slice(0, words).join(" ") + "...";
+    }
+    return title;
+  };
 
   const handleDelete = async (id) => {
     try {
@@ -57,14 +108,33 @@ export const HomeNilaiSkripsi = () => {
       });
 
       if (result.isConfirmed) {
-        const docRef = doc(db, "users", id);
-        await deleteDoc(docRef);
+        const docRef = doc(db, "sidang", id);
+        const docSnapshot = await getDoc(docRef);
+        if (docSnapshot.exists()) {
+          const data = docSnapshot.data();
+          const persetujuanKPFileName = `persyaratan/sidangKP/formPersetujuanKP/${data.uid}`;
+          const penilaianPerusahaanFileName = `persyaratan/sidangKP/penilaianPerusahaan/${data.uid}`;
+          const pendaftaranKpFileName = `persyaratan/sidangKP/formPendaftaranKP/${data.uid}`;
+          const bimbinganKPFileName = `persyaratan/sidangKP/formBimbinganKP/${data.uid}`;
+          const sertifikatSeminarFileName = `persyaratan/sidangKP/sertifikatSeminar/${data.uid}`;
+          const sertifikatPSPTFileName = `persyaratan/sidangKP/sertifikatPSPT/${data.uid}`;
+          await deleteObject(ref(storage, persetujuanKPFileName));
+          await deleteObject(ref(storage, penilaianPerusahaanFileName));
+          await deleteObject(ref(storage, pendaftaranKpFileName));
+          await deleteObject(ref(storage, bimbinganKPFileName));
+          await deleteObject(ref(storage, sertifikatSeminarFileName));
+          await deleteObject(ref(storage, sertifikatPSPTFileName));
+          await deleteDoc(docRef);
+        }
         Swal.fire("Success", "Data Berhasil dihapus!", "success");
       }
     } catch (error) {
       console.error("Error deleting data: ", error);
     }
   };
+
+  const startIdx = (currentPage - 1) * itemsPerPage;
+  const endIdx = currentPage * itemsPerPage;
 
   return (
     <>
@@ -74,58 +144,85 @@ export const HomeNilaiSkripsi = () => {
         </div>
       ) : (
         <>
-          <div className="flex bg-slate-100 min-h-screen">
+          <div className="flex bg-slate-100 h-screen">
             <Sidebar />
             <div className="flex flex-col w-full pl-[300px] overflow-y-auto pr-4 pb-4">
-              <h1 className="text-2xl text-white text-center shadow-md font-semibold rounded-lg p-4 m-4 mb-10 bg-slate-600">
-                Data Mahasiswa
+              <h1 className="text-2xl text-white text-center shadow-md font-bold rounded-lg p-4 m-4 mb-10 bg-slate-600">
+                Data Nilai Skripsi
               </h1>
-
-              <div className="flex justify-between mt-16">
-                <div className="flex items-center ml-4 " />
-                <div className="flex items-center mr-4">
-                  <input
-                    type="text"
-                    className="px-4 py-2 border w-[400px] rounded-md drop-shadow-sm"
-                    placeholder="Search..."
-                    value={searchText}
-                    onChange={(e) => setSearchText(e.target.value)}
-                  />
-                </div>
+              <div className="flex items-center mt-16 mb-2 mx-2 justify-end mr-4">
+                <input
+                  type="text"
+                  className="px-4 py-2 border w-[400px] rounded-md drop-shadow-sm"
+                  placeholder="Search..."
+                />
               </div>
 
-              <div className="overflow-x-auto flex flex-col px-4 mt-2">
-                <table className="w-full bg-white rounded-t-lg text-slate-700 drop-shadow-md">
-                  <thead className="shadow-sm font-extralight text-sm">
-                    <tr>
+              {/* Tabel Data */}
+              <div className="flex flex-col px-4 mt-2">
+                <table className="overflow-x-auto block bg-white rounded-t-lg text-slate-700 drop-shadow-md">
+                  <thead className=" shadow-sm font-extralight text-sm">
+                    <tr className="">
                       <th className="p-2 px-6">No</th>
                       <th className="p-2 px-6">NIM</th>
                       <th className="p-2 px-6">Nama</th>
                       <th className="p-2 px-6">Jurusan</th>
-                      <th className="p-2 px-6">Email</th>
+                      <th className="p-2 px-6">Judul</th>
+                      <th className="p-2 px-6">Catatan</th>
+                      <th className="p-2 px-6">Pembimbing</th>
+                      <th className="p-2 px-6 whitespace-nowrap">Penguji 1</th>
+                      <th className="p-2 px-6 whitespace-nowrap">Penguji 2</th>
+                      <th className="p-2 px-6 whitespace-nowrap">Nilai</th>
+                      <th className="p-2 px-6 whitespace-nowrap">Indeks</th>
                       <th className="p-2 px-6">Action</th>
                     </tr>
                   </thead>
                   <tbody className="rounded-b-md text-sm">
-                    {data.map((item, index) => (
+                    {data.slice(startIdx, endIdx).map((item, index) => (
                       <tr
                         key={item.id}
                         className="hover:bg-slate-100 border-b border-t border-slate-300"
                       >
-                        <td className="text-center">{index + 1}</td>
-                        <td className="text-center">{item.nim}</td>
-                        <td className="text-center whitespace-nowrap">
-                          {item.nama}
+                        <td className="text-center">{startIdx + index + 1}</td>
+                        <td className="text-center">
+                          {item.userInfo && item.userInfo.nim}
                         </td>
-                        <td className="text-center">{item.jurusan}</td>
-                        <td className="text-center">{item.email}</td>
+                        <td className="text-center whitespace-nowrap">
+                          {item.userInfo && item.userInfo.nama}
+                        </td>
+                        <td className="text-center">
+                          {item.userInfo && item.userInfo.jurusan}
+                        </td>
+                        <td className="text-center p-4 whitespace-nowrap">
+                          {truncateTitle(item.pengajuanInfo.topikPenelitian, 3)}
+                        </td>
+                        <td className="text-center p-4">{item.catatan}</td>
+                        <td className="text-center p-6 whitespace-nowrap">
+                          {item.pengajuanInfo
+                            ? item.dosenPembimbingInfo.nama
+                            : "-"}
+                        </td>
+                        <td className="text-center p-6 whitespace-nowrap">
+                          {item.pengujiSatuInfo
+                            ? item.pengujiSatuInfo.nama
+                            : "-"}
+                        </td>
+                        <td className="text-center p-6 whitespace-nowrap">
+                          {item.pengujiDuaInfo ? item.pengujiDuaInfo.nama : "-"}
+                        </td>
+                        <td className="text-center p-6 whitespace-nowrap">
+                          {item.nilaiAkhir ? item.nilaiAkhir : "-"}
+                        </td>
+                        <td className="text-center p-6 whitespace-nowrap">
+                          {item.indeks ? item.indeks : "-"}
+                        </td>
                         <td className="text-center p-4">
-                          <div className="flex justify-center items-center">
+                          <div className="flex">
                             <Link
-                              to={`/pengajuan-kp/detail/${item.id}`}
+                              to={`/kelola-nilai/skripsi/${item.id}`}
                               className="p-2 bg-slate-200 rounded-md hover:bg-slate-300 mr-1"
                             >
-                              Detail
+                              Nilai
                             </Link>
                             <button
                               className="p-2 bg-red-200 rounded-md hover:bg-red-300"
@@ -170,8 +267,8 @@ export const HomeNilaiSkripsi = () => {
                     </button>
                   </div>
                 </div>
-                <div className="mb-10" />
               </div>
+              <div className="mb-10" />
             </div>
           </div>
         </>

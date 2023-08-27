@@ -1,13 +1,12 @@
 import { useState, useEffect } from "react";
-import { Sidebar } from "../../../../components/sidebar/Sidebar";
 import { InfinitySpin } from "react-loader-spinner";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { auth, db } from "../../../../utils/firebase";
+import { auth, db } from "../../../../../utils/firebase";
 import { doc, getDoc } from "firebase/firestore";
-import Swal from "sweetalert2";
+import { SidebarDosen } from "../../../../../components/sidebar/SidebarDosen";
 
-export const DetailSempro = () => {
+export const DetailBimbinganSkripsi = () => {
   const { itemId } = useParams();
   const [data, setData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -24,17 +23,7 @@ export const DetailSempro = () => {
     return null;
   };
   const getPeriodeInfo = async (uid) => {
-    const userDocRef = doc(db, "jadwalSidang", uid);
-    const userDocSnapshot = await getDoc(userDocRef);
-
-    if (userDocSnapshot.exists()) {
-      return userDocSnapshot.data();
-    }
-    return null;
-  };
-
-  const getPengajuanInfo = async (uid) => {
-    const userDocRef = doc(db, "pengajuan", uid);
+    const userDocRef = doc(db, "jadwalPengajuan", uid);
     const userDocSnapshot = await getDoc(userDocRef);
 
     if (userDocSnapshot.exists()) {
@@ -45,18 +34,15 @@ export const DetailSempro = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const itemDocRef = doc(db, "sidang", itemId);
+      const itemDocRef = doc(db, "pengajuan", itemId);
       const itemDocSnapshot = await getDoc(itemDocRef);
 
       if (itemDocSnapshot.exists()) {
         const itemData = itemDocSnapshot.data();
         const userInfo = await getUserInfo(itemData.user_uid);
-        const pengajuanInfo = await getPengajuanInfo(itemData.pengajuan_uid);
-        const dosenPembimbingInfo = await getUserInfo(
-          pengajuanInfo.pembimbing_uid
-        );
+        const dosenPembimbingInfo = await getUserInfo(itemData.pembimbing_uid);
         const periodePendaftaranInfo = await getPeriodeInfo(
-          itemData.jadwalSidang_uid
+          itemData.jadwalPengajuan_uid
         );
 
         setData({
@@ -64,7 +50,6 @@ export const DetailSempro = () => {
           ...itemData,
           userInfo: userInfo,
           dosenPembimbingInfo: dosenPembimbingInfo,
-          pengajuanInfo: pengajuanInfo,
           periodePendaftaranInfo: periodePendaftaranInfo,
         });
         console.log(data);
@@ -77,7 +62,7 @@ export const DetailSempro = () => {
 
     if (loading) return;
     if (!user) return navigate("/login");
-  }, [itemId, user, loading, navigate, data]);
+  }, [itemId, user, loading, navigate]);
 
   if (isLoading) {
     return (
@@ -91,73 +76,21 @@ export const DetailSempro = () => {
     return <p>Data not found.</p>;
   }
 
-  const handleButtonPembimbing = () => {
-    if (data.status != "Sah") {
-      Swal.fire({
-        title: "Error",
-        text: "Data belum diverifikasi",
-        icon: "error",
-        confirmButtonText: "OK",
-      });
-    } else {
-      navigate(`/sidang-sempro/penguji/${itemId}`);
-    }
+  const handleNilaiBimingan = () => {
+    navigate(`/bimbingan-skripsi/nilai-bimbingan/${itemId}`);
   };
 
   return (
     <>
       <div className="flex bg-slate-100 h-screen">
-        <Sidebar />
+        <SidebarDosen />
         <div className="flex flex-col w-full pl-[300px] overflow-y-auto pr-4 pb-4">
           <h1 className="text-2xl text-white text-center shadow-md font-bold rounded-lg p-4 m-4 mb-10 bg-slate-600">
-            Detail Sidang Seminar Proposal
+            Detail Pengajuan Skripsi
           </h1>
 
           <div className="flex flex-col px-4 mt-2 bg-white mx-4 rounded-lg p-4 drop-shadow-lg">
-            <div className="flex justify-start mt-4 items-center">
-              <h1 className="w-full p-4 bg-slate-600 text-center text-white rounded-lg  font-bold">
-                Berkas Persyaratan
-              </h1>
-            </div>
-            <div className="flex justify-evenly items-center p-4 flex-wrap">
-              <Link
-                to={`${data.transkipNilai}`}
-                target="_blank"
-                className="p-2 bg-slate-300 hover:bg-slate-200 rounded-md text-slate-600  font-semibold hover:transform hover:scale-110 transition-transform duration-300 ease-in-out"
-              >
-                Transkip Nilai
-              </Link>
-              <Link
-                to={`${data.pendaftaranSempro}`}
-                target="_blank"
-                className="p-2 bg-slate-300 hover:bg-slate-200 rounded-md text-slate-600  font-semibold hover:transform hover:scale-110 transition-transform duration-300 ease-in-out"
-              >
-                Form Pendaftaran Seminar Proposal
-              </Link>
-              <Link
-                to={`${data.persetujuanSempro}`}
-                target="_blank"
-                className="p-2 bg-slate-300 hover:bg-slate-200 rounded-md font-semibold text-slate-600 hover:transform hover:scale-110 transition-transform duration-300 ease-in-out"
-              >
-                Form Persetujuan Seminar Proposal
-              </Link>
-              <Link
-                to={`${data.fileSertifikatKeahlian}`}
-                target="_blank"
-                className="p-2 bg-slate-300 hover:bg-slate-200 rounded-md text-slate-600  font-semibold hover:transform hover:scale-110 transition-transform duration-300 ease-in-out"
-              >
-                Sertifikat Keahlian
-              </Link>
-              <Link
-                to={`${data.fileMenghadiriSidang}`}
-                target="_blank"
-                className="p-2 mt-2 flex-grow text-center bg-slate-300 hover:bg-slate-200 rounded-md text-slate-600  font-semibold hover:transform hover:scale-110 transition-transform duration-300 ease-in-out"
-              >
-                Form Menghadiri Sidang
-              </Link>
-            </div>
-
-            <div className="border p-4 rounded-md border-slate-300">
+            <div className="border p-4 rounded-md border-slate-300 uppercase">
               <h1 className="text-lg font-bold text-slate-600 mb-2">
                 Tanggal Daftar
               </h1>
@@ -204,43 +137,26 @@ export const DetailSempro = () => {
               <h1 className="mb-2 text-lg font-bold text-slate-600">Jurusan</h1>
               <p className="mb-2">{data.userInfo.jurusan}</p>
               <h1 className="mb-2 text-lg font-bold text-slate-600">
-                Topik Penelitian
+                Kelompok Keilmuan
               </h1>
-              <p className="mb-2">{data.pengajuanInfo.topikPenelitian}</p>
-              <h1 className="mb-2 text-lg font-bold text-slate-600">Judul</h1>
-              <p className="mb-2">{data.judul}</p>
-              <h1 className="mb-2 text-lg font-bold text-slate-600">Status</h1>
-              <p className="mb-2">{data.status}</p>
-              <h1 className="mb-2 text-lg font-bold text-slate-600">Catatan</h1>
-              <p className="mb-2">{data.catatan}</p>
+              <p className="mb-2">{data.topikPenelitian}</p>
               <h1 className="mb-2 text-lg font-bold text-slate-600">
-                Dosen Pembimbing
+                Nilai Bimbingan
               </h1>
               <p className="mb-2">
-                {" "}
-                {data.dosenPembimbingInfo ? (
-                  <p className="mb-2">{data.dosenPembimbingInfo.nama}</p>
-                ) : (
-                  <p className="mb-2 ">-</p>
-                )}
+                {data.nilaiBimbingan ? data.nilaiBimbingan : "-"}
               </p>
             </div>
 
             <div className="flex flex-1 justify-end p-4">
-              <Link
-                to={`/sidang-sempro/verifikasi/${itemId}`}
-                className="bg-green-600 hover:bg-green-500 p-2 m-2 rounded-lg w-[150px] text-center text-slate-100 drop-shadow-xl"
-              >
-                Verifikasi
-              </Link>
               <button
-                onClick={handleButtonPembimbing}
+                onClick={handleNilaiBimingan}
                 className="bg-blue-600 hover:bg-blue-500 p-2 m-2 rounded-lg w-[200px] text-center text-slate-100"
               >
-                Beri Dosen Penguji
+                Beri Nilai Bimbingan
               </button>
               <Link
-                to={"/sidang-sempro"}
+                to={"/bimbingan-skripsi"}
                 className="bg-red-400 hover:bg-red-300 p-2 m-2 rounded-lg w-[150px] text-center text-slate-100"
               >
                 Kembali

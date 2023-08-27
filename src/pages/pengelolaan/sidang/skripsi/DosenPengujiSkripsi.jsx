@@ -61,12 +61,14 @@ export const DosenPengujiSkripsi = () => {
       // Get the existing document data
       const itemDocRef = doc(db, "sidang", itemId);
       const itemDocSnapshot = await getDoc(itemDocRef);
+      const penguji = dosenPengujiDua
+        ? [dosenPengujiSatu, dosenPengujiDua]
+        : [dosenPengujiSatu];
 
       if (itemDocSnapshot.exists()) {
         // Update the document with new status and catatan
         await updateDoc(itemDocRef, {
-          pengujiSatu_uid: dosenPengujiSatu,
-          pengujiDua_uid: dosenPengujiDua,
+          penguji: penguji,
           catatan: "-",
         });
 
@@ -79,26 +81,6 @@ export const DosenPengujiSkripsi = () => {
           navigate(`/sidang-kp/detail/${itemId}`);
         });
       }
-
-      // const response = await fetch(
-      //   "http://localhost:3000/send-notification/dosen-pembimbing-kp",
-      //   {
-      //     method: "POST",
-      //     headers: {
-      //       "Content-Type": "application/json",
-      //     },
-      //     body: JSON.stringify({
-      //       registrationToken:
-      //         "efjLkfYnTBu97mDH1aDtt3:APA91bEfMxhN6FKk5GW3DnHVoEoJP90GyanTAU1h-xeyfCS9sQFS19EMHViqXDXFu9iYyhfIOe-lMU0kmtuOaqcbqvs_3dnTMDRiZt_j7Mk7a-x8uu50sx6Jiqh3MG4UI5sUAWtWjYLt",
-      //     }),
-      //   }
-      // );
-
-      // if (response.ok) {
-      //   console.log("Notification sent successfully");
-      // } else {
-      //   console.error("Failed to send notification");
-      // }
     } catch (error) {
       console.error("Error updating document: ", error);
       setError("Error updating document");

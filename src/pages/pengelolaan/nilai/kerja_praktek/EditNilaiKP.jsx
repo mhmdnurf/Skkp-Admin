@@ -11,7 +11,8 @@ export const EditNilaiKP = () => {
   const { itemId } = useParams();
   const [nilaiBimbingan, setNilaiBimbingan] = useState("");
   const [nilaiPerusahaan, setNilaiPerusahaan] = useState("");
-  const [nilaiPenguji, setNilaiPenguji] = useState("");
+  const [nilaiPengujiSatu, setNilaiPengujiSatu] = useState("");
+  const [nilaiPengujiDua, setNilaiPengujiDua] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -22,14 +23,15 @@ export const EditNilaiKP = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const docRef = doc(db, "sidang", itemId);
+        const docRef = doc(db, "pengajuan", itemId);
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
           const data = docSnap.data();
           setNilaiBimbingan(data.nilaiBimbingan);
           setNilaiPerusahaan(data.nilaiPerusahaan);
-          setNilaiPenguji(data.nilaiPenguji);
+          setNilaiPengujiSatu(data.nilaiPengujiSatu);
+          setNilaiPengujiDua(data.nilaiPengujiDua);
         } else {
           setError("Data not found");
         }
@@ -53,10 +55,17 @@ export const EditNilaiKP = () => {
     try {
       const nilaiBimbinganFloat = parseFloat(nilaiBimbingan);
       const nilaiPerusahaanFloat = parseFloat(nilaiPerusahaan);
-      const nilaiPengujiFloat = parseFloat(nilaiPenguji);
+      const nilaiPengujiSatuFloat = parseFloat(nilaiPengujiSatu);
+      const nilaiPengujiDuaFloat = isNaN(parseFloat(nilaiPengujiDua))
+        ? parseFloat(nilaiPengujiSatu)
+        : parseFloat(nilaiPengujiDua);
 
-      const nilaiAkhir =
-        (nilaiBimbinganFloat + nilaiPerusahaanFloat + nilaiPengujiFloat) / 3;
+      const nilaiAkhir = (
+        (nilaiBimbinganFloat +
+          nilaiPerusahaanFloat +
+          (nilaiPengujiSatuFloat + nilaiPengujiDuaFloat) / 2) /
+        3
+      ).toFixed(2);
 
       let indeksHuruf = "";
       if (nilaiAkhir >= 80) {
@@ -69,17 +78,15 @@ export const EditNilaiKP = () => {
         indeksHuruf = "D";
       }
       // Get the existing document data
-      const itemDocRef = doc(db, "sidang", itemId);
+      const itemDocRef = doc(db, "pengajuan", itemId);
       const itemDocSnapshot = await getDoc(itemDocRef);
 
       if (itemDocSnapshot.exists()) {
-        const data = itemDocSnapshot.data();
-        setNilaiBimbingan(data.nilaiBimbingan);
-        // Update the document with new nilaiBimbingan and nilaiPerusahaan
         await updateDoc(itemDocRef, {
           nilaiBimbingan: nilaiBimbingan,
           nilaiPerusahaan: nilaiPerusahaan,
-          nilaiPenguji: nilaiPenguji,
+          nilaiPengujiSatu: nilaiPengujiSatu,
+          nilaiPengujiDua: nilaiPengujiDua,
           nilaiAkhir: nilaiAkhir,
           indeks: indeksHuruf,
           editedAt: new Date(),
@@ -94,26 +101,6 @@ export const EditNilaiKP = () => {
           navigate(`/kelola-nilai/kp`);
         });
       }
-
-      //   const response = await fetch(
-      //     "http://localhost:3000/send-notification/hasil-verifikasi-kp",
-      //     {
-      //       method: "POST",
-      //       headers: {
-      //         "Content-Type": "application/json",
-      //       },
-      //       body: JSON.stringify({
-      //         registrationToken:
-      //           "efjLkfYnTBu97mDH1aDtt3:APA91bEfMxhN6FKk5GW3DnHVoEoJP90GyanTAU1h-xeyfCS9sQFS19EMHViqXDXFu9iYyhfIOe-lMU0kmtuOaqcbqvs_3dnTMDRiZt_j7Mk7a-x8uu50sx6Jiqh3MG4UI5sUAWtWjYLt",
-      //       }),
-      //     }
-      //   );
-
-      //   if (response.ok) {
-      //     console.log("Notification sent successfully");
-      //   } else {
-      //     console.error("Failed to send notification");
-      //   }
     } catch (error) {
       console.error("Error updating document: ", error);
       setError("Error updating document");
@@ -163,14 +150,25 @@ export const EditNilaiKP = () => {
                   required
                 />
                 <label className="block text-slate-600 font-bold mb-2">
-                  Nilai Penguji
+                  Nilai Penguji 1
                 </label>
                 <input
                   type="text"
                   className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-500"
                   placeholder="Masukkan Nilai"
-                  value={nilaiPenguji}
-                  onChange={(e) => setNilaiPenguji(e.target.value)}
+                  value={nilaiPengujiSatu}
+                  onChange={(e) => setNilaiPengujiSatu(e.target.value)}
+                  required
+                />
+                <label className="block text-slate-600 font-bold mb-2">
+                  Nilai Penguji 2
+                </label>
+                <input
+                  type="text"
+                  className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-500"
+                  placeholder="Masukkan Nilai"
+                  value={nilaiPengujiDua}
+                  onChange={(e) => setNilaiPengujiDua(e.target.value)}
                   required
                 />
               </div>

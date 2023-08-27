@@ -1,24 +1,20 @@
 import { useState, useEffect } from "react";
-import { Sidebar } from "../../../../components/sidebar/Sidebar";
 import { InfinitySpin } from "react-loader-spinner";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { auth, db, storage } from "../../../../utils/firebase";
+import { auth, db } from "../../../../../utils/firebase";
 import {
   collection,
-  deleteDoc,
   doc,
   getDoc,
-  getDocs,
   onSnapshot,
   orderBy,
   query,
   where,
 } from "firebase/firestore";
-import { deleteObject, ref } from "firebase/storage";
-import Swal from "sweetalert2";
+import { SidebarDosen } from "../../../../../components/sidebar/SidebarDosen";
 
-export const HomePengajuanKP = () => {
+export const HomeBimbinganSkripsi = () => {
   const itemsPerPage = 5;
   const [data, setData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -38,120 +34,66 @@ export const HomePengajuanKP = () => {
   };
 
   useEffect(() => {
-    const unsubscribe = onSnapshot(
-      query(
-        collection(db, "pengajuan"),
-        where("jenisPengajuan", "==", "Kerja Praktek"),
-        orderBy("status", "asc")
-      ),
-      async (snapshot) => {
-        const fetchedData = [];
-        for (const doc of snapshot.docs) {
-          const data = doc.data();
-          const userInfo = await getUserInfo(data.user_uid);
-          let dosenPembimbingInfo = null;
+    if (user) {
+      const unsubscribe = onSnapshot(
+        query(
+          collection(db, "pengajuan"),
+          where("jenisPengajuan", "==", "Skripsi"),
+          where("pembimbing_uid", "==", user.uid),
+          orderBy("status", "asc")
+        ),
+        async (snapshot) => {
+          const fetchedData = [];
+          for (const doc of snapshot.docs) {
+            const data = doc.data();
+            const userInfo = await getUserInfo(data.user_uid);
+            let dosenPembimbingInfo = null;
 
-          // Cek jika pembimbing_uid tidak sama dengan "-"
-          if (data.pembimbing_uid !== "-") {
-            dosenPembimbingInfo = await getUserInfo(data.pembimbing_uid);
+            // Cek jika pembimbing_uid tidak sama dengan "-"
+            if (data.pembimbing_uid !== "-") {
+              dosenPembimbingInfo = await getUserInfo(data.pembimbing_uid);
+            }
+
+            fetchedData.push({
+              id: doc.id,
+              ...data,
+              userInfo: userInfo,
+              dosenPembimbingInfo: dosenPembimbingInfo,
+            });
           }
-
-          fetchedData.push({
-            id: doc.id,
-            ...data,
-            userInfo: userInfo,
-            dosenPembimbingInfo: dosenPembimbingInfo,
-          });
-        }
-        const filteredData = fetchedData.filter(
-          (item) =>
-            item.userInfo.nama
-              .toLowerCase()
-              .includes(searchText.toLowerCase()) ||
-            item.userInfo.jurusan
-              .toLowerCase()
-              .includes(searchText.toLowerCase()) ||
-            item.userInfo.nim
-              .toLowerCase()
-              .includes(searchText.toLowerCase()) ||
-            item.status.toLowerCase().includes(searchText.toLowerCase()) ||
-            (item.dosenPembimbingInfo &&
-              item.dosenPembimbingInfo.nama
+          const filteredData = fetchedData.filter(
+            (item) =>
+              item.userInfo.nama
                 .toLowerCase()
-                .includes(searchText.toLowerCase())) ||
-            new Date(item.createdAt.seconds * 1000)
-              .toLocaleDateString("en-US")
-              .includes(searchText) ||
-            item.judul.toLowerCase().includes(searchText.toLowerCase())
-        );
-        setData(filteredData);
-        setIsLoading(false);
-      }
-    );
-
-    if (loading) return;
-    if (!user) return navigate("/login");
-
-    // Cleanup: unsubscribe when the component unmounts or when the effect re-runs
-    return () => unsubscribe();
-  }, [user, loading, navigate, searchText]);
-
-  const truncateTitle = (title, words = 3) => {
-    const wordsArray = title.split(" ");
-    if (wordsArray.length > words) {
-      return wordsArray.slice(0, words).join(" ") + "...";
-    }
-    return title;
-  };
-
-  const handleDelete = async (id) => {
-    try {
-      const docRef = doc(db, "pengajuan", id);
-      const docSnapshot = await getDoc(docRef);
-      const data = docSnapshot.data();
-      if (docSnapshot.exists()) {
-        const pengajuanSnapshot = await getDocs(collection(db, "sidang"));
-        let isUsedInPengajuan = false;
-        pengajuanSnapshot.forEach((doc) => {
-          const sidangData = doc.data();
-          if (docRef.id === sidangData.jadwalSidang_uid) {
-            isUsedInPengajuan = true;
-          }
-        });
-        if (isUsedInPengajuan) {
-          Swal.fire("Error", "Kerja Praktek sudah disidangkan!", "error");
-        } else {
-          const result = await Swal.fire({
-            title: "Apakah Anda Yakin?",
-            text: "Data akan hilang permanen ketika dihapus",
-            icon: "warning",
-            showCancelButton: true,
-            confirmButtonColor: "#d33",
-            cancelButtonColor: "#3085d6",
-            cancelButtonText: "Batal",
-            confirmButtonText: "Confirm",
-          });
-
-          if (result.isConfirmed) {
-            const transkipNilaiFileName = `persyaratan/pengajuanKP/transkipNilai/${data.user_uid}`;
-            const formKrsFileName = `persyaratan/pengajuanKP/formKRS/${data.user_uid}`;
-            const pendaftaranKpFileName = `persyaratan/pengajuanKP/formPendaftaranKP/${data.user_uid}`;
-            const pembayaranKpFileName = `persyaratan/pengajuanKP/slipPembayaranKP/${data.user_uid}`;
-            const proporsalFileName = `persyaratan/pengajuanKP/proporsalKP/${data.user_uid}`;
-            await deleteObject(ref(storage, transkipNilaiFileName));
-            await deleteObject(ref(storage, formKrsFileName));
-            await deleteObject(ref(storage, pendaftaranKpFileName));
-            await deleteObject(ref(storage, pembayaranKpFileName));
-            await deleteObject(ref(storage, proporsalFileName));
-            await deleteDoc(docRef);
-            Swal.fire("Success", "Data Berhasil dihapus!", "success");
-          }
+                .includes(searchText.toLowerCase()) ||
+              item.userInfo.jurusan
+                .toLowerCase()
+                .includes(searchText.toLowerCase()) ||
+              item.userInfo.nim
+                .toLowerCase()
+                .includes(searchText.toLowerCase()) ||
+              item.status.toLowerCase().includes(searchText.toLowerCase()) ||
+              (item.dosenPembimbingInfo &&
+                item.dosenPembimbingInfo.nama
+                  .toLowerCase()
+                  .includes(searchText.toLowerCase())) ||
+              new Date(item.createdAt.seconds * 1000)
+                .toLocaleDateString("en-US")
+                .includes(searchText) ||
+              item.judul.toLowerCase().includes(searchText.toLowerCase())
+          );
+          setData(filteredData);
+          setIsLoading(false);
         }
-      }
-    } catch (error) {
-      console.error("Error deleting data: ", error);
+      );
+
+      if (loading) return;
+      if (!user) return navigate("/login");
+
+      // Cleanup: unsubscribe when the component unmounts or when the effect re-runs
+      return () => unsubscribe();
     }
-  };
+  }, [user, loading, navigate, searchText]);
 
   const startIdx = (currentPage - 1) * itemsPerPage;
   const endIdx = currentPage * itemsPerPage;
@@ -165,10 +107,10 @@ export const HomePengajuanKP = () => {
       ) : (
         <>
           <div className="flex bg-slate-100 h-screen">
-            <Sidebar />
+            <SidebarDosen />
             <div className="flex flex-col w-full pl-[300px] overflow-y-auto pr-4 pb-4">
               <h1 className="text-2xl text-white text-center shadow-md font-bold rounded-lg p-4 m-4 mb-10 bg-slate-600">
-                Data Pengajuan Kerja Praktek
+                Mahasiswa Bimbingan Skripsi
               </h1>
               <div className="flex items-center mt-16 mb-2 mx-2 justify-end mr-4">
                 <input
@@ -182,18 +124,22 @@ export const HomePengajuanKP = () => {
 
               {/* Tabel Data */}
               <div className="flex flex-col px-4 mt-2">
-                <table className="overflow-x-auto block bg-white rounded-t-lg text-slate-700 drop-shadow-md">
+                <table className="overflow-x-auto block bg-white rounded-t-lg text-slate-700 drop-shadow-md uppercase">
                   <thead className=" shadow-sm font-extralight text-sm">
                     <tr className="">
                       <th className="p-2 px-6">No</th>
-                      <th className="p-2 px-6">Tanggal Daftar</th>
+                      <th className="p-2 px-6 whitespace-nowrap">
+                        Tanggal Daftar
+                      </th>
                       <th className="p-2 px-6">NIM</th>
                       <th className="p-2 px-6">Nama</th>
                       <th className="p-2 px-6">Jurusan</th>
-                      <th className="p-2 px-6">Judul</th>
-                      <th className="p-2 px-6">Status</th>
-                      <th className="p-2 px-6">Catatan</th>
-                      <th className="p-2 px-6">Pembimbing</th>
+                      <th className="p-2 px-6 whitespace-nowrap">
+                        Kelompok Keilmuan
+                      </th>
+                      <th className="p-2 px-6 whitespace-nowrap">
+                        Nilai Bimbingan
+                      </th>
                       <th className="p-2 px-6">Action</th>
                     </tr>
                   </thead>
@@ -226,29 +172,19 @@ export const HomePengajuanKP = () => {
                           {item.userInfo && item.userInfo.jurusan}
                         </td>
                         <td className="text-center p-4 whitespace-nowrap">
-                          {truncateTitle(item.judul, 3)}
+                          {item.topikPenelitian}
                         </td>
-                        <td className="text-center">{item.status}</td>
-                        <td className="text-center p-4">{item.catatan}</td>
-                        <td className="text-center p-6 whitespace-nowrap">
-                          {item.dosenPembimbingInfo
-                            ? item.dosenPembimbingInfo.nama
-                            : "-"}
+                        <td className="text-center">
+                          {item.nilaiBimbingan ? item.nilaiBimbingan : "-"}
                         </td>
                         <td className="text-center p-4">
                           <div className="flex">
                             <Link
-                              to={`/pengajuan-kp/detail/${item.id}`}
+                              to={`/bimbingan-skripsi/detail/${item.id}`}
                               className="p-2 bg-slate-200 rounded-md hover:bg-slate-300 mr-1"
                             >
                               Detail
                             </Link>
-                            <button
-                              className="p-2 bg-red-200 rounded-md hover:bg-red-300"
-                              onClick={() => handleDelete(item.id)}
-                            >
-                              Hapus
-                            </button>
                           </div>
                         </td>
                       </tr>

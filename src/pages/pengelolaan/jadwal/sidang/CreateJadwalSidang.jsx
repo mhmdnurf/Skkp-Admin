@@ -98,25 +98,21 @@ export const CreateJadwalSidang = () => {
         await addDoc(collection(db, "jadwalSidang"), jadwalData);
 
         // Kirim permintaan ke server untuk mengirim notifikasi
-        // const response = await fetch(
-        //   "http://localhost:3000/send-notification/sidang",
-        //   {
-        //     method: "POST",
-        //     headers: {
-        //       "Content-Type": "application/json",
-        //     },
-        //     body: JSON.stringify({
-        //       registrationToken:
-        //         "efjLkfYnTBu97mDH1aDtt3:APA91bEfMxhN6FKk5GW3DnHVoEoJP90GyanTAU1h-xeyfCS9sQFS19EMHViqXDXFu9iYyhfIOe-lMU0kmtuOaqcbqvs_3dnTMDRiZt_j7Mk7a-x8uu50sx6Jiqh3MG4UI5sUAWtWjYLt",
-        //     }),
-        //   }
-        // );
+        const response = await fetch(
+          "http://localhost:3000/send-notification/sidang",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
 
-        // if (response.ok) {
-        //   console.log("Notification sent successfully");
-        // } else {
-        //   console.error("Failed to send notification");
-        // }
+        if (response.ok) {
+          console.log("Notifications sent successfully to all users");
+        } else {
+          console.error("Failed to send notifications to all users");
+        }
         Swal.fire("Success", "Jadwal berhasil dibuka!", "success").then(() => {
           navigate("/kelola-jadwal/sidang");
         });

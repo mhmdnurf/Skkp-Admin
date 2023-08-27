@@ -16,9 +16,9 @@ export const CreateTopik = () => {
   const [selectedJenisPengajuan, setSelectedJenisPengajuan] = useState([]);
 
   const jenisPengajuanOptions = [
-    { id: 1, value: "IF", label: "Teknik Informatika" },
-    { id: 2, value: "SI", label: "Sistem Informasi" },
-    { id: 3, value: "KA", label: "Komputer Akuntansi" },
+    { id: 1, value: "Teknik Informatika", label: "Teknik Informatika" },
+    { id: 2, value: "Sistem Informasi", label: "Sistem Informasi" },
+    { id: 3, value: "Komputer Akuntansi", label: "Komputer Akuntansi" },
   ];
 
   const navigate = useNavigate();
@@ -27,7 +27,7 @@ export const CreateTopik = () => {
     if (loading) return;
     if (!user) return navigate("/login");
     setIsLoading(false);
-  }, [loading, user]);
+  }, [loading, user, navigate]);
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
