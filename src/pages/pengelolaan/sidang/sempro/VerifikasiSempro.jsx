@@ -56,23 +56,44 @@ export const VerifikasiSempro = () => {
       if (userDocSnapshot.exists()) {
         const registrationToken = userDocSnapshot.data().registrationToken;
 
-        const response = await fetch(
-          `http://localhost:3000/send-notification/hasil-verifikasi-sempro/${user_uid}`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              registrationToken: registrationToken,
-            }),
-          }
-        );
+        if (status === "Sah") {
+          const response = await fetch(
+            `http://localhost:3000/send-notification/hasil-verifikasi-sempro-berhasil/${user_uid}`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                registrationToken: registrationToken,
+              }),
+            }
+          );
 
-        if (response.ok) {
-          console.log("Notification sent successfully");
+          if (response.ok) {
+            console.log("Notification sent successfully");
+          } else {
+            console.error("Failed to send notification");
+          }
         } else {
-          console.error("Failed to send notification");
+          const response = await fetch(
+            `http://localhost:3000/send-notification/hasil-verifikasi-sempro-ditolak/${user_uid}`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                registrationToken: registrationToken,
+              }),
+            }
+          );
+
+          if (response.ok) {
+            console.log("Notification sent successfully");
+          } else {
+            console.error("Failed to send notification");
+          }
         }
       }
     } catch (error) {

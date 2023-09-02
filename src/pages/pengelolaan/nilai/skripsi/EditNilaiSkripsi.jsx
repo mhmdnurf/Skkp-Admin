@@ -9,10 +9,10 @@ import { useAuthState } from "react-firebase-hooks/auth";
 
 export const EditNilaiSkripsi = () => {
   const { itemId } = useParams();
-  const [nilaiBimbingan, setNilaiBimbingan] = useState("");
-  const [nilaiPerusahaan, setNilaiPerusahaan] = useState("");
-  const [nilaiPenguji, setNilaiPenguji] = useState("");
-  const [pengajuanUID, setPengajuanUID] = useState("");
+  const [nilaiPengujiSatu, setNilaiPengujiSatu] = useState("");
+  const [nilaiPengujiDua, setNilaiPengujiDua] = useState("");
+  const [nilaiSempro, setNilaiSempro] = useState("");
+  const [nilaiKompre, setNilaiKompre] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -23,15 +23,38 @@ export const EditNilaiSkripsi = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const docRef = doc(db, "sidang", itemId);
+        const docRef = doc(db, "pengajuan", itemId);
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
           const data = docSnap.data();
-          setNilaiBimbingan(data.nilaiBimbingan);
-          setNilaiPerusahaan(data.nilaiPerusahaan);
-          setNilaiPenguji(data.nilaiPenguji);
-          setPengajuanUID(data.pengajuan_uid);
+          if (data.nilaiSempro) {
+            if (data.nilaiSempro.nilaiAkhirSempro !== undefined) {
+              setNilaiSempro(data.nilaiSempro.nilaiAkhirSempro);
+            } else {
+              setNilaiSempro(null);
+            }
+          }
+          if (data.nilaiKompre) {
+            if (data.nilaiKompre.nilaiKomprehensif !== undefined) {
+              setNilaiKompre(data.nilaiKompre.nilaiKomprehensif);
+            } else {
+              setNilaiKompre(null);
+            }
+          }
+          if (data.nilaiSkripsi) {
+            if (data.nilaiSkripsi.nilaiPengujiSatu !== undefined) {
+              setNilaiPengujiSatu(data.nilaiSkripsi.nilaiPengujiSatu);
+            } else {
+              setNilaiPengujiSatu(null);
+            }
+
+            if (data.nilaiSkripsi.nilaiPengujiDua !== undefined) {
+              setNilaiPengujiDua(data.nilaiSkripsi.nilaiPengujiDua);
+            } else {
+              setNilaiPengujiDua(null);
+            }
+          }
         } else {
           setError("Data not found");
         }
@@ -53,34 +76,49 @@ export const EditNilaiSkripsi = () => {
     setIsSubmitting(true);
 
     try {
-      const nilaiBimbinganFloat = parseFloat(nilaiBimbingan);
-      const nilaiPerusahaanFloat = parseFloat(nilaiPerusahaan);
-      const nilaiPengujiFloat = parseFloat(nilaiPenguji);
+      const nilaiSemproFloat = parseFloat(nilaiSempro);
+      const nilaiKompreFloat = parseFloat(nilaiKompre);
+      const nilaiPengujiSatuFloat = parseFloat(nilaiPengujiSatu);
+      const nilaiPengujiDuaFloat = parseFloat(nilaiPengujiDua);
 
-      const nilaiAkhir =
-        (nilaiBimbinganFloat + nilaiPerusahaanFloat + nilaiPengujiFloat) / 3;
+      const nilaiSidangSkripsi = (
+        (nilaiPengujiSatuFloat + nilaiPengujiDuaFloat) /
+        2
+      ).toFixed(2);
+
+      const nilaiAkhirSkripsi = (
+        (nilaiSemproFloat +
+          nilaiKompreFloat +
+          nilaiPengujiSatuFloat +
+          nilaiPengujiDuaFloat) /
+        4
+      ).toFixed(2);
 
       let indeksHuruf = "";
-      if (nilaiAkhir >= 80) {
+      if (nilaiAkhirSkripsi >= 80) {
         indeksHuruf = "A";
-      } else if (nilaiAkhir >= 70) {
+      } else if (nilaiAkhirSkripsi >= 70) {
         indeksHuruf = "B";
-      } else if (nilaiAkhir >= 60) {
+      } else if (nilaiAkhirSkripsi >= 60) {
         indeksHuruf = "C";
       } else {
         indeksHuruf = "D";
       }
+
       // Get the existing document data
-      const itemDocRef = doc(db, "pengajuan", pengajuanUID);
+      const itemDocRef = doc(db, "pengajuan", itemId);
       const itemDocSnapshot = await getDoc(itemDocRef);
 
+      const nilaiSkripsi = {
+        nilaiPengujiSatu: nilaiPengujiSatu,
+        nilaiPengujiDua: nilaiPengujiDua,
+        nilaiSkripsi: nilaiSidangSkripsi,
+      };
+
       if (itemDocSnapshot.exists()) {
-        // Update the document with new nilaiBimbingan and nilaiPerusahaan
         await updateDoc(itemDocRef, {
-          nilaiBimbingan: nilaiBimbingan,
-          nilaiPerusahaan: nilaiPerusahaan,
-          nilaiPenguji: nilaiPenguji,
-          nilaiAkhir: nilaiAkhir,
+          nilaiSkripsi,
+          nilaiAkhirSkripsi: nilaiAkhirSkripsi,
           indeks: indeksHuruf,
           editedAt: new Date(),
         });
@@ -91,29 +129,9 @@ export const EditNilaiSkripsi = () => {
           icon: "success",
           confirmButtonText: "OK",
         }).then(() => {
-          navigate(`/kelola-nilai/kp`);
+          navigate(`/kelola-nilai/skripsi/detail/${itemId}`);
         });
       }
-
-      //   const response = await fetch(
-      //     "http://localhost:3000/send-notification/hasil-verifikasi-kp",
-      //     {
-      //       method: "POST",
-      //       headers: {
-      //         "Content-Type": "application/json",
-      //       },
-      //       body: JSON.stringify({
-      //         registrationToken:
-      //           "efjLkfYnTBu97mDH1aDtt3:APA91bEfMxhN6FKk5GW3DnHVoEoJP90GyanTAU1h-xeyfCS9sQFS19EMHViqXDXFu9iYyhfIOe-lMU0kmtuOaqcbqvs_3dnTMDRiZt_j7Mk7a-x8uu50sx6Jiqh3MG4UI5sUAWtWjYLt",
-      //       }),
-      //     }
-      //   );
-
-      //   if (response.ok) {
-      //     console.log("Notification sent successfully");
-      //   } else {
-      //     console.error("Failed to send notification");
-      //   }
     } catch (error) {
       console.error("Error updating document: ", error);
       setError("Error updating document");
@@ -141,36 +159,25 @@ export const EditNilaiSkripsi = () => {
             >
               <div className="mb-4">
                 <label className="block text-slate-600 font-bold mb-2">
-                  Nilai Bimbingan
+                  Nilai Penguji 1
                 </label>
                 <input
                   type="text"
                   className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-500"
                   placeholder="Masukkan Nilai"
-                  value={nilaiBimbingan}
-                  onChange={(e) => setNilaiBimbingan(e.target.value)}
+                  value={nilaiPengujiSatu}
+                  onChange={(e) => setNilaiPengujiSatu(e.target.value)}
                   required
                 />
                 <label className="block text-slate-600 font-bold mb-2">
-                  Nilai Perusahaan
+                  Nilai Penguji 2
                 </label>
                 <input
                   type="text"
                   className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-500"
                   placeholder="Masukkan Nilai"
-                  value={nilaiPerusahaan}
-                  onChange={(e) => setNilaiPerusahaan(e.target.value)}
-                  required
-                />
-                <label className="block text-slate-600 font-bold mb-2">
-                  Nilai Penguji
-                </label>
-                <input
-                  type="text"
-                  className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-500"
-                  placeholder="Masukkan Nilai"
-                  value={nilaiPenguji}
-                  onChange={(e) => setNilaiPenguji(e.target.value)}
+                  value={nilaiPengujiDua}
+                  onChange={(e) => setNilaiPengujiDua(e.target.value)}
                   required
                 />
               </div>
@@ -183,7 +190,7 @@ export const EditNilaiSkripsi = () => {
                   {isSubmitting ? "Loading..." : "Submit"}
                 </button>
                 <Link
-                  to={`/kelola-nilai/kp`}
+                  to={`/kelola-nilai/skripsi/detail/${itemId}`}
                   className="px-4 py-2 bg-red-400 text-white rounded-md hover:bg-red-500 ml-1 drop-shadow-lg"
                 >
                   Cancel

@@ -23,18 +23,14 @@ export const Login = () => {
 
         if (userDoc.exists()) {
           const userData = userDoc.data();
-          if (userData.role === "prodi" || userData.role === "Dosen") {
+          if (userData.role === "prodi") {
             await Swal.fire("Success", "Login Berhasil!", "success");
             navigate("/");
             // } else if (userData.role === "Dosen") {
             //   await Swal.fire("Success", "Login Berhasil!", "success");
             //   navigate("/");
           } else {
-            await Swal.fire(
-              "Error",
-              "Oops, anda bukan bagian dari prodi",
-              "error"
-            );
+            await Swal.fire("Error", "Anda bukan bagian dari prodi", "error");
           }
         }
       };
@@ -75,7 +71,11 @@ export const Login = () => {
 
       setIsLoading(false); // Menghentikan loader setelah proses otentikasi selesai
     } catch (error) {
-      console.error("Login error:", error);
+      if (error.code === "auth/user-not-found") {
+        await Swal.fire("Error", "Akun anda tidak terdaftar", "error");
+      } else if (error.code === "auth/wrong-password") {
+        await Swal.fire("Error", "Email atau password salah", "error");
+      }
       setIsLoading(false); // Menghentikan loader jika terjadi kesalahan
     }
   };

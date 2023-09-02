@@ -10,7 +10,7 @@ import {
   doc,
   where,
 } from "firebase/firestore";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { useAuthState } from "react-firebase-hooks/auth";
 
@@ -41,7 +41,7 @@ export const HomeMahasiswa = () => {
 
     // Cleanup: unsubscribe when the component unmounts or when the effect re-runs
     return () => unsubscribe();
-  }, [user, loading]);
+  }, [user, loading, navigate]);
 
   const handleDelete = async (id) => {
     try {
@@ -121,12 +121,6 @@ export const HomeMahasiswa = () => {
                         <td className="text-center">{item.email}</td>
                         <td className="text-center p-4">
                           <div className="flex justify-center items-center">
-                            <Link
-                              to={`/pengajuan-kp/detail/${item.id}`}
-                              className="p-2 bg-slate-200 rounded-md hover:bg-slate-300 mr-1"
-                            >
-                              Detail
-                            </Link>
                             <button
                               className="p-2 bg-red-200 rounded-md hover:bg-red-300"
                               onClick={() => handleDelete(item.id)}

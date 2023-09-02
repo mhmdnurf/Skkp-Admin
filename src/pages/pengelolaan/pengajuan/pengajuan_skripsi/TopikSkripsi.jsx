@@ -1,27 +1,57 @@
 import { useState, useEffect } from "react";
 import { Sidebar } from "../../../../components/sidebar/Sidebar";
 import { auth, db } from "../../../../utils/firebase";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  getDoc,
+  onSnapshot,
+  updateDoc,
+} from "firebase/firestore";
 import { InfinitySpin } from "react-loader-spinner";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import Swal from "sweetalert2";
 import { useAuthState } from "react-firebase-hooks/auth";
+import Select from "react-select";
 
-export const VerifikasiSkripsi = () => {
+export const UbahTopikSkripsi = () => {
   const { itemId } = useParams();
-  const [status, setStatus] = useState("");
-  const [catatan, setCatatan] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [user, loading] = useAuthState(auth);
+  const [topikPenelitian, setTopikPenelitian] = useState("");
+  const [topikOptions, setTopikOptions] = useState([]);
 
   const navigate = useNavigate();
 
   useEffect(() => {
     if (loading) return;
     if (!user) return navigate("/login");
-  }, [itemId, user, loading, navigate]);
+
+    const unsubscribe = onSnapshot(
+      collection(db, "topikPenelitian"),
+      (querySnapshot) => {
+        const fetchedData = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setTopikOptions(fetchedData);
+        console.log(topikOptions);
+        setIsLoading(false);
+      }
+    );
+
+    return () => {
+      // Berhenti mendengarkan perubahan saat komponen dibongkar
+      unsubscribe();
+    };
+  }, [user, loading, navigate, topikOptions]);
+
+  const options = topikOptions.map((option) => ({
+    value: option.namaTopik,
+    label: option.namaTopik,
+  }));
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
@@ -32,11 +62,12 @@ export const VerifikasiSkripsi = () => {
       const itemDocRef = doc(db, "pengajuan", itemId);
       const itemDocSnapshot = await getDoc(itemDocRef);
 
+      const selectedValue = topikPenelitian ? topikPenelitian.value : null;
+
       if (itemDocSnapshot.exists()) {
         // Update the document with new status and catatan
         await updateDoc(itemDocRef, {
-          status: status,
-          catatan: catatan,
+          topikPenelitian: selectedValue,
         });
 
         Swal.fire({
@@ -47,52 +78,6 @@ export const VerifikasiSkripsi = () => {
         }).then(() => {
           navigate(`/pengajuan-skripsi/detail/${itemId}`);
         });
-      }
-      const user_uid = itemDocSnapshot.data().user_uid;
-      const userDocRef = doc(db, "users", user_uid);
-      const userDocSnapshot = await getDoc(userDocRef);
-      if (userDocSnapshot.exists()) {
-        const registrationToken = userDocSnapshot.data().registrationToken;
-
-        if (status === "Sah") {
-          const response = await fetch(
-            `http://localhost:3000/send-notification/hasil-verifikasi-skripsi-berhasil/${user_uid}`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                registrationToken: registrationToken,
-              }),
-            }
-          );
-
-          if (response.ok) {
-            console.log("Notification sent successfully");
-          } else {
-            console.error("Failed to send notification");
-          }
-        } else {
-          const response = await fetch(
-            `http://localhost:3000/send-notification/hasil-verifikasi-skripsi-ditolak/${user_uid}`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                registrationToken: registrationToken,
-              }),
-            }
-          );
-
-          if (response.ok) {
-            console.log("Notification sent successfully");
-          } else {
-            console.error("Failed to send notification");
-          }
-        }
       }
     } catch (error) {
       console.error("Error updating document: ", error);
@@ -113,7 +98,7 @@ export const VerifikasiSkripsi = () => {
         ) : (
           <div className="flex-1 p-8">
             <h1 className="text-2xl text-white text-center shadow-md font-semibold rounded-lg p-4 m-4 mb-4 w-full bg-slate-600">
-              Verifikasi Pengajuan Skripsi
+              Ubah Topik Penelitian
             </h1>
             <form
               onSubmit={handleFormSubmit}
@@ -121,30 +106,17 @@ export const VerifikasiSkripsi = () => {
             >
               <div className="mb-4">
                 <label className="block text-slate-600 font-bold mb-2">
-                  Status
+                  Topik Penelitian
                 </label>
-                <select
-                  className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring focus:border-slate-300 bg-white"
-                  value={status}
-                  onChange={(e) => setStatus(e.target.value)}
-                  required
-                >
-                  <option value="" disabled>
-                    Pilih Status
-                  </option>
-                  <option value="Sah">Sah</option>
-                  <option value="Ditolak">Ditolak</option>
-                </select>
-                <label className="block text-slate-600 font-bold mb-2">
-                  Catatan
-                </label>
-                <input
-                  type="text"
-                  className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-500"
-                  placeholder="Catatan Verifikasi"
-                  value={catatan}
-                  onChange={(e) => setCatatan(e.target.value)}
-                  required
+                <Select
+                  className="w-full"
+                  value={topikPenelitian}
+                  options={options}
+                  onChange={(selectedOption) =>
+                    setTopikPenelitian(selectedOption)
+                  }
+                  isSearchable={true}
+                  placeholder="Pilih Topik"
                 />
               </div>
               <div className="flex justify-end">

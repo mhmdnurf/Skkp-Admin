@@ -66,7 +66,6 @@ export const DetailKompre = () => {
           pengajuanInfo: pengajuanInfo,
           periodePendaftaranInfo: periodePendaftaranInfo,
         });
-        console.log(data);
       }
 
       setIsLoading(false);
@@ -76,7 +75,7 @@ export const DetailKompre = () => {
 
     if (loading) return;
     if (!user) return navigate("/login");
-  }, [itemId, user, loading, navigate]);
+  }, [itemId, user, loading, navigate, data]);
 
   if (isLoading) {
     return (
@@ -165,23 +164,25 @@ export const DetailKompre = () => {
               <h1 className="mb-2 text-lg font-bold text-slate-600">NIM</h1>
               <p className="mb-2">{data.userInfo.nim}</p>
               <h1 className="mb-2 text-lg font-bold text-slate-600">Nama</h1>
-              <p className="mb-2">{data.userInfo.nama}</p>
+              <p className="mb-2 uppercase">{data.userInfo.nama}</p>
               <h1 className="mb-2 text-lg font-bold text-slate-600">Jurusan</h1>
-              <p className="mb-2">{data.userInfo.jurusan}</p>
+              <p className="mb-2 uppercase">{data.userInfo.jurusan}</p>
               <h1 className="mb-2 text-lg font-bold text-slate-600">
                 Topik Penelitian
               </h1>
-              <p className="mb-2">{data.pengajuanInfo.topikPenelitian}</p>
+              <p className="mb-2 uppercase">
+                {data.pengajuanInfo.topikPenelitian}
+              </p>
               <h1 className="mb-2 text-lg font-bold text-slate-600">Judul</h1>
-              <p className="mb-2">{data.judul}</p>
+              <p className="mb-2 uppercase">{data.judul}</p>
               <h1 className="mb-2 text-lg font-bold text-slate-600">Status</h1>
-              <p className="mb-2">{data.status}</p>
+              <p className="mb-2 uppercase">{data.status}</p>
               <h1 className="mb-2 text-lg font-bold text-slate-600">Catatan</h1>
-              <p className="mb-2">{data.catatan}</p>
+              <p className="mb-2 uppercase">{data.catatan}</p>
               <h1 className="mb-2 text-lg font-bold text-slate-600">
                 Dosen Pembimbing
               </h1>
-              <p className="mb-2">
+              <p className="mb-2 uppercase">
                 {" "}
                 {data.dosenPembimbingInfo ? (
                   <p className="mb-2">{data.dosenPembimbingInfo.nama}</p>
@@ -193,14 +194,20 @@ export const DetailKompre = () => {
 
             <div className="flex flex-1 justify-end p-4">
               <Link
+                to={`/sidang-kompre/ubah-judul/${itemId}`}
+                className="bg-emerald-500 hover:bg-emerald-600 p-2 m-2 rounded-md w-[150px] text-center text-slate-100 drop-shadow-xl"
+              >
+                Ubah Judul
+              </Link>
+              <Link
                 to={`/sidang-kompre/verifikasi/${itemId}`}
-                className="bg-green-600 hover:bg-green-500 p-2 m-2 rounded-lg w-[150px] text-center text-slate-100 drop-shadow-xl"
+                className="bg-green-600 hover:bg-green-700 p-2 m-2 rounded-md w-[150px] text-center text-slate-100 drop-shadow-xl"
               >
                 Verifikasi
               </Link>
               <Link
                 to={"/sidang-kompre"}
-                className="bg-red-400 hover:bg-red-300 p-2 m-2 rounded-lg w-[150px] text-center text-slate-100"
+                className="bg-red-400 hover:bg-red-500 p-2 m-2 rounded-md w-[150px] text-center text-slate-100"
               >
                 Kembali
               </Link>

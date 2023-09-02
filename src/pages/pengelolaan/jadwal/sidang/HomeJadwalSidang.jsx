@@ -12,6 +12,7 @@ import {
   onSnapshot,
   orderBy,
   query,
+  updateDoc,
 } from "firebase/firestore";
 import Swal from "sweetalert2";
 import { useAuthState } from "react-firebase-hooks/auth";
@@ -30,20 +31,36 @@ export const HomeJadwalSidang = () => {
   useEffect(() => {
     const unsubscribe = onSnapshot(
       query(collection(db, "jadwalSidang"), orderBy("tanggalSidang", "desc")),
-      (snapshot) => {
-        const fetchedData = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
+      async (snapshot) => {
+        const promises = snapshot.docs.map(async (doc) => {
+          const data = doc.data();
+
+          if (
+            data.periodePendaftaran.tanggalTutup &&
+            data.periodePendaftaran.tanggalTutup.toDate() < new Date() &&
+            !data.manualStatus // Tambahkan pengecekan manualStatus di sini
+          ) {
+            const docRef = doc.ref;
+            await updateDoc(docRef, {
+              status: "Tidak Aktif",
+            });
+          }
+
+          return {
+            id: doc.id,
+            ...data,
+          };
+        });
+
+        const fetchedData = await Promise.all(promises);
         setData(fetchedData);
-        console.log(data);
         setIsLoading(false);
       }
     );
     if (loading) return;
     if (!user) return navigate("/login");
 
-    // Cleanup the subscription when component unmounts
+    // Membersihkan langganan saat komponen di-unmount
     return () => unsubscribe();
   }, [loading, user, navigate]);
 

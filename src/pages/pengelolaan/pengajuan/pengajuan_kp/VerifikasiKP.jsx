@@ -55,23 +55,42 @@ export const VerifikasiKP = () => {
       if (userDocSnapshot.exists()) {
         const registrationToken = userDocSnapshot.data().registrationToken;
 
-        const response = await fetch(
-          `http://localhost:3000/send-notification/hasil-verifikasi-kp/${user_uid}`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              registrationToken: registrationToken,
-            }),
+        if (status === "Sah") {
+          const response = await fetch(
+            `http://localhost:3000/send-notification/hasil-verifikasi-kp-berhasil/${user_uid}`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                registrationToken: registrationToken,
+              }),
+            }
+          );
+          if (response.ok) {
+            console.log("Notification sent successfully");
+          } else {
+            console.error("Failed to send notification");
           }
-        );
-
-        if (response.ok) {
-          console.log("Notification sent successfully");
         } else {
-          console.error("Failed to send notification");
+          const response = await fetch(
+            `http://localhost:3000/send-notification/hasil-verifikasi-kp-ditolak/${user_uid}`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                registrationToken: registrationToken,
+              }),
+            }
+          );
+          if (response.ok) {
+            console.log("Notification sent successfully");
+          } else {
+            console.error("Failed to send notification");
+          }
         }
       }
     } catch (error) {

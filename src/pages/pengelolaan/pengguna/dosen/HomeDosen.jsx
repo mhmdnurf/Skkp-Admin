@@ -93,7 +93,7 @@ export const HomeDosen = () => {
             <Sidebar />
             <div className="flex flex-col w-full pl-[300px] overflow-y-auto pr-4 pb-4">
               <h1 className="text-2xl text-white text-center shadow-md font-semibold rounded-lg p-4 m-4 mb-10 bg-slate-600">
-                Data Mahasiswa
+                Data Dosen
               </h1>
 
               <div className="flex justify-between mt-16">
@@ -121,6 +121,7 @@ export const HomeDosen = () => {
                   <thead className="shadow-sm font-extralight text-sm">
                     <tr>
                       <th className="p-2 px-6">No</th>
+                      <th className="p-2 px-6">NIDN</th>
                       <th className="p-2 px-6">Nama</th>
                       <th className="p-2 px-6">Email</th>
                       <th className="p-2 px-6">Action</th>
@@ -134,11 +135,20 @@ export const HomeDosen = () => {
                       >
                         <td className="text-center">{startIdx + index + 1}</td>
                         <td className="text-center whitespace-nowrap">
+                          {item.nidn}
+                        </td>
+                        <td className="text-center whitespace-nowrap">
                           {item.nama}
                         </td>
                         <td className="text-center">{item.email}</td>
                         <td className="text-center p-4">
                           <div className="flex justify-center items-center">
+                            <Link
+                              to={`/kelola-pengguna/dosen/edit/${item.id}`}
+                              className="p-2 bg-slate-200 rounded-md hover:bg-slate-300 mr-1"
+                            >
+                              Ubah
+                            </Link>
                             <button
                               className="p-2 bg-red-200 rounded-md hover:bg-red-300"
                               onClick={() => handleDelete(item.id)}

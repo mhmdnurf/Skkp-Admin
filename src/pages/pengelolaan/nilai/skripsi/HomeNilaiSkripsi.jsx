@@ -35,21 +35,12 @@ export const HomeNilaiSkripsi = () => {
     }
     return null;
   };
-  const getPengajuanInfo = async (uid) => {
-    const userDocRef = doc(db, "pengajuan", uid);
-    const userDocSnapshot = await getDoc(userDocRef);
-
-    if (userDocSnapshot.exists()) {
-      return userDocSnapshot.data();
-    }
-    return null;
-  };
 
   useEffect(() => {
     const unsubscribe = onSnapshot(
       query(
-        collection(db, "sidang"),
-        where("jenisSidang", "==", "Skripsi"),
+        collection(db, "pengajuan"),
+        where("jenisPengajuan", "==", "Skripsi"),
         orderBy("status", "asc")
       ),
       async (snapshot) => {
@@ -57,24 +48,15 @@ export const HomeNilaiSkripsi = () => {
         for (const doc of snapshot.docs) {
           const data = doc.data();
           const userInfo = await getUserInfo(data.user_uid);
-          const pengajuanInfo = await getPengajuanInfo(data.pengajuan_uid);
-          const dosenPembimbingInfo = await getUserInfo(
-            pengajuanInfo.pembimbing_uid
-          );
-          const pengujiSatuInfo = await getUserInfo(data.pengujiSatu_uid);
-          const pengujiDuaInfo = await getUserInfo(data.pengujiDua_uid);
+          const dosenPembimbingInfo = await getUserInfo(data.pembimbing_uid);
           fetchedData.push({
             id: doc.id,
             ...data,
             userInfo: userInfo,
             dosenPembimbingInfo: dosenPembimbingInfo,
-            pengujiSatuInfo: pengujiSatuInfo,
-            pengujiDuaInfo: pengujiDuaInfo,
-            pengajuanInfo: pengajuanInfo,
           });
         }
         setData(fetchedData);
-        console.log(data);
         setIsLoading(false);
       }
     );
@@ -84,7 +66,7 @@ export const HomeNilaiSkripsi = () => {
 
     // Cleanup: unsubscribe when the component unmounts or when the effect re-runs
     return () => unsubscribe();
-  }, [user, loading]);
+  }, [user, loading, navigate, data]);
 
   const truncateTitle = (title, words = 3) => {
     const wordsArray = title.split(" ");
@@ -93,6 +75,9 @@ export const HomeNilaiSkripsi = () => {
     }
     return title;
   };
+
+  const startIdx = (currentPage - 1) * itemsPerPage;
+  const endIdx = currentPage * itemsPerPage;
 
   const handleDelete = async (id) => {
     try {
@@ -133,9 +118,6 @@ export const HomeNilaiSkripsi = () => {
     }
   };
 
-  const startIdx = (currentPage - 1) * itemsPerPage;
-  const endIdx = currentPage * itemsPerPage;
-
   return (
     <>
       {isLoading ? (
@@ -160,18 +142,15 @@ export const HomeNilaiSkripsi = () => {
 
               {/* Tabel Data */}
               <div className="flex flex-col px-4 mt-2">
-                <table className="overflow-x-auto block bg-white rounded-t-lg text-slate-700 drop-shadow-md">
+                <table className="overflow-x-auto block bg-white rounded-t-lg text-slate-700 drop-shadow-md uppercase">
                   <thead className=" shadow-sm font-extralight text-sm">
                     <tr className="">
                       <th className="p-2 px-6">No</th>
                       <th className="p-2 px-6">NIM</th>
                       <th className="p-2 px-6">Nama</th>
                       <th className="p-2 px-6">Jurusan</th>
-                      <th className="p-2 px-6">Judul</th>
-                      <th className="p-2 px-6">Catatan</th>
+                      <th className="p-2 px-6">Topik Penelitian</th>
                       <th className="p-2 px-6">Pembimbing</th>
-                      <th className="p-2 px-6 whitespace-nowrap">Penguji 1</th>
-                      <th className="p-2 px-6 whitespace-nowrap">Penguji 2</th>
                       <th className="p-2 px-6 whitespace-nowrap">Nilai</th>
                       <th className="p-2 px-6 whitespace-nowrap">Indeks</th>
                       <th className="p-2 px-6">Action</th>
@@ -194,24 +173,17 @@ export const HomeNilaiSkripsi = () => {
                           {item.userInfo && item.userInfo.jurusan}
                         </td>
                         <td className="text-center p-4 whitespace-nowrap">
-                          {truncateTitle(item.pengajuanInfo.topikPenelitian, 3)}
+                          {truncateTitle(item.topikPenelitian, 3)}
                         </td>
-                        <td className="text-center p-4">{item.catatan}</td>
                         <td className="text-center p-6 whitespace-nowrap">
-                          {item.pengajuanInfo
+                          {item.dosenPembimbingInfo
                             ? item.dosenPembimbingInfo.nama
                             : "-"}
                         </td>
                         <td className="text-center p-6 whitespace-nowrap">
-                          {item.pengujiSatuInfo
-                            ? item.pengujiSatuInfo.nama
+                          {item.nilaiAkhirSkripsi
+                            ? item.nilaiAkhirSkripsi
                             : "-"}
-                        </td>
-                        <td className="text-center p-6 whitespace-nowrap">
-                          {item.pengujiDuaInfo ? item.pengujiDuaInfo.nama : "-"}
-                        </td>
-                        <td className="text-center p-6 whitespace-nowrap">
-                          {item.nilaiAkhir ? item.nilaiAkhir : "-"}
                         </td>
                         <td className="text-center p-6 whitespace-nowrap">
                           {item.indeks ? item.indeks : "-"}
@@ -219,10 +191,10 @@ export const HomeNilaiSkripsi = () => {
                         <td className="text-center p-4">
                           <div className="flex">
                             <Link
-                              to={`/kelola-nilai/skripsi/${item.id}`}
-                              className="p-2 bg-slate-200 rounded-md hover:bg-slate-300 mr-1"
+                              to={`/kelola-nilai/skripsi/detail/${item.id}`}
+                              className="normal-case p-2 bg-slate-200 rounded-md hover:bg-slate-300 mr-1"
                             >
-                              Nilai
+                              Detail
                             </Link>
                             <button
                               className="p-2 bg-red-200 rounded-md hover:bg-red-300"

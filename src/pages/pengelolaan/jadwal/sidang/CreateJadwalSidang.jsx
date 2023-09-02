@@ -185,7 +185,7 @@ export const CreateJadwalSidang = () => {
                   </div>
 
                   <div className="mb-4 relative mt-2">
-                    <label className="block text-slate-600 font-bold">
+                    <label className="block text-slate-600 font-bold z-50">
                       Tanggal Sidang
                     </label>
                     <div>

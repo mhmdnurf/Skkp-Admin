@@ -28,10 +28,17 @@ export const EditNilaiKP = () => {
 
         if (docSnap.exists()) {
           const data = docSnap.data();
-          setNilaiBimbingan(data.nilaiBimbingan);
-          setNilaiPerusahaan(data.nilaiPerusahaan);
-          setNilaiPengujiSatu(data.nilaiPengujiSatu);
-          setNilaiPengujiDua(data.nilaiPengujiDua);
+          if (data.nilaiKP) {
+            setNilaiBimbingan(data.nilaiKP.nilaiBimbingan);
+            setNilaiPerusahaan(data.nilaiKP.nilaiPerusahaan);
+            setNilaiPengujiSatu(data.nilaiKP.nilaiPengujiSatu);
+            setNilaiPengujiDua(data.nilaiKP.nilaiPengujiDua);
+          } else {
+            setNilaiBimbingan(null);
+            setNilaiPerusahaan(null);
+            setNilaiPengujiSatu(null);
+            setNilaiPengujiDua(null);
+          }
         } else {
           setError("Data not found");
         }
@@ -81,13 +88,17 @@ export const EditNilaiKP = () => {
       const itemDocRef = doc(db, "pengajuan", itemId);
       const itemDocSnapshot = await getDoc(itemDocRef);
 
+      const nilaiKP = {
+        nilaiBimbingan: nilaiBimbingan,
+        nilaiPengujiSatu: nilaiPengujiSatu,
+        nilaiPengujiDua: nilaiPengujiDua,
+        nilaiAkhir: nilaiAkhir,
+        nilaiPerusahaan: nilaiPerusahaan,
+      };
+
       if (itemDocSnapshot.exists()) {
         await updateDoc(itemDocRef, {
-          nilaiBimbingan: nilaiBimbingan,
-          nilaiPerusahaan: nilaiPerusahaan,
-          nilaiPengujiSatu: nilaiPengujiSatu,
-          nilaiPengujiDua: nilaiPengujiDua,
-          nilaiAkhir: nilaiAkhir,
+          nilaiKP,
           indeks: indeksHuruf,
           editedAt: new Date(),
         });

@@ -86,8 +86,19 @@ export const CreateJadwalPengajuan = () => {
         await addDoc(collection(db, "jadwalPengajuan"), jadwalData);
 
         // Kirim permintaan ke server untuk mengirim notifikasi
+
+        let endpoint;
+
+        if (selectedJenisPengajuan.includes(1)) {
+          endpoint = "pengajuanKP";
+        } else if (selectedJenisPengajuan.includes(2)) {
+          endpoint = "pengajuanSkripsi";
+        } else {
+          endpoint = "pengajuan";
+        }
+
         const response = await fetch(
-          "http://localhost:3000/send-notification/pengajuan",
+          `http://localhost:3000/send-notification/${endpoint}`,
           {
             method: "POST",
             headers: {
@@ -101,6 +112,7 @@ export const CreateJadwalPengajuan = () => {
         } else {
           console.error("Failed to send notifications to all users");
         }
+
         Swal.fire("Success", "Jadwal berhasil dibuka!", "success").then(() => {
           navigate("/kelola-jadwal/pengajuan");
         });
@@ -114,13 +126,13 @@ export const CreateJadwalPengajuan = () => {
   };
 
   const handleJenisPengajuanChange = (value) => {
-    if (selectedJenisPengajuan.includes(value)) {
-      setSelectedJenisPengajuan(
-        selectedJenisPengajuan.filter((item) => item !== value)
-      );
-    } else {
-      setSelectedJenisPengajuan([...selectedJenisPengajuan, value]);
-    }
+    setSelectedJenisPengajuan((prevSelected) => {
+      if (prevSelected.includes(value)) {
+        return prevSelected.filter((item) => item !== value);
+      } else {
+        return [...prevSelected, value];
+      }
+    });
   };
 
   return (

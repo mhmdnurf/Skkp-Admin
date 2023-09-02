@@ -7,10 +7,9 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import Swal from "sweetalert2";
 import { useAuthState } from "react-firebase-hooks/auth";
 
-export const VerifikasiSidangKP = () => {
+export const EditNilaiKompre = () => {
   const { itemId } = useParams();
-  const [status, setStatus] = useState("");
-  const [catatan, setCatatan] = useState("");
+  const [nilaiKomprehensif, setNilaiKomprehensif] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -19,8 +18,35 @@ export const VerifikasiSidangKP = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const docRef = doc(db, "pengajuan", itemId);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+
+          if (data.nilaiKompre) {
+            if (data.nilaiSempro.nilaiKomprehensif !== undefined) {
+              setNilaiKomprehensif(data.nilaiSempro.nilaiKomprehensif);
+            } else {
+              setNilaiKomprehensif(null);
+            }
+          }
+        } else {
+          setError("Data not found");
+        }
+
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Error fetching data: ", error);
+        setError("Error fetching data");
+        setIsLoading(false);
+      }
+    };
     if (loading) return;
     if (!user) return navigate("/login");
+    fetchData();
   }, [itemId, user, loading, navigate]);
 
   const handleFormSubmit = async (e) => {
@@ -29,14 +55,16 @@ export const VerifikasiSidangKP = () => {
 
     try {
       // Get the existing document data
-      const itemDocRef = doc(db, "sidang", itemId);
+      const itemDocRef = doc(db, "pengajuan", itemId);
       const itemDocSnapshot = await getDoc(itemDocRef);
 
+      const nilaiKompre = {
+        nilaiKomprehensif: nilaiKomprehensif,
+      };
+
       if (itemDocSnapshot.exists()) {
-        // Update the document with new status and catatan
         await updateDoc(itemDocRef, {
-          status: status,
-          catatan: catatan,
+          nilaiKompre,
           editedAt: new Date(),
         });
 
@@ -46,56 +74,8 @@ export const VerifikasiSidangKP = () => {
           icon: "success",
           confirmButtonText: "OK",
         }).then(() => {
-          navigate(`/sidang-kp/detail/${itemId}`);
+          navigate(`/kelola-nilai/skripsi/detail/${itemId}`);
         });
-      }
-
-      // Push Notifikasi
-      const user_uid = itemDocSnapshot.data().user_uid;
-      const userDocRef = doc(db, "users", user_uid);
-      const userDocSnapshot = await getDoc(userDocRef);
-      if (userDocSnapshot.exists()) {
-        const registrationToken = userDocSnapshot.data().registrationToken;
-
-        if (status === "Sah") {
-          const response = await fetch(
-            `http://localhost:3000/send-notification/hasil-verifikasi-sidang-kp-berhasil/${user_uid}`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                registrationToken: registrationToken,
-              }),
-            }
-          );
-
-          if (response.ok) {
-            console.log("Notification sent successfully");
-          } else {
-            console.error("Failed to send notification");
-          }
-        } else {
-          const response = await fetch(
-            `http://localhost:3000/send-notification/hasil-verifikasi-sidang-kp-ditolak/${user_uid}`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                registrationToken: registrationToken,
-              }),
-            }
-          );
-
-          if (response.ok) {
-            console.log("Notification sent successfully");
-          } else {
-            console.error("Failed to send notification");
-          }
-        }
       }
     } catch (error) {
       console.error("Error updating document: ", error);
@@ -116,7 +96,7 @@ export const VerifikasiSidangKP = () => {
         ) : (
           <div className="flex-1 p-8">
             <h1 className="text-2xl text-white text-center shadow-md font-semibold rounded-lg p-4 m-4 mb-4 w-full bg-slate-600">
-              Verifikasi Pendaftaran Sidang Kerja Praktek
+              Nilai Komprehensif
             </h1>
             <form
               onSubmit={handleFormSubmit}
@@ -124,29 +104,14 @@ export const VerifikasiSidangKP = () => {
             >
               <div className="mb-4">
                 <label className="block text-slate-600 font-bold mb-2">
-                  Status
-                </label>
-                <select
-                  className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring focus:border-slate-300 bg-white"
-                  value={status}
-                  onChange={(e) => setStatus(e.target.value)}
-                  required
-                >
-                  <option value="" disabled>
-                    Pilih Status
-                  </option>
-                  <option value="Sah">Sah</option>
-                  <option value="Ditolak">Ditolak</option>
-                </select>
-                <label className="block text-slate-600 font-bold mb-2">
-                  Catatan
+                  Nilai Komprehensif
                 </label>
                 <input
                   type="text"
                   className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-500"
-                  placeholder="Catatan Verifikasi"
-                  value={catatan}
-                  onChange={(e) => setCatatan(e.target.value)}
+                  placeholder="Masukkan Nilai"
+                  value={nilaiKomprehensif}
+                  onChange={(e) => setNilaiKomprehensif(e.target.value)}
                   required
                 />
               </div>
@@ -159,7 +124,7 @@ export const VerifikasiSidangKP = () => {
                   {isSubmitting ? "Loading..." : "Submit"}
                 </button>
                 <Link
-                  to={`/sidang-kp/detail/${itemId}`}
+                  to={`/kelola-nilai/skripsi/detail/${itemId}`}
                   className="px-4 py-2 bg-red-400 text-white rounded-md hover:bg-red-500 ml-1 drop-shadow-lg"
                 >
                   Cancel

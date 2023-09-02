@@ -60,247 +60,460 @@ import { EditNilaiPengujiKP } from "./pages/dosen/pengelolaan/penguji/kerja-prak
 import { HomePengujiSempro } from "./pages/dosen/pengelolaan/penguji/sempro/HomePengujiSempro";
 import { DetailPengujiSempro } from "./pages/dosen/pengelolaan/penguji/sempro/DetailPengujiSempro";
 import { EditNilaiPengujiSempro } from "./pages/dosen/pengelolaan/penguji/sempro/NilaiPengujiSempro";
+import { DetailNilaiSkripsi } from "./pages/pengelolaan/nilai/skripsi/DetailNilaiSkripsi";
+import { EditNilaiSempro } from "./pages/pengelolaan/nilai/skripsi/EditNilaiSempro";
+import { EditNilaiKompre } from "./pages/pengelolaan/nilai/skripsi/EditNilaiKomprehensif";
+import { JudulKP } from "./pages/pengelolaan/pengajuan/pengajuan_kp/JudulKP";
+import { UbahTopikSkripsi } from "./pages/pengelolaan/pengajuan/pengajuan_skripsi/TopikSkripsi";
+import { JudulSempro } from "./pages/pengelolaan/sidang/sempro/JudulSempro";
+import { JudulKompre } from "./pages/pengelolaan/sidang/kompre/JudulKompre";
+import { JudulSkripsi } from "./pages/pengelolaan/sidang/skripsi/JudulSkripsi";
+import { EditDosen } from "./pages/pengelolaan/pengguna/dosen/EditDosen";
+import { EditMahasiswa } from "./pages/pengelolaan/pengguna/mahasiswa/EditMahasiswa";
 
 export default function App() {
-  const [user, loading] = useAuthState(auth);
-  const [userRole, setUserRole] = useState("");
+  // const [user, loading] = useAuthState(auth);
+  // const [userRole, setUserRole] = useState("");
 
-  useEffect(() => {
-    if (!loading && user) {
-      const getUserData = async () => {
-        const userDocRef = doc(db, "users", user.uid);
-        const userDocSnap = await getDoc(userDocRef);
+  // useEffect(() => {
+  //   if (!loading && user) {
+  //     const getUserData = async () => {
+  //       const userDocRef = doc(db, "users", user.uid);
+  //       const userDocSnap = await getDoc(userDocRef);
 
-        if (userDocSnap.exists()) {
-          const userData = userDocSnap.data();
-          const userRole = userData.role;
-          setUserRole(userRole);
-        }
-      };
+  //       if (userDocSnap.exists()) {
+  //         const userData = userDocSnap.data();
+  //         const userRole = userData.role;
+  //         setUserRole(userRole);
+  //       }
+  //     };
 
-      getUserData();
-    }
-  }, [user, loading]);
+  //     getUserData();
+  //   }
+  // }, [user, loading]);
 
-  console.log(userRole);
+  // console.log(userRole);
+
+  // return (
+  //   <>
+  //     <BrowserRouter>
+  //       <Routes>
+  //         <Route path="/login" element={<Login />} />
+  //         {userRole === "prodi" ? (
+  //           <>
+  //             <Route path="/" element={<Dashboard />} />
+  //             <Route path="/pengajuan-kp" element={<HomePengajuanKP />} />
+  //             <Route
+  //               path="/pengajuan-kp/detail/:itemId"
+  //               element={<DetailPengajuanKP />}
+  //             />
+  //             <Route
+  //               path="/pengajuan-kp/verifikasi/:itemId"
+  //               element={<VerifikasiKP />}
+  //             />
+  //             <Route
+  //               path="/pengajuan-kp/dosen-pembimbing/:itemId"
+  //               element={<DosenPembimbingKP />}
+  //             />
+  //             <Route
+  //               path="/pengajuan-skripsi"
+  //               element={<HomePengajuanSkripsi />}
+  //             />
+  //             <Route
+  //               path="/pengajuan-skripsi/detail/:itemId"
+  //               element={<DetailPengajuanSkripsi />}
+  //             />
+  //             <Route
+  //               path="/pengajuan-skripsi/verifikasi/:itemId"
+  //               element={<VerifikasiSkripsi />}
+  //             />
+  //             <Route
+  //               path="/pengajuan-skripsi/dosen-pembimbing/:itemId"
+  //               element={<DosenPembimbingSkripsi />}
+  //             />
+  //             <Route path="/tahun-ajaran" element={<HomeTahunAjaran />} />
+  //             <Route
+  //               path="/tahun-ajaran/create"
+  //               element={<CreateTahunAjaran />}
+  //             />
+  //             <Route
+  //               path="/tahun-ajaran/edit/:itemId"
+  //               element={<EditTahunAjaran />}
+  //             />
+  //             <Route
+  //               path="/kelola-jadwal/sidang"
+  //               element={<HomeJadwalSidang />}
+  //             />
+  //             <Route
+  //               path="/kelola-jadwal/sidang/create"
+  //               element={<CreateJadwalSidang />}
+  //             />
+  //             <Route
+  //               path="/kelola-jadwal/sidang/edit/:itemId"
+  //               element={<EditJadwalSidang />}
+  //             />
+
+  //             <Route
+  //               path="/kelola-jadwal/pengajuan"
+  //               element={<HomeJadwalPengajuan />}
+  //             />
+
+  //             <Route
+  //               path="/kelola-jadwal/pengajuan/edit/:itemId"
+  //               element={<EditJadwalPengajuan />}
+  //             />
+  //             <Route
+  //               path="/kelola-jadwal/pengajuan/create"
+  //               element={<CreateJadwalPengajuan />}
+  //             />
+
+  //             {/* Rute Kelola Nilai KP */}
+  //             <Route path="/kelola-nilai/kp" element={<HomeNilaiKP />} />
+  //             <Route
+  //               path="/kelola-nilai/kp/:itemId"
+  //               element={<EditNilaiKP />}
+  //             />
+
+  //             {/* Rute Kelola Nilai Skripsi */}
+  //             <Route
+  //               path="/kelola-nilai/skripsi"
+  //               element={<HomeNilaiSkripsi />}
+  //             />
+  //             <Route
+  //               path="/kelola-nilai/skripsi/:itemId"
+  //               element={<EditNilaiSkripsi />}
+  //             />
+
+  //             {/* Rute Sidang KP */}
+  //             <Route path="/sidang-kp/" element={<HomeSidangKP />} />
+  //             <Route
+  //               path="/sidang-kp/detail/:itemId"
+  //               element={<DetailSidangKP />}
+  //             />
+  //             <Route
+  //               path="/sidang-kp/verifikasi/:itemId"
+  //               element={<VerifikasiSidangKP />}
+  //             />
+  //             <Route
+  //               path="/sidang-kp/penguji/:itemId"
+  //               element={<DosenPengujiKP />}
+  //             />
+
+  //             {/* Rute Sempro */}
+  //             <Route path="/sidang-sempro/" element={<HomeSempro />} />
+  //             <Route
+  //               path="/sidang-sempro/detail/:itemId"
+  //               element={<DetailSempro />}
+  //             />
+  //             <Route
+  //               path="/sidang-sempro/verifikasi/:itemId"
+  //               element={<VerifikasiSempro />}
+  //             />
+  //             <Route
+  //               path="/sidang-sempro/penguji/:itemId"
+  //               element={<DosenPengujiSempro />}
+  //             />
+
+  //             {/* Rute Komprehensif */}
+  //             <Route path="/sidang-kompre/" element={<HomeKompre />} />
+  //             <Route
+  //               path="/sidang-kompre/detail/:itemId"
+  //               element={<DetailKompre />}
+  //             />
+  //             <Route
+  //               path="/sidang-kompre/verifikasi/:itemId"
+  //               element={<VerifikasiKompre />}
+  //             />
+
+  //             {/* Rute Sidang Skripsi */}
+  //             <Route path="/sidang-skripsi/" element={<HomeSidangSkripsi />} />
+  //             <Route
+  //               path="/sidang-skripsi/detail/:itemId"
+  //               element={<DetailSidangSkripsi />}
+  //             />
+  //             <Route
+  //               path="/sidang-skripsi/verifikasi/:itemId"
+  //               element={<VerifikasiSidangSkripsi />}
+  //             />
+  //             <Route
+  //               path="/sidang-skripsi/verifikasi/:itemId"
+  //               element={<DosenPengujiSkripsi />}
+  //             />
+
+  //             {/* Rute Kelola Topik */}
+  //             <Route path="/kelola-topik" element={<HomeTopik />} />
+  //             <Route
+  //               path="/kelola-topik/edit/:itemId"
+  //               element={<EditTopik />}
+  //             />
+  //             <Route path="/kelola-topik/create" element={<CreateTopik />} />
+
+  //             {/* Rute Pengguna Mahasiswa */}
+  //             <Route
+  //               path="/kelola-pengguna/mahasiswa"
+  //               element={<HomeMahasiswa />}
+  //             />
+
+  //             {/* Rute Dosen */}
+  //             <Route path="/kelola-pengguna/dosen" element={<HomeDosen />} />
+  //             <Route
+  //               path="/kelola-pengguna/dosen/create"
+  //               element={<CreateDosen />}
+  //             />
+  //           </>
+  //         ) : (
+  //           <>
+  //             <Route path="/" element={<DashboardDosen />} />
+  //             {/* Rute Bimbingan */}
+  //             <Route path="/bimbingan-kp" element={<HomeBimbinganKP />} />
+  //             <Route
+  //               path="/bimbingan-kp/detail/:itemId"
+  //               element={<DetailBimbinganKP />}
+  //             />
+  //             <Route
+  //               path="/bimbingan-kp/nilai-bimbingan/:itemId"
+  //               element={<EditNilaiBimbingan />}
+  //             />
+  //             {/* Rute Bimbingan Skripsi */}
+  //             <Route
+  //               path="/bimbingan-skripsi"
+  //               element={<HomeBimbinganSkripsi />}
+  //             />
+  //             <Route
+  //               path="/bimbingan-skripsi/detail/:itemId"
+  //               element={<DetailBimbinganSkripsi />}
+  //             />
+  //             <Route
+  //               path="/bimbingan-skripsi/nilai-bimbingan/:itemId"
+  //               element={<EditNilaiBimbinganSkripsi />}
+  //             />
+
+  //             {/* Rute Penguji KP */}
+  //             <Route path="/penguji-kp" element={<HomePengujiKP />} />
+  //             <Route
+  //               path="/penguji-kp/detail/:itemId"
+  //               element={<DetailPengujiKP />}
+  //             />
+  //             <Route
+  //               path="/penguji-kp/nilai/:itemId"
+  //               element={<EditNilaiPengujiKP />}
+  //             />
+
+  //             {/* Rute Penguji Sempro */}
+  //             <Route path="/penguji-sempro" element={<HomePengujiSempro />} />
+  //             <Route
+  //               path="/penguji-sempro/detail/:itemId"
+  //               element={<DetailPengujiSempro />}
+  //             />
+  //             <Route
+  //               path="/penguji-sempro/nilai/:itemId"
+  //               element={<EditNilaiPengujiSempro />}
+  //             />
+  //           </>
+  //         )}
+  //       </Routes>
+  //     </BrowserRouter>
+  //   </>
+  // );
 
   return (
     <>
       <BrowserRouter>
         <Routes>
-          <Route path="/login" element={<Login />} />
-          {userRole === "prodi" ? (
-            <>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/pengajuan-kp" element={<HomePengajuanKP />} />
-              <Route
-                path="/pengajuan-kp/detail/:itemId"
-                element={<DetailPengajuanKP />}
-              />
-              <Route
-                path="/pengajuan-kp/verifikasi/:itemId"
-                element={<VerifikasiKP />}
-              />
-              <Route
-                path="/pengajuan-kp/dosen-pembimbing/:itemId"
-                element={<DosenPembimbingKP />}
-              />
-              <Route
-                path="/pengajuan-skripsi"
-                element={<HomePengajuanSkripsi />}
-              />
-              <Route
-                path="/pengajuan-skripsi/detail/:itemId"
-                element={<DetailPengajuanSkripsi />}
-              />
-              <Route
-                path="/pengajuan-skripsi/verifikasi/:itemId"
-                element={<VerifikasiSkripsi />}
-              />
-              <Route
-                path="/pengajuan-skripsi/dosen-pembimbing/:itemId"
-                element={<DosenPembimbingSkripsi />}
-              />
-              <Route path="/tahun-ajaran" element={<HomeTahunAjaran />} />
-              <Route
-                path="/tahun-ajaran/create"
-                element={<CreateTahunAjaran />}
-              />
-              <Route
-                path="/tahun-ajaran/edit/:itemId"
-                element={<EditTahunAjaran />}
-              />
-              <Route
-                path="/kelola-jadwal/sidang"
-                element={<HomeJadwalSidang />}
-              />
-              <Route
-                path="/kelola-jadwal/sidang/create"
-                element={<CreateJadwalSidang />}
-              />
-              <Route
-                path="/kelola-jadwal/sidang/edit/:itemId"
-                element={<EditJadwalSidang />}
-              />
+          <>
+            <Route path="/login" element={<Login />} />
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/pengajuan-kp" element={<HomePengajuanKP />} />
+            <Route
+              path="/pengajuan-kp/detail/:itemId"
+              element={<DetailPengajuanKP />}
+            />
+            <Route
+              path="/pengajuan-kp/verifikasi/:itemId"
+              element={<VerifikasiKP />}
+            />
+            <Route
+              path="/pengajuan-kp/dosen-pembimbing/:itemId"
+              element={<DosenPembimbingKP />}
+            />
+            <Route path="/pengajuan-kp/judul/:itemId" element={<JudulKP />} />
+            <Route
+              path="/pengajuan-skripsi"
+              element={<HomePengajuanSkripsi />}
+            />
+            <Route
+              path="/pengajuan-skripsi/detail/:itemId"
+              element={<DetailPengajuanSkripsi />}
+            />
+            <Route
+              path="/pengajuan-skripsi/verifikasi/:itemId"
+              element={<VerifikasiSkripsi />}
+            />
+            <Route
+              path="/pengajuan-skripsi/dosen-pembimbing/:itemId"
+              element={<DosenPembimbingSkripsi />}
+            />
+            <Route
+              path="/pengajuan-skripsi/ubah-topik/:itemId"
+              element={<UbahTopikSkripsi />}
+            />
 
-              <Route
-                path="/kelola-jadwal/pengajuan"
-                element={<HomeJadwalPengajuan />}
-              />
+            <Route path="/tahun-ajaran" element={<HomeTahunAjaran />} />
+            <Route
+              path="/tahun-ajaran/create"
+              element={<CreateTahunAjaran />}
+            />
+            <Route
+              path="/tahun-ajaran/edit/:itemId"
+              element={<EditTahunAjaran />}
+            />
+            <Route
+              path="/kelola-jadwal/sidang"
+              element={<HomeJadwalSidang />}
+            />
+            <Route
+              path="/kelola-jadwal/sidang/create"
+              element={<CreateJadwalSidang />}
+            />
+            <Route
+              path="/kelola-jadwal/sidang/edit/:itemId"
+              element={<EditJadwalSidang />}
+            />
 
-              <Route
-                path="/kelola-jadwal/pengajuan/edit/:itemId"
-                element={<EditJadwalPengajuan />}
-              />
-              <Route
-                path="/kelola-jadwal/pengajuan/create"
-                element={<CreateJadwalPengajuan />}
-              />
+            <Route
+              path="/kelola-jadwal/pengajuan"
+              element={<HomeJadwalPengajuan />}
+            />
 
-              {/* Rute Kelola Nilai KP */}
-              <Route path="/kelola-nilai/kp" element={<HomeNilaiKP />} />
-              <Route
-                path="/kelola-nilai/kp/:itemId"
-                element={<EditNilaiKP />}
-              />
+            <Route
+              path="/kelola-jadwal/pengajuan/edit/:itemId"
+              element={<EditJadwalPengajuan />}
+            />
+            <Route
+              path="/kelola-jadwal/pengajuan/create"
+              element={<CreateJadwalPengajuan />}
+            />
 
-              {/* Rute Kelola Nilai Skripsi */}
-              <Route
-                path="/kelola-nilai/skripsi"
-                element={<HomeNilaiSkripsi />}
-              />
-              <Route
-                path="/kelola-nilai/skripsi/:itemId"
-                element={<EditNilaiSkripsi />}
-              />
+            {/* Rute Kelola Nilai KP */}
+            <Route path="/kelola-nilai/kp" element={<HomeNilaiKP />} />
+            <Route path="/kelola-nilai/kp/:itemId" element={<EditNilaiKP />} />
 
-              {/* Rute Sidang KP */}
-              <Route path="/sidang-kp/" element={<HomeSidangKP />} />
-              <Route
-                path="/sidang-kp/detail/:itemId"
-                element={<DetailSidangKP />}
-              />
-              <Route
-                path="/sidang-kp/verifikasi/:itemId"
-                element={<VerifikasiSidangKP />}
-              />
-              <Route
-                path="/sidang-kp/penguji/:itemId"
-                element={<DosenPengujiKP />}
-              />
+            {/* Rute Kelola Nilai Skripsi */}
+            <Route
+              path="/kelola-nilai/skripsi"
+              element={<HomeNilaiSkripsi />}
+            />
+            <Route
+              path="/kelola-nilai/skripsi/detail/:itemId"
+              element={<DetailNilaiSkripsi />}
+            />
+            <Route
+              path="/kelola-nilai/sempro/:itemId"
+              element={<EditNilaiSempro />}
+            />
+            <Route
+              path="/kelola-nilai/kompre/:itemId"
+              element={<EditNilaiKompre />}
+            />
+            <Route
+              path="/kelola-nilai/skripsi/:itemId"
+              element={<EditNilaiSkripsi />}
+            />
 
-              {/* Rute Sempro */}
-              <Route path="/sidang-sempro/" element={<HomeSempro />} />
-              <Route
-                path="/sidang-sempro/detail/:itemId"
-                element={<DetailSempro />}
-              />
-              <Route
-                path="/sidang-sempro/verifikasi/:itemId"
-                element={<VerifikasiSempro />}
-              />
-              <Route
-                path="/sidang-sempro/penguji/:itemId"
-                element={<DosenPengujiSempro />}
-              />
+            {/* Rute Sidang KP */}
+            <Route path="/sidang-kp/" element={<HomeSidangKP />} />
+            <Route
+              path="/sidang-kp/detail/:itemId"
+              element={<DetailSidangKP />}
+            />
+            <Route
+              path="/sidang-kp/verifikasi/:itemId"
+              element={<VerifikasiSidangKP />}
+            />
+            <Route
+              path="/sidang-kp/penguji/:itemId"
+              element={<DosenPengujiKP />}
+            />
 
-              {/* Rute Komprehensif */}
-              <Route path="/sidang-kompre/" element={<HomeKompre />} />
-              <Route
-                path="/sidang-kompre/detail/:itemId"
-                element={<DetailKompre />}
-              />
-              <Route
-                path="/sidang-kompre/verifikasi/:itemId"
-                element={<VerifikasiKompre />}
-              />
+            {/* Rute Sempro */}
+            <Route path="/sidang-sempro/" element={<HomeSempro />} />
+            <Route
+              path="/sidang-sempro/detail/:itemId"
+              element={<DetailSempro />}
+            />
+            <Route
+              path="/sidang-sempro/verifikasi/:itemId"
+              element={<VerifikasiSempro />}
+            />
+            <Route
+              path="/sidang-sempro/penguji/:itemId"
+              element={<DosenPengujiSempro />}
+            />
+            <Route
+              path="/sidang-sempro/ubah-judul/:itemId"
+              element={<JudulSempro />}
+            />
 
-              {/* Rute Sidang Skripsi */}
-              <Route path="/sidang-skripsi/" element={<HomeSidangSkripsi />} />
-              <Route
-                path="/sidang-skripsi/detail/:itemId"
-                element={<DetailSidangSkripsi />}
-              />
-              <Route
-                path="/sidang-skripsi/verifikasi/:itemId"
-                element={<VerifikasiSidangSkripsi />}
-              />
-              <Route
-                path="/sidang-skripsi/verifikasi/:itemId"
-                element={<DosenPengujiSkripsi />}
-              />
+            {/* Rute Komprehensif */}
+            <Route path="/sidang-kompre/" element={<HomeKompre />} />
+            <Route
+              path="/sidang-kompre/detail/:itemId"
+              element={<DetailKompre />}
+            />
+            <Route
+              path="/sidang-kompre/verifikasi/:itemId"
+              element={<VerifikasiKompre />}
+            />
+            <Route
+              path="/sidang-kompre/ubah-judul/:itemId"
+              element={<JudulKompre />}
+            />
 
-              {/* Rute Kelola Topik */}
-              <Route path="/kelola-topik" element={<HomeTopik />} />
-              <Route
-                path="/kelola-topik/edit/:itemId"
-                element={<EditTopik />}
-              />
-              <Route path="/kelola-topik/create" element={<CreateTopik />} />
+            {/* Rute Sidang Skripsi */}
+            <Route path="/sidang-skripsi/" element={<HomeSidangSkripsi />} />
+            <Route
+              path="/sidang-skripsi/detail/:itemId"
+              element={<DetailSidangSkripsi />}
+            />
+            <Route
+              path="/sidang-skripsi/verifikasi/:itemId"
+              element={<VerifikasiSidangSkripsi />}
+            />
+            <Route
+              path="/sidang-skripsi/penguji/:itemId"
+              element={<DosenPengujiSkripsi />}
+            />
+            <Route
+              path="/sidang-skripsi/ubah-judul/:itemId"
+              element={<JudulSkripsi />}
+            />
 
-              {/* Rute Pengguna Mahasiswa */}
-              <Route
-                path="/kelola-pengguna/mahasiswa"
-                element={<HomeMahasiswa />}
-              />
+            {/* Rute Kelola Topik */}
+            <Route path="/kelola-topik" element={<HomeTopik />} />
+            <Route path="/kelola-topik/edit/:itemId" element={<EditTopik />} />
+            <Route path="/kelola-topik/create" element={<CreateTopik />} />
 
-              {/* Rute Dosen */}
-              <Route path="/kelola-pengguna/dosen" element={<HomeDosen />} />
-              <Route
-                path="/kelola-pengguna/dosen/create"
-                element={<CreateDosen />}
-              />
-            </>
-          ) : (
-            <>
-              <Route path="/" element={<DashboardDosen />} />
-              {/* Rute Bimbingan */}
-              <Route path="/bimbingan-kp" element={<HomeBimbinganKP />} />
-              <Route
-                path="/bimbingan-kp/detail/:itemId"
-                element={<DetailBimbinganKP />}
-              />
-              <Route
-                path="/bimbingan-kp/nilai-bimbingan/:itemId"
-                element={<EditNilaiBimbingan />}
-              />
-              {/* Rute Bimbingan Skripsi */}
-              <Route
-                path="/bimbingan-skripsi"
-                element={<HomeBimbinganSkripsi />}
-              />
-              <Route
-                path="/bimbingan-skripsi/detail/:itemId"
-                element={<DetailBimbinganSkripsi />}
-              />
-              <Route
-                path="/bimbingan-skripsi/nilai-bimbingan/:itemId"
-                element={<EditNilaiBimbinganSkripsi />}
-              />
+            {/* Rute Pengguna Mahasiswa */}
+            <Route
+              path="/kelola-pengguna/mahasiswa"
+              element={<HomeMahasiswa />}
+            />
+            <Route
+              path="/kelola-pengguna/mahasiswa/edit/:itemId"
+              element={<EditMahasiswa />}
+            />
 
-              {/* Rute Penguji KP */}
-              <Route path="/penguji-kp" element={<HomePengujiKP />} />
-              <Route
-                path="/penguji-kp/detail/:itemId"
-                element={<DetailPengujiKP />}
-              />
-              <Route
-                path="/penguji-kp/nilai/:itemId"
-                element={<EditNilaiPengujiKP />}
-              />
-
-              {/* Rute Penguji Sempro */}
-              <Route path="/penguji-sempro" element={<HomePengujiSempro />} />
-              <Route
-                path="/penguji-sempro/detail/:itemId"
-                element={<DetailPengujiSempro />}
-              />
-              <Route
-                path="/penguji-sempro/nilai/:itemId"
-                element={<EditNilaiPengujiSempro />}
-              />
-            </>
-          )}
+            {/* Rute Dosen */}
+            <Route path="/kelola-pengguna/dosen" element={<HomeDosen />} />
+            <Route
+              path="/kelola-pengguna/dosen/create"
+              element={<CreateDosen />}
+            />
+            <Route
+              path="/kelola-pengguna/dosen/edit/:itemId"
+              element={<EditDosen />}
+            />
+          </>
         </Routes>
       </BrowserRouter>
     </>

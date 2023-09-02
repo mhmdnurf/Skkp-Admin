@@ -55,8 +55,17 @@ export const DetailSidangKP = () => {
         const dosenPembimbingInfo = await getUserInfo(
           pengajuanInfo.pembimbing_uid
         );
-        const pengujiSatuInfo = await getUserInfo(itemData.pengujiSatu_uid);
-        const pengujiDuaInfo = await getUserInfo(itemData.pengujiDua_uid);
+
+        let pengujiSatuInfo = null;
+        let pengujiDuaInfo = null;
+        if (itemData.penguji) {
+          pengujiSatuInfo = itemData.penguji.pengujiSatu
+            ? await getUserInfo(itemData.penguji.pengujiSatu)
+            : null;
+          pengujiDuaInfo = itemData.penguji.pengujiDua
+            ? await getUserInfo(itemData.penguji.pengujiDua)
+            : null;
+        }
         const periodePendaftaranInfo = await getPeriodeInfo(
           itemData.jadwalSidang_uid
         );
@@ -71,7 +80,6 @@ export const DetailSidangKP = () => {
           pengajuanInfo: pengajuanInfo,
           periodePendaftaranInfo: periodePendaftaranInfo,
         });
-        console.log(data);
       }
 
       setIsLoading(false);
@@ -81,7 +89,7 @@ export const DetailSidangKP = () => {
 
     if (loading) return;
     if (!user) return navigate("/login");
-  }, [itemId, user, loading, navigate]);
+  }, [itemId, user, loading, navigate, data]);
 
   if (isLoading) {
     return (
@@ -209,21 +217,21 @@ export const DetailSidangKP = () => {
                   data.periodePendaftaranInfo.tahunAjaran}
               </p>
               <h1 className="mb-2 text-lg font-bold text-slate-600">NIM</h1>
-              <p className="mb-2">{data.userInfo.nim}</p>
+              <p className="mb-2 uppercase">{data.userInfo.nim}</p>
               <h1 className="mb-2 text-lg font-bold text-slate-600">Nama</h1>
-              <p className="mb-2">{data.userInfo.nama}</p>
+              <p className="mb-2 uppercase">{data.userInfo.nama}</p>
               <h1 className="mb-2 text-lg font-bold text-slate-600">Jurusan</h1>
-              <p className="mb-2">{data.userInfo.jurusan}</p>
+              <p className="mb-2 uppercase">{data.userInfo.jurusan}</p>
               <h1 className="mb-2 text-lg font-bold text-slate-600">Judul</h1>
-              <p className="mb-2">{data.pengajuanInfo.judul}</p>
+              <p className="mb-2 uppercase">{data.pengajuanInfo.judul}</p>
               <h1 className="mb-2 text-lg font-bold text-slate-600">Status</h1>
-              <p className="mb-2">{data.status}</p>
+              <p className="mb-2 uppercase">{data.status}</p>
               <h1 className="mb-2 text-lg font-bold text-slate-600">Catatan</h1>
-              <p className="mb-2">{data.catatan}</p>
+              <p className="mb-2 uppercase">{data.catatan}</p>
               <h1 className="mb-2 text-lg font-bold text-slate-600">
                 Dosen Pembimbing
               </h1>
-              <p className="mb-2">
+              <p className="mb-2 uppercase">
                 {" "}
                 {data.dosenPembimbingInfo ? (
                   <p className="mb-2">{data.dosenPembimbingInfo.nama}</p>
@@ -234,7 +242,7 @@ export const DetailSidangKP = () => {
               <h1 className="mb-2 text-lg font-bold text-slate-600">
                 Penguji Satu
               </h1>
-              <p className="mb-2">
+              <p className="mb-2 uppercase">
                 {" "}
                 {data.pengujiSatuInfo ? (
                   <p className="mb-2">{data.pengujiSatuInfo.nama}</p>
@@ -245,7 +253,7 @@ export const DetailSidangKP = () => {
               <h1 className="mb-2 text-lg font-bold text-slate-600">
                 Penguji Dua
               </h1>
-              <p className="mb-2">
+              <p className="mb-2 uppercase">
                 {" "}
                 {data.pengujiDuaInfo ? (
                   <p className="mb-2">{data.pengujiDuaInfo.nama}</p>
@@ -258,19 +266,19 @@ export const DetailSidangKP = () => {
             <div className="flex flex-1 justify-end p-4">
               <Link
                 to={`/sidang-kp/verifikasi/${itemId}`}
-                className="bg-green-600 hover:bg-green-500 p-2 m-2 rounded-lg w-[150px] text-center text-slate-100 drop-shadow-xl"
+                className="bg-green-600 hover:bg-green-700 p-2 m-2 rounded-md w-[150px] text-center text-slate-100 drop-shadow-xl"
               >
                 Verifikasi
               </Link>
               <button
                 onClick={handleButtonPembimbing}
-                className="bg-blue-600 hover:bg-blue-500 p-2 m-2 rounded-lg w-[200px] text-center text-slate-100"
+                className="bg-blue-600 hover:bg-blue-700 p-2 m-2 rounded-md w-[200px] text-center text-slate-100"
               >
                 Beri Dosen Penguji
               </button>
               <Link
                 to={"/sidang-kp"}
-                className="bg-red-400 hover:bg-red-300 p-2 m-2 rounded-lg w-[150px] text-center text-slate-100"
+                className="bg-red-400 hover:bg-red-500 p-2 m-2 rounded-md w-[150px] text-center text-slate-100"
               >
                 Kembali
               </Link>

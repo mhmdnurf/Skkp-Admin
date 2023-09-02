@@ -14,6 +14,7 @@ import { InfinitySpin } from "react-loader-spinner";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import Swal from "sweetalert2";
 import { useAuthState } from "react-firebase-hooks/auth";
+import Select from "react-select";
 
 export const DosenPengujiSkripsi = () => {
   const { itemId } = useParams();
@@ -35,8 +36,8 @@ export const DosenPengujiSkripsi = () => {
         );
         console.log(querySnapshot);
         const dosenOptions = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
+          value: doc.id, // Gunakan id sebagai value
+          label: doc.data().nama, // Gunakan nama sebagai label
         }));
         console.log(dosenOptions);
         setAvailableDosen(dosenOptions);
@@ -61,14 +62,15 @@ export const DosenPengujiSkripsi = () => {
       // Get the existing document data
       const itemDocRef = doc(db, "sidang", itemId);
       const itemDocSnapshot = await getDoc(itemDocRef);
-      const penguji = dosenPengujiDua
-        ? [dosenPengujiSatu, dosenPengujiDua]
-        : [dosenPengujiSatu];
+      const pengujiRoles = {
+        pengujiSatu: dosenPengujiSatu ? dosenPengujiSatu.value : null, // Ambil nilai dari selected option
+        pengujiDua: dosenPengujiDua ? dosenPengujiDua.value : null, // Ambil nilai dari selected option
+      };
 
       if (itemDocSnapshot.exists()) {
         // Update the document with new status and catatan
         await updateDoc(itemDocRef, {
-          penguji: penguji,
+          penguji: pengujiRoles,
           catatan: "-",
         });
 
@@ -110,40 +112,29 @@ export const DosenPengujiSkripsi = () => {
                 <label className="block text-slate-600 font-bold mb-2">
                   Dosen Penguji 1
                 </label>
-                <select
-                  className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring focus:border-slate-300 bg-white mb-4"
+                <Select
+                  className="w-full"
                   value={dosenPengujiSatu}
-                  onChange={(e) => setDosenPengujiSatu(e.target.value)}
-                  required
-                >
-                  <option value="" disabled>
-                    Pilih Dosen Penguji
-                  </option>
-                  {availableDosen.map((dosen) => (
-                    <option key={dosen.id} value={dosen.uid}>
-                      {dosen.nama}
-                    </option>
-                  ))}
-                </select>
-                <label className="block text-slate-600 font-bold mb-2">
+                  options={availableDosen}
+                  onChange={(selectedOption) =>
+                    setDosenPengujiSatu(selectedOption)
+                  }
+                  isSearchable={true}
+                  placeholder="Pilih Dosen Penguji 1"
+                />
+                <label className="block text-slate-600 font-bold mb-2 mt-4">
                   Dosen Penguji 2
                 </label>
-                <select
-                  className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring focus:border-slate-300 bg-white"
+                <Select
+                  className="w-full"
                   value={dosenPengujiDua}
-                  onChange={(e) => setDosenPengujiDua(e.target.value)}
-                  required
-                >
-                  <option value="" disabled>
-                    Pilih Dosen Penguji
-                  </option>
-                  <option value="-">-</option>
-                  {availableDosen.map((dosen) => (
-                    <option key={dosen.id} value={dosen.uid}>
-                      {dosen.nama}
-                    </option>
-                  ))}
-                </select>
+                  options={[{ value: "-", label: "-" }, ...availableDosen]}
+                  onChange={(selectedOption) =>
+                    setDosenPengujiDua(selectedOption)
+                  }
+                  isSearchable={true}
+                  placeholder="Pilih Dosen Penguji 2"
+                />
               </div>
               <div className="flex justify-end">
                 <button

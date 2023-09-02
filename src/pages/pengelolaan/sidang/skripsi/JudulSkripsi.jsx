@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Sidebar } from "../../../../components/sidebar/Sidebar";
 import { auth, db } from "../../../../utils/firebase";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
@@ -7,21 +7,29 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import Swal from "sweetalert2";
 import { useAuthState } from "react-firebase-hooks/auth";
 
-export const VerifikasiSidangKP = () => {
+export const JudulSkripsi = () => {
   const { itemId } = useParams();
-  const [status, setStatus] = useState("");
-  const [catatan, setCatatan] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [user, loading] = useAuthState(auth);
+  const [judul, setJudul] = useState("");
 
   const navigate = useNavigate();
 
+  const fetchJudul = useCallback(async (itemId) => {
+    const itemDocRef = doc(db, "sidang", itemId);
+    const itemDocSnapshot = await getDoc(itemDocRef);
+    const data = itemDocSnapshot.data();
+
+    setJudul(data.judul);
+  }, []);
+
   useEffect(() => {
+    fetchJudul(itemId);
     if (loading) return;
     if (!user) return navigate("/login");
-  }, [itemId, user, loading, navigate]);
+  }, [user, loading, navigate, itemId, fetchJudul]);
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
@@ -31,13 +39,10 @@ export const VerifikasiSidangKP = () => {
       // Get the existing document data
       const itemDocRef = doc(db, "sidang", itemId);
       const itemDocSnapshot = await getDoc(itemDocRef);
-
       if (itemDocSnapshot.exists()) {
         // Update the document with new status and catatan
         await updateDoc(itemDocRef, {
-          status: status,
-          catatan: catatan,
-          editedAt: new Date(),
+          judul: judul,
         });
 
         Swal.fire({
@@ -46,56 +51,8 @@ export const VerifikasiSidangKP = () => {
           icon: "success",
           confirmButtonText: "OK",
         }).then(() => {
-          navigate(`/sidang-kp/detail/${itemId}`);
+          navigate(`/sidang-sempro/detail/${itemId}`);
         });
-      }
-
-      // Push Notifikasi
-      const user_uid = itemDocSnapshot.data().user_uid;
-      const userDocRef = doc(db, "users", user_uid);
-      const userDocSnapshot = await getDoc(userDocRef);
-      if (userDocSnapshot.exists()) {
-        const registrationToken = userDocSnapshot.data().registrationToken;
-
-        if (status === "Sah") {
-          const response = await fetch(
-            `http://localhost:3000/send-notification/hasil-verifikasi-sidang-kp-berhasil/${user_uid}`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                registrationToken: registrationToken,
-              }),
-            }
-          );
-
-          if (response.ok) {
-            console.log("Notification sent successfully");
-          } else {
-            console.error("Failed to send notification");
-          }
-        } else {
-          const response = await fetch(
-            `http://localhost:3000/send-notification/hasil-verifikasi-sidang-kp-ditolak/${user_uid}`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                registrationToken: registrationToken,
-              }),
-            }
-          );
-
-          if (response.ok) {
-            console.log("Notification sent successfully");
-          } else {
-            console.error("Failed to send notification");
-          }
-        }
       }
     } catch (error) {
       console.error("Error updating document: ", error);
@@ -116,7 +73,7 @@ export const VerifikasiSidangKP = () => {
         ) : (
           <div className="flex-1 p-8">
             <h1 className="text-2xl text-white text-center shadow-md font-semibold rounded-lg p-4 m-4 mb-4 w-full bg-slate-600">
-              Verifikasi Pendaftaran Sidang Kerja Praktek
+              Ubah Judul Skripsi
             </h1>
             <form
               onSubmit={handleFormSubmit}
@@ -124,29 +81,14 @@ export const VerifikasiSidangKP = () => {
             >
               <div className="mb-4">
                 <label className="block text-slate-600 font-bold mb-2">
-                  Status
-                </label>
-                <select
-                  className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring focus:border-slate-300 bg-white"
-                  value={status}
-                  onChange={(e) => setStatus(e.target.value)}
-                  required
-                >
-                  <option value="" disabled>
-                    Pilih Status
-                  </option>
-                  <option value="Sah">Sah</option>
-                  <option value="Ditolak">Ditolak</option>
-                </select>
-                <label className="block text-slate-600 font-bold mb-2">
-                  Catatan
+                  Judul Skripsi
                 </label>
                 <input
                   type="text"
                   className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-500"
-                  placeholder="Catatan Verifikasi"
-                  value={catatan}
-                  onChange={(e) => setCatatan(e.target.value)}
+                  placeholder="Judul Kerja Praktek"
+                  value={judul}
+                  onChange={(e) => setJudul(e.target.value)}
                   required
                 />
               </div>
@@ -159,7 +101,7 @@ export const VerifikasiSidangKP = () => {
                   {isSubmitting ? "Loading..." : "Submit"}
                 </button>
                 <Link
-                  to={`/sidang-kp/detail/${itemId}`}
+                  to={`/sidang-skripsi/detail/${itemId}`}
                   className="px-4 py-2 bg-red-400 text-white rounded-md hover:bg-red-500 ml-1 drop-shadow-lg"
                 >
                   Cancel

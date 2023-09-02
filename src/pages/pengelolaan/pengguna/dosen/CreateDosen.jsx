@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Sidebar } from "../../../../components/sidebar/Sidebar";
 import { db, auth } from "../../../../utils/firebase";
-import { createUserWithEmailAndPassword } from "firebase/auth";
 import {
   collection,
   doc,
@@ -19,7 +18,7 @@ export const CreateDosen = () => {
   const [nama, setNama] = useState("");
   const [user, loading] = useAuthState(auth);
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [nidn, setNidn] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -50,25 +49,18 @@ export const CreateDosen = () => {
         setIsSubmitting(false);
         return;
       }
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
-      const userUid = userCredential.user.uid;
-      const userDocRef = doc(db, "users", userUid);
+      const userDocRef = doc(db, "users");
       await setDoc(userDocRef, {
-        uid: userUid,
         nama: nama,
         email: email,
         role: "Dosen",
+        nidn: nidn,
         createdAt: new Date(),
       });
 
       // Mengosongkan input setelah berhasil menambahkan data
       setNama("");
       setEmail("");
-      setPassword("");
       setError(null);
       Swal.fire({
         title: "Success",
@@ -125,14 +117,14 @@ export const CreateDosen = () => {
                   required
                 />
                 <label className="block text-slate-600 font-bold mb-2">
-                  Password
+                  NIDN
                 </label>
                 <input
-                  type="password"
+                  type="text"
                   className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-500"
-                  placeholder="Masukkan Email"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Masukkan NIDN"
+                  value={nidn}
+                  onChange={(e) => setNidn(e.target.value)}
                   required
                 />
               </div>

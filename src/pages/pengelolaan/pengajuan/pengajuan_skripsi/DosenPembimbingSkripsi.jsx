@@ -14,6 +14,7 @@ import { InfinitySpin } from "react-loader-spinner";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import Swal from "sweetalert2";
 import { useAuthState } from "react-firebase-hooks/auth";
+import Select from "react-select";
 
 export const DosenPembimbingSkripsi = () => {
   const { itemId } = useParams();
@@ -34,8 +35,8 @@ export const DosenPembimbingSkripsi = () => {
         );
         console.log(querySnapshot);
         const dosenOptions = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
+          value: doc.id, // Gunakan id sebagai value
+          label: doc.data().nama, // Gunakan nama sebagai label
         }));
         console.log(dosenOptions);
         setAvailableDosen(dosenOptions);
@@ -65,7 +66,7 @@ export const DosenPembimbingSkripsi = () => {
         // Update the document with new status and catatan
         await updateDoc(itemDocRef, {
           catatan: "-",
-          pembimbing_uid: dosenPembimbing,
+          pembimbing_uid: dosenPembimbing.value,
         });
 
         Swal.fire({
@@ -131,21 +132,16 @@ export const DosenPembimbingSkripsi = () => {
                 <label className="block text-slate-600 font-bold mb-2">
                   Dosen Pembimbing
                 </label>
-                <select
-                  className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring focus:border-slate-300 bg-white"
+                <Select
+                  className="w-full"
                   value={dosenPembimbing}
-                  onChange={(e) => setDosenPembimbing(e.target.value)}
-                  required
-                >
-                  <option value="" disabled>
-                    Pilih Dosen Pembimbing
-                  </option>
-                  {availableDosen.map((dosen) => (
-                    <option key={dosen.id} value={dosen.uid}>
-                      {dosen.nama}
-                    </option>
-                  ))}
-                </select>
+                  options={availableDosen}
+                  onChange={(selectedOption) =>
+                    setDosenPembimbing(selectedOption)
+                  }
+                  isSearchable={true}
+                  placeholder="Pilih Dosen Pembimbing"
+                />
               </div>
               <div className="flex justify-end">
                 <button

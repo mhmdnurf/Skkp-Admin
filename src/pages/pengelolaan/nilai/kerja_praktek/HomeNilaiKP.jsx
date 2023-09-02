@@ -3,10 +3,9 @@ import { Sidebar } from "../../../../components/sidebar/Sidebar";
 import { InfinitySpin } from "react-loader-spinner";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { auth, db, storage } from "../../../../utils/firebase";
+import { auth, db } from "../../../../utils/firebase";
 import {
   collection,
-  deleteDoc,
   doc,
   getDoc,
   onSnapshot,
@@ -14,8 +13,6 @@ import {
   query,
   where,
 } from "firebase/firestore";
-import Swal from "sweetalert2";
-import { deleteObject, ref } from "firebase/storage";
 
 export const HomeNilaiKP = () => {
   const itemsPerPage = 5;
@@ -48,18 +45,12 @@ export const HomeNilaiKP = () => {
         for (const doc of snapshot.docs) {
           const data = doc.data();
           const userInfo = await getUserInfo(data.user_uid);
-          // const pengajuanInfo = await getPengajuanInfo(data.pengajuan_uid);
           const dosenPembimbingInfo = await getUserInfo(data.pembimbing_uid);
-          // const pengujiSatuInfo = await getUserInfo(data.pengujiSatu_uid);
-          // const pengujiDuaInfo = await getUserInfo(data.pengujiDua_uid);
           fetchedData.push({
             id: doc.id,
             ...data,
             userInfo: userInfo,
             dosenPembimbingInfo: dosenPembimbingInfo,
-            // pengujiSatuInfo: pengujiSatuInfo,
-            // pengujiDuaInfo: pengujiDuaInfo,
-            // pengajuanInfo: pengajuanInfo,
           });
         }
         setData(fetchedData);
@@ -73,57 +64,10 @@ export const HomeNilaiKP = () => {
 
     // Cleanup: unsubscribe when the component unmounts or when the effect re-runs
     return () => unsubscribe();
-  }, [user, loading, navigate]);
-
-  const truncateTitle = (title, words = 3) => {
-    const wordsArray = title.split(" ");
-    if (wordsArray.length > words) {
-      return wordsArray.slice(0, words).join(" ") + "...";
-    }
-    return title;
-  };
+  }, [user, loading, navigate, data]);
 
   const startIdx = (currentPage - 1) * itemsPerPage;
   const endIdx = currentPage * itemsPerPage;
-
-  const handleDelete = async (id) => {
-    try {
-      const result = await Swal.fire({
-        title: "Apakah Anda Yakin?",
-        text: "Data akan hilang permanen ketika dihapus",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#d33",
-        cancelButtonColor: "#3085d6",
-        cancelButtonText: "Batal",
-        confirmButtonText: "Confirm",
-      });
-
-      if (result.isConfirmed) {
-        const docRef = doc(db, "sidang", id);
-        const docSnapshot = await getDoc(docRef);
-        if (docSnapshot.exists()) {
-          const data = docSnapshot.data();
-          const persetujuanKPFileName = `persyaratan/sidangKP/formPersetujuanKP/${data.uid}`;
-          const penilaianPerusahaanFileName = `persyaratan/sidangKP/penilaianPerusahaan/${data.uid}`;
-          const pendaftaranKpFileName = `persyaratan/sidangKP/formPendaftaranKP/${data.uid}`;
-          const bimbinganKPFileName = `persyaratan/sidangKP/formBimbinganKP/${data.uid}`;
-          const sertifikatSeminarFileName = `persyaratan/sidangKP/sertifikatSeminar/${data.uid}`;
-          const sertifikatPSPTFileName = `persyaratan/sidangKP/sertifikatPSPT/${data.uid}`;
-          await deleteObject(ref(storage, persetujuanKPFileName));
-          await deleteObject(ref(storage, penilaianPerusahaanFileName));
-          await deleteObject(ref(storage, pendaftaranKpFileName));
-          await deleteObject(ref(storage, bimbinganKPFileName));
-          await deleteObject(ref(storage, sertifikatSeminarFileName));
-          await deleteObject(ref(storage, sertifikatPSPTFileName));
-          await deleteDoc(docRef);
-        }
-        Swal.fire("Success", "Data Berhasil dihapus!", "success");
-      }
-    } catch (error) {
-      console.error("Error deleting data: ", error);
-    }
-  };
 
   return (
     <>
@@ -149,7 +93,7 @@ export const HomeNilaiKP = () => {
 
               {/* Tabel Data */}
               <div className="flex flex-col px-4 mt-2">
-                <table className="overflow-x-auto block bg-white rounded-t-lg text-slate-700 drop-shadow-md">
+                <table className="overflow-x-auto block bg-white rounded-t-lg text-slate-700 drop-shadow-md uppercase">
                   <thead className=" shadow-sm font-extralight text-sm">
                     <tr className="">
                       <th className="p-2 px-6">No</th>
@@ -157,8 +101,6 @@ export const HomeNilaiKP = () => {
                       <th className="p-2 px-6">Nama</th>
                       <th className="p-2 px-6">Jurusan</th>
                       <th className="p-2 px-6">Judul</th>
-                      <th className="p-2 px-6">Catatan</th>
-                      <th className="p-2 px-6">Pembimbing</th>
                       <th className="p-2 px-6 whitespace-nowrap">Nilai</th>
                       <th className="p-2 px-6 whitespace-nowrap">Indeks</th>
                       <th className="p-2 px-6">Action</th>
@@ -181,16 +123,10 @@ export const HomeNilaiKP = () => {
                           {item.userInfo && item.userInfo.jurusan}
                         </td>
                         <td className="text-center p-4 whitespace-nowrap">
-                          {truncateTitle(item.judul, 3)}
-                        </td>
-                        <td className="text-center p-4">{item.catatan}</td>
-                        <td className="text-center p-6 whitespace-nowrap">
-                          {item.dosenPembimbingInfo
-                            ? item.dosenPembimbingInfo.nama
-                            : "-"}
+                          {item.judul}
                         </td>
                         <td className="text-center p-6 whitespace-nowrap">
-                          {item.nilaiAkhir ? item.nilaiAkhir : "-"}
+                          {item.nilaiKP ? item.nilaiKP.nilaiAkhir : "-"}
                         </td>
                         <td className="text-center p-6 whitespace-nowrap">
                           {item.indeks ? item.indeks : "-"}
@@ -203,12 +139,6 @@ export const HomeNilaiKP = () => {
                             >
                               Nilai
                             </Link>
-                            <button
-                              className="p-2 bg-red-200 rounded-md hover:bg-red-300"
-                              onClick={() => handleDelete(item.id)}
-                            >
-                              Hapus
-                            </button>
                           </div>
                         </td>
                       </tr>

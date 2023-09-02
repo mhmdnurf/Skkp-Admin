@@ -326,12 +326,12 @@ export const Dashboard = () => {
                   <div className="px-10">
                     <div className="proporsal bg-white p-4 rounded-lg mb-4 hover:transform hover:scale-105 transition-transform duration-300 ease-in-out text-slate-600 drop-shadow-lg">
                       <h3 className="font-bold text-md">
-                        INFORMASI SEMINAR PROSPOSAL !
+                        INFORMASI SEMINAR PROPOSAL !
                       </h3>
                       {tanggalBukaSempro && tanggalTutupSempro ? (
                         <>
                           <p>
-                            Diberitahukan kepada mahasiswa/i Seminar Proporsal
+                            Diberitahukan kepada mahasiswa/i Seminar Proposal
                             akan diadakan pada tanggal :{" "}
                             <b>
                               {" "}

@@ -96,14 +96,6 @@ export const HomePengajuanKP = () => {
     return () => unsubscribe();
   }, [user, loading, navigate, searchText]);
 
-  const truncateTitle = (title, words = 3) => {
-    const wordsArray = title.split(" ");
-    if (wordsArray.length > words) {
-      return wordsArray.slice(0, words).join(" ") + "...";
-    }
-    return title;
-  };
-
   const handleDelete = async (id) => {
     try {
       const docRef = doc(db, "pengajuan", id);
@@ -114,7 +106,7 @@ export const HomePengajuanKP = () => {
         let isUsedInPengajuan = false;
         pengajuanSnapshot.forEach((doc) => {
           const sidangData = doc.data();
-          if (docRef.id === sidangData.jadwalSidang_uid) {
+          if (docRef.id === sidangData.pengajuan_uid) {
             isUsedInPengajuan = true;
           }
         });
@@ -182,11 +174,13 @@ export const HomePengajuanKP = () => {
 
               {/* Tabel Data */}
               <div className="flex flex-col px-4 mt-2">
-                <table className="overflow-x-auto block bg-white rounded-t-lg text-slate-700 drop-shadow-md">
+                <table className="overflow-x-auto block bg-white rounded-t-lg text-slate-700 drop-shadow-md uppercase">
                   <thead className=" shadow-sm font-extralight text-sm">
                     <tr className="">
                       <th className="p-2 px-6">No</th>
-                      <th className="p-2 px-6">Tanggal Daftar</th>
+                      <th className="p-2 px-6 whitespace-nowrap">
+                        Tanggal Daftar
+                      </th>
                       <th className="p-2 px-6">NIM</th>
                       <th className="p-2 px-6">Nama</th>
                       <th className="p-2 px-6">Jurusan</th>
@@ -226,16 +220,18 @@ export const HomePengajuanKP = () => {
                           {item.userInfo && item.userInfo.jurusan}
                         </td>
                         <td className="text-center p-4 whitespace-nowrap">
-                          {truncateTitle(item.judul, 3)}
+                          {item.judul}
                         </td>
-                        <td className="text-center">{item.status}</td>
+                        <td className="text-center whitespace-nowrap">
+                          {item.status}
+                        </td>
                         <td className="text-center p-4">{item.catatan}</td>
                         <td className="text-center p-6 whitespace-nowrap">
                           {item.dosenPembimbingInfo
                             ? item.dosenPembimbingInfo.nama
                             : "-"}
                         </td>
-                        <td className="text-center p-4">
+                        <td className="text-center p-4 normal-case">
                           <div className="flex">
                             <Link
                               to={`/pengajuan-kp/detail/${item.id}`}

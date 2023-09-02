@@ -14,6 +14,7 @@ import { InfinitySpin } from "react-loader-spinner";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import Swal from "sweetalert2";
 import { useAuthState } from "react-firebase-hooks/auth";
+import Select from "react-select";
 
 export const DosenPengujiKP = () => {
   const { itemId } = useParams();
@@ -35,8 +36,8 @@ export const DosenPengujiKP = () => {
         );
         console.log(querySnapshot);
         const dosenOptions = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
+          value: doc.id, // Gunakan id sebagai value
+          label: doc.data().nama, // Gunakan nama sebagai label
         }));
         console.log(dosenOptions);
         setAvailableDosen(dosenOptions);
@@ -61,13 +62,15 @@ export const DosenPengujiKP = () => {
       // Get the existing document data
       const itemDocRef = doc(db, "sidang", itemId);
       const itemDocSnapshot = await getDoc(itemDocRef);
-      const penguji = dosenPengujiDua
-        ? [dosenPengujiSatu, dosenPengujiDua]
-        : [dosenPengujiSatu];
+
+      const pengujiRoles = {
+        pengujiSatu: dosenPengujiSatu ? dosenPengujiSatu.value : null, // Ambil nilai dari selected option
+        pengujiDua: dosenPengujiDua ? dosenPengujiDua.value : null, // Ambil nilai dari selected option
+      };
       if (itemDocSnapshot.exists()) {
         // Update the document with new status and catatan
         await updateDoc(itemDocRef, {
-          penguji: penguji,
+          penguji: pengujiRoles,
           catatan: "-",
         });
 
@@ -80,26 +83,6 @@ export const DosenPengujiKP = () => {
           navigate(`/sidang-kp/detail/${itemId}`);
         });
       }
-
-      // const response = await fetch(
-      //   "http://localhost:3000/send-notification/dosen-pembimbing-kp",
-      //   {
-      //     method: "POST",
-      //     headers: {
-      //       "Content-Type": "application/json",
-      //     },
-      //     body: JSON.stringify({
-      //       registrationToken:
-      //         "efjLkfYnTBu97mDH1aDtt3:APA91bEfMxhN6FKk5GW3DnHVoEoJP90GyanTAU1h-xeyfCS9sQFS19EMHViqXDXFu9iYyhfIOe-lMU0kmtuOaqcbqvs_3dnTMDRiZt_j7Mk7a-x8uu50sx6Jiqh3MG4UI5sUAWtWjYLt",
-      //     }),
-      //   }
-      // );
-
-      // if (response.ok) {
-      //   console.log("Notification sent successfully");
-      // } else {
-      //   console.error("Failed to send notification");
-      // }
     } catch (error) {
       console.error("Error updating document: ", error);
       setError("Error updating document");
@@ -129,40 +112,29 @@ export const DosenPengujiKP = () => {
                 <label className="block text-slate-600 font-bold mb-2">
                   Dosen Penguji 1
                 </label>
-                <select
-                  className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring focus:border-slate-300 bg-white mb-4"
+                <Select
+                  className="w-full"
                   value={dosenPengujiSatu}
-                  onChange={(e) => setDosenPengujiSatu(e.target.value)}
-                  required
-                >
-                  <option value="" disabled>
-                    Pilih Dosen Penguji
-                  </option>
-                  {availableDosen.map((dosen) => (
-                    <option key={dosen.id} value={dosen.uid}>
-                      {dosen.nama}
-                    </option>
-                  ))}
-                </select>
-                <label className="block text-slate-600 font-bold mb-2">
+                  options={availableDosen}
+                  onChange={(selectedOption) =>
+                    setDosenPengujiSatu(selectedOption)
+                  }
+                  isSearchable={true}
+                  placeholder="Pilih Dosen Penguji 1"
+                />
+                <label className="block text-slate-600 font-bold mb-2 mt-4">
                   Dosen Penguji 2
                 </label>
-                <select
-                  className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring focus:border-slate-300 bg-white"
+                <Select
+                  className="w-full"
                   value={dosenPengujiDua}
-                  onChange={(e) => setDosenPengujiDua(e.target.value)}
-                  required
-                >
-                  <option value="" disabled>
-                    Pilih Dosen Penguji
-                  </option>
-                  <option value="-">-</option>
-                  {availableDosen.map((dosen) => (
-                    <option key={dosen.id} value={dosen.uid}>
-                      {dosen.nama}
-                    </option>
-                  ))}
-                </select>
+                  options={[{ value: "-", label: "-" }, ...availableDosen]}
+                  onChange={(selectedOption) =>
+                    setDosenPengujiDua(selectedOption)
+                  }
+                  isSearchable={true}
+                  placeholder="Pilih Dosen Penguji 2"
+                />
               </div>
               <div className="flex justify-end">
                 <button

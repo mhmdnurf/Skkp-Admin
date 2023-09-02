@@ -29,7 +29,7 @@ export const VerifikasiSidangSkripsi = () => {
 
     try {
       // Get the existing document data
-      const itemDocRef = doc(db, "pengajuan", itemId);
+      const itemDocRef = doc(db, "sidang", itemId);
       const itemDocSnapshot = await getDoc(itemDocRef);
 
       if (itemDocSnapshot.exists()) {
@@ -46,7 +46,7 @@ export const VerifikasiSidangSkripsi = () => {
           icon: "success",
           confirmButtonText: "OK",
         }).then(() => {
-          navigate(`/pengajuan-kp/detail/${itemId}`);
+          navigate(`/sidang-skripsi/detail/${itemId}`);
         });
       }
 
@@ -56,23 +56,44 @@ export const VerifikasiSidangSkripsi = () => {
       if (userDocSnapshot.exists()) {
         const registrationToken = userDocSnapshot.data().registrationToken;
 
-        const response = await fetch(
-          `http://localhost:3000/send-notification/hasil-verifikasi-sidang-skripsi/${user_uid}`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              registrationToken: registrationToken,
-            }),
-          }
-        );
+        if (status === "Sah") {
+          const response = await fetch(
+            `http://localhost:3000/send-notification/hasil-verifikasi-sidang-skripsi-berhasil/${user_uid}`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                registrationToken: registrationToken,
+              }),
+            }
+          );
 
-        if (response.ok) {
-          console.log("Notification sent successfully");
+          if (response.ok) {
+            console.log("Notification sent successfully");
+          } else {
+            console.error("Failed to send notification");
+          }
         } else {
-          console.error("Failed to send notification");
+          const response = await fetch(
+            `http://localhost:3000/send-notification/hasil-verifikasi-sidang-skripsi-ditolak/${user_uid}`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                registrationToken: registrationToken,
+              }),
+            }
+          );
+
+          if (response.ok) {
+            console.log("Notification sent successfully");
+          } else {
+            console.error("Failed to send notification");
+          }
         }
       }
     } catch (error) {
@@ -94,7 +115,7 @@ export const VerifikasiSidangSkripsi = () => {
         ) : (
           <div className="flex-1 p-8">
             <h1 className="text-2xl text-white text-center shadow-md font-semibold rounded-lg p-4 m-4 mb-4 w-full bg-slate-600">
-              Verifikasi Pengajuan Kerja Praktek
+              Verifikasi Pendaftaran Sidang Skripsi
             </h1>
             <form
               onSubmit={handleFormSubmit}
@@ -137,7 +158,7 @@ export const VerifikasiSidangSkripsi = () => {
                   {isSubmitting ? "Loading..." : "Submit"}
                 </button>
                 <Link
-                  to={`/pengajuan-kp/detail/${itemId}`}
+                  to={`/sidang-skripsi/detail/${itemId}`}
                   className="px-4 py-2 bg-red-400 text-white rounded-md hover:bg-red-500 ml-1 drop-shadow-lg"
                 >
                   Cancel

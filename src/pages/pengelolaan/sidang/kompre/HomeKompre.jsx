@@ -92,7 +92,6 @@ export const HomeKompre = () => {
               .includes(searchText.toLowerCase())
         );
         setData(filteredData);
-        console.log(data);
         setIsLoading(false);
       }
     );
@@ -103,14 +102,6 @@ export const HomeKompre = () => {
     // Cleanup: unsubscribe when the component unmounts or when the effect re-runs
     return () => unsubscribe();
   }, [user, loading, navigate, data, searchText]);
-
-  const truncateTitle = (title, words = 3) => {
-    const wordsArray = title.split(" ");
-    if (wordsArray.length > words) {
-      return wordsArray.slice(0, words).join(" ") + "...";
-    }
-    return title;
-  };
 
   const handleDelete = async (id) => {
     try {
@@ -171,11 +162,13 @@ export const HomeKompre = () => {
 
               {/* Tabel Data */}
               <div className="flex flex-col px-4 mt-2">
-                <table className="overflow-x-auto block bg-white rounded-t-lg text-slate-700 drop-shadow-md">
+                <table className="overflow-x-auto block bg-white rounded-t-lg text-slate-700 drop-shadow-md uppercase">
                   <thead className=" shadow-sm font-extralight text-sm">
                     <tr className="">
                       <th className="p-2 px-6">No</th>
-                      <th className="p-2 px-6">Tanggal Daftar</th>
+                      <th className="p-2 px-6 whitespace-nowrap">
+                        Tanggal Daftar
+                      </th>
                       <th className="p-2 px-6">NIM</th>
                       <th className="p-2 px-6">Nama</th>
                       <th className="p-2 px-6">Jurusan</th>
@@ -215,7 +208,7 @@ export const HomeKompre = () => {
                           {item.userInfo && item.userInfo.jurusan}
                         </td>
                         <td className="text-center p-4 whitespace-nowrap">
-                          {truncateTitle(item.pengajuanInfo.topikPenelitian, 3)}
+                          {item.pengajuanInfo.topikPenelitian}
                         </td>
                         <td className="text-center whitespace-nowrap">
                           {item.status}
@@ -230,7 +223,7 @@ export const HomeKompre = () => {
                           <div className="flex">
                             <Link
                               to={`/sidang-kompre/detail/${item.id}`}
-                              className="p-2 bg-slate-200 rounded-md hover:bg-slate-300 mr-1"
+                              className="normal-case p-2 bg-slate-200 rounded-md hover:bg-slate-300 mr-1"
                             >
                               Detail
                             </Link>

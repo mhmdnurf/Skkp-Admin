@@ -62,16 +62,24 @@ export const HomeSidangKP = () => {
           const dosenPembimbingInfo = await getUserInfo(
             pengajuanInfo.pembimbing_uid
           );
-          const pengujiSatuInfo = await getUserInfo(data.pengujiSatu_uid);
-          const pengujiDuaInfo = await getUserInfo(data.pengujiDua_uid);
+          let pengujiSatuInfo = null;
+          let pengujiDuaInfo = null;
+          if (data.penguji) {
+            pengujiSatuInfo = data.penguji.pengujiSatu
+              ? await getUserInfo(data.penguji.pengujiSatu)
+              : null;
+            pengujiDuaInfo = data.penguji.pengujiDua
+              ? await getUserInfo(data.penguji.pengujiDua)
+              : null;
+          }
           fetchedData.push({
             id: doc.id,
             ...data,
             userInfo: userInfo,
             dosenPembimbingInfo: dosenPembimbingInfo,
+            pengajuanInfo: pengajuanInfo,
             pengujiSatuInfo: pengujiSatuInfo,
             pengujiDuaInfo: pengujiDuaInfo,
-            pengajuanInfo: pengajuanInfo,
           });
         }
         const filteredData = fetchedData.filter(
@@ -115,14 +123,6 @@ export const HomeSidangKP = () => {
     // Cleanup: unsubscribe when the component unmounts or when the effect re-runs
     return () => unsubscribe();
   }, [user, loading, navigate, searchText]);
-
-  const truncateTitle = (title, words = 3) => {
-    const wordsArray = title.split(" ");
-    if (wordsArray.length > words) {
-      return wordsArray.slice(0, words).join(" ") + "...";
-    }
-    return title;
-  };
 
   const startIdx = (currentPage - 1) * itemsPerPage;
   const endIdx = currentPage * itemsPerPage;
@@ -205,11 +205,13 @@ export const HomeSidangKP = () => {
 
               {/* Tabel Data */}
               <div className="flex flex-col px-4 mt-2">
-                <table className="overflow-x-auto block bg-white rounded-t-lg text-slate-700 drop-shadow-md">
+                <table className="overflow-x-auto block bg-white rounded-t-lg text-slate-700 drop-shadow-md uppercase">
                   <thead className=" shadow-sm font-extralight text-sm">
                     <tr className="">
                       <th className="p-2 px-6">No</th>
-                      <th className="p-2 px-6">Tanggal Daftar</th>
+                      <th className="p-2 px-6 whitespace-nowrap">
+                        Tanggal Daftar
+                      </th>
                       <th className="p-2 px-6">NIM</th>
                       <th className="p-2 px-6">Nama</th>
                       <th className="p-2 px-6">Jurusan</th>
@@ -251,7 +253,7 @@ export const HomeSidangKP = () => {
                           {item.userInfo && item.userInfo.jurusan}
                         </td>
                         <td className="text-center p-4 whitespace-nowrap">
-                          {truncateTitle(item.pengajuanInfo.judul, 3)}
+                          {item.pengajuanInfo.judul}
                         </td>
                         <td className="text-center whitespace-nowrap">
                           {item.status}
@@ -274,7 +276,7 @@ export const HomeSidangKP = () => {
                           <div className="flex">
                             <Link
                               to={`/sidang-kp/detail/${item.id}`}
-                              className="p-2 bg-slate-200 rounded-md hover:bg-slate-300 mr-1"
+                              className="normal-case p-2 bg-slate-200 rounded-md hover:bg-slate-300 mr-1"
                             >
                               Detail
                             </Link>

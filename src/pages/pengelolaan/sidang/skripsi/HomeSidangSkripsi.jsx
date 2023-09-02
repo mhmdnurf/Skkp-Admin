@@ -107,7 +107,6 @@ export const HomeSidangSkripsi = () => {
               .includes(searchText.toLowerCase())
         );
         setData(filteredData);
-        console.log(data);
         setIsLoading(false);
       }
     );
@@ -117,7 +116,7 @@ export const HomeSidangSkripsi = () => {
 
     // Cleanup: unsubscribe when the component unmounts or when the effect re-runs
     return () => unsubscribe();
-  }, [user, loading, navigate, searchText, navigate]);
+  }, [user, loading, navigate, searchText]);
 
   const truncateTitle = (title, words = 3) => {
     const wordsArray = title.split(" ");
@@ -193,7 +192,7 @@ export const HomeSidangSkripsi = () => {
 
               {/* Tabel Data */}
               <div className="flex flex-col px-4 mt-2">
-                <table className="overflow-x-auto block bg-white rounded-t-lg text-slate-700 drop-shadow-md">
+                <table className="overflow-x-auto block bg-white rounded-t-lg text-slate-700 drop-shadow-md uppercase">
                   <thead className=" shadow-sm font-extralight text-sm">
                     <tr className="">
                       <th className="p-2 px-6">No</th>
@@ -261,8 +260,8 @@ export const HomeSidangSkripsi = () => {
                         <td className="text-center p-4">
                           <div className="flex">
                             <Link
-                              to={`/sidang-sempro/detail/${item.id}`}
-                              className="p-2 bg-slate-200 rounded-md hover:bg-slate-300 mr-1"
+                              to={`/sidang-skripsi/detail/${item.id}`}
+                              className="normal-case p-2 bg-slate-200 rounded-md hover:bg-slate-300 mr-1"
                             >
                               Detail
                             </Link>

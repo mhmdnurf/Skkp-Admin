@@ -53,7 +53,7 @@ export const EditTopik = () => {
     if (!user) return navigate("/login");
 
     fetchData();
-  }, [itemId, user, loading]);
+  }, [itemId, user, loading, navigate]);
 
   const handleFormEdit = async (e) => {
     e.preventDefault();

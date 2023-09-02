@@ -106,12 +106,12 @@ export const HomePengajuanSkripsi = () => {
         let isUsedInPengajuan = false;
         pengajuanSnapshot.forEach((doc) => {
           const sidangData = doc.data();
-          if (docRef.id === sidangData.jadwalSidang_uid) {
+          if (docRef.id === sidangData.pengajuan_uid) {
             isUsedInPengajuan = true;
           }
         });
         if (isUsedInPengajuan) {
-          Swal.fire("Error", "Kerja Praktek sudah disidangkan!", "error");
+          Swal.fire("Error", "Topik Penelitian sudah disidangkan!", "error");
         } else {
           const result = await Swal.fire({
             title: "Apakah Anda Yakin?",
@@ -174,11 +174,13 @@ export const HomePengajuanSkripsi = () => {
 
               {/* Tabel Data */}
               <div className="flex flex-col px-4 mt-2">
-                <table className="overflow-x-auto block bg-white rounded-t-lg text-slate-700 drop-shadow-md">
+                <table className="overflow-x-auto block bg-white rounded-t-lg text-slate-700 drop-shadow-md uppercase">
                   <thead className=" shadow-sm font-extralight text-sm">
                     <tr className="">
                       <th className="p-2 px-6">No</th>
-                      <th className="p-2 px-6">Tanggal Daftar</th>
+                      <th className="p-2 px-6 whitespace-nowrap">
+                        Tanggal Daftar
+                      </th>
                       <th className="p-2 px-6">NIM</th>
                       <th className="p-2 px-6">Nama</th>
                       <th className="p-2 px-6">Jurusan</th>
@@ -222,7 +224,7 @@ export const HomePengajuanSkripsi = () => {
                         </td>
                         <td className="text-center">{item.status}</td>
                         <td className="text-center p-4">{item.catatan}</td>
-                        <td className="text-center p-6">
+                        <td className="text-center p-6 whitespace-nowrap">
                           {item.dosenPembimbingInfo
                             ? item.dosenPembimbingInfo.nama
                             : "-"}
@@ -231,7 +233,7 @@ export const HomePengajuanSkripsi = () => {
                           <div className="flex">
                             <Link
                               to={`/pengajuan-skripsi/detail/${item.id}`}
-                              className="p-2 bg-slate-200 rounded-md hover:bg-slate-300 mr-1"
+                              className="p-2 bg-slate-200 rounded-md hover:bg-slate-300 mr-1 normal-case"
                             >
                               Detail
                             </Link>

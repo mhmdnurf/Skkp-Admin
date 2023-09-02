@@ -53,7 +53,6 @@ export const DetailPengajuanKP = () => {
           dosenPembimbingInfo: dosenPembimbingInfo,
           periodePendaftaranInfo: periodePendaftaranInfo,
         });
-        console.log(data);
       }
 
       setIsLoading(false);
@@ -63,7 +62,7 @@ export const DetailPengajuanKP = () => {
 
     if (loading) return;
     if (!user) return navigate("/login");
-  }, [itemId, user, loading, navigate]);
+  }, [itemId, user, loading, navigate, data]);
 
   if (isLoading) {
     return (
@@ -107,35 +106,35 @@ export const DetailPengajuanKP = () => {
             </div>
             <div className="flex justify-evenly items-center p-4">
               <Link
-                to={`${data.transkipNilai}`}
+                to={`${data.berkasPersyaratan.transkipNilai}`}
                 target="_blank"
                 className="p-2 bg-slate-300 hover:bg-slate-200 rounded-md text-slate-600  font-semibold hover:transform hover:scale-110 transition-transform duration-300 ease-in-out"
               >
                 Transkip Nilai
               </Link>
               <Link
-                to={`${data.formKrs}`}
+                to={`${data.berkasPersyaratan.formKrs}`}
                 target="_blank"
                 className="p-2 bg-slate-300 hover:bg-slate-200 rounded-md text-slate-600  font-semibold hover:transform hover:scale-110 transition-transform duration-300 ease-in-out"
               >
                 Form KRS
               </Link>
               <Link
-                to={`${data.formPendaftaranKP}`}
+                to={`${data.berkasPersyaratan.formPendaftaranKP}`}
                 target="_blank"
                 className="p-2 bg-slate-300 hover:bg-slate-200 rounded-md font-semibold text-slate-600 hover:transform hover:scale-110 transition-transform duration-300 ease-in-out"
               >
                 Form Pendaftaran KP
               </Link>
               <Link
-                to={`${data.slipPembayaranKP}`}
+                to={`${data.berkasPersyaratan.slipPembayaranKP}`}
                 target="_blank"
                 className="p-2 bg-slate-300 hover:bg-slate-200 rounded-md text-slate-600  font-semibold hover:transform hover:scale-110 transition-transform duration-300 ease-in-out"
               >
                 Slip Pembayaran KP
               </Link>
               <Link
-                to={`${data.dokumenProporsal}`}
+                to={`${data.berkasPersyaratan.dokumenProposal}`}
                 target="_blank"
                 className="p-2 bg-slate-300 hover:bg-slate-200 rounded-md text-slate-600  font-semibold hover:transform hover:scale-110 transition-transform duration-300 ease-in-out"
               >
@@ -186,19 +185,19 @@ export const DetailPengajuanKP = () => {
               <h1 className="mb-2 text-lg font-bold text-slate-600">NIM</h1>
               <p className="mb-2">{data.userInfo.nim}</p>
               <h1 className="mb-2 text-lg font-bold text-slate-600">Nama</h1>
-              <p className="mb-2">{data.userInfo.nama}</p>
+              <p className="mb-2 uppercase">{data.userInfo.nama}</p>
               <h1 className="mb-2 text-lg font-bold text-slate-600">Jurusan</h1>
-              <p className="mb-2">{data.userInfo.jurusan}</p>
+              <p className="mb-2 uppercase">{data.userInfo.jurusan}</p>
               <h1 className="mb-2 text-lg font-bold text-slate-600">Judul</h1>
-              <p className="mb-2">{data.judul}</p>
+              <p className="mb-2 uppercase">{data.judul}</p>
               <h1 className="mb-2 text-lg font-bold text-slate-600">Status</h1>
-              <p className="mb-2">{data.status}</p>
+              <p className="mb-2 uppercase">{data.status}</p>
               <h1 className="mb-2 text-lg font-bold text-slate-600">Catatan</h1>
-              <p className="mb-2">{data.catatan}</p>
+              <p className="mb-2 uppercase">{data.catatan}</p>
               <h1 className="mb-2 text-lg font-bold text-slate-600">
                 Dosen Pembimbing
               </h1>
-              <p className="mb-2">
+              <p className="mb-2 uppercase">
                 {" "}
                 {data.dosenPembimbingInfo ? (
                   <p className="mb-2">{data.dosenPembimbingInfo.nama}</p>
@@ -210,20 +209,26 @@ export const DetailPengajuanKP = () => {
 
             <div className="flex flex-1 justify-end p-4">
               <Link
+                to={`/pengajuan-kp/judul/${itemId}`}
+                className="bg-yellow-600 hover:bg-yellow-700 p-2 m-2 rounded-md w-[150px] text-center text-slate-100 drop-shadow-xl"
+              >
+                Ubah Judul
+              </Link>
+              <Link
                 to={`/pengajuan-kp/verifikasi/${itemId}`}
-                className="bg-green-600 hover:bg-green-500 p-2 m-2 rounded-lg w-[150px] text-center text-slate-100 drop-shadow-xl"
+                className="bg-green-600 hover:bg-green-700 p-2 m-2 rounded-md w-[150px] text-center text-slate-100 drop-shadow-xl"
               >
                 Verifikasi
               </Link>
               <button
                 onClick={handleButtonPembimbing}
-                className="bg-blue-600 hover:bg-blue-500 p-2 m-2 rounded-lg w-[200px] text-center text-slate-100"
+                className="bg-blue-600 hover:bg-blue-700 p-2 m-2 rounded-md w-[200px] text-center text-slate-100"
               >
                 Beri Dosen Pembimbing
               </button>
               <Link
                 to={"/pengajuan-kp"}
-                className="bg-red-400 hover:bg-red-300 p-2 m-2 rounded-lg w-[150px] text-center text-slate-100"
+                className="bg-red-400 hover:bg-red-500 p-2 m-2 rounded-md w-[150px] text-center text-slate-100"
               >
                 Kembali
               </Link>

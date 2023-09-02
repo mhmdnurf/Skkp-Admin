@@ -33,6 +33,16 @@ export const DetailSidangSkripsi = () => {
     return null;
   };
 
+  const getPengajuanInfo = async (uid) => {
+    const userDocRef = doc(db, "pengajuan", uid);
+    const userDocSnapshot = await getDoc(userDocRef);
+
+    if (userDocSnapshot.exists()) {
+      return userDocSnapshot.data();
+    }
+    return null;
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       const itemDocRef = doc(db, "sidang", itemId);
@@ -40,10 +50,13 @@ export const DetailSidangSkripsi = () => {
 
       if (itemDocSnapshot.exists()) {
         const itemData = itemDocSnapshot.data();
-        const userInfo = await getUserInfo(itemData.uid);
-        const dosenPembimbingInfo = await getUserInfo(itemData.dosenPembimbing);
+        const userInfo = await getUserInfo(itemData.user_uid);
+        const pengajuanInfo = await getPengajuanInfo(itemData.pengajuan_uid);
+        const dosenPembimbingInfo = await getUserInfo(
+          pengajuanInfo.pembimbing_uid
+        );
         const periodePendaftaranInfo = await getPeriodeInfo(
-          itemData.periodePendaftaran
+          itemData.jadwalSidang_uid
         );
 
         setData({
@@ -51,9 +64,9 @@ export const DetailSidangSkripsi = () => {
           ...itemData,
           userInfo: userInfo,
           dosenPembimbingInfo: dosenPembimbingInfo,
+          pengajuanInfo: pengajuanInfo,
           periodePendaftaranInfo: periodePendaftaranInfo,
         });
-        console.log(data);
       }
 
       setIsLoading(false);
@@ -63,7 +76,7 @@ export const DetailSidangSkripsi = () => {
 
     if (loading) return;
     if (!user) return navigate("/login");
-  }, [itemId, user, loading, navigate]);
+  }, [itemId, user, loading, navigate, data]);
 
   if (isLoading) {
     return (
@@ -86,7 +99,7 @@ export const DetailSidangSkripsi = () => {
         confirmButtonText: "OK",
       });
     } else {
-      navigate(`/pengajuan-kp/dosen-pembimbing/${itemId}`);
+      navigate(`/sidang-skripsi/penguji/${itemId}`);
     }
   };
 
@@ -96,7 +109,7 @@ export const DetailSidangSkripsi = () => {
         <Sidebar />
         <div className="flex flex-col w-full pl-[300px] overflow-y-auto pr-4 pb-4">
           <h1 className="text-2xl text-white text-center shadow-md font-bold rounded-lg p-4 m-4 mb-10 bg-slate-600">
-            Detail Sidang Kerja Praktek
+            Detail Sidang Skripsi
           </h1>
 
           <div className="flex flex-col px-4 mt-2 bg-white mx-4 rounded-lg p-4 drop-shadow-lg">
@@ -105,48 +118,69 @@ export const DetailSidangSkripsi = () => {
                 Berkas Persyaratan
               </h1>
             </div>
-            <div className="flex justify-evenly items-center p-4">
+            <div className="flex justify-between items-center p-4 flex-wrap">
               <Link
-                to={`${data.persetujuanKP}`}
+                to={`${data.ijazah}`}
                 target="_blank"
                 className="p-2 bg-slate-300 hover:bg-slate-200 rounded-md text-slate-600  font-semibold hover:transform hover:scale-110 transition-transform duration-300 ease-in-out"
               >
-                Persetujuan KP
+                Ijazah SMA/SMK
               </Link>
               <Link
-                to={`${data.penilaianPerusahaan}`}
+                to={`${data.transkipNilai}`}
                 target="_blank"
                 className="p-2 bg-slate-300 hover:bg-slate-200 rounded-md text-slate-600  font-semibold hover:transform hover:scale-110 transition-transform duration-300 ease-in-out"
               >
-                Penilaian Perusahaan
+                Transkip Nilai
               </Link>
               <Link
-                to={`${data.formPendaftaranKP}`}
+                to={`${data.pendaftaranSkripsi}`}
+                target="_blank"
+                className="p-2 bg-slate-300 hover:bg-slate-200 rounded-md text-slate-600  font-semibold hover:transform hover:scale-110 transition-transform duration-300 ease-in-out"
+              >
+                Form Pendaftaran Sidang
+              </Link>
+              <Link
+                to={`${data.persetujuanSkripsi}`}
                 target="_blank"
                 className="p-2 bg-slate-300 hover:bg-slate-200 rounded-md font-semibold text-slate-600 hover:transform hover:scale-110 transition-transform duration-300 ease-in-out"
               >
-                Pendaftaran KP
+                Form Persetujuan
               </Link>
               <Link
-                to={`${data.bimbinganKP}`}
+                to={`${data.fileBuktiLunas}`}
                 target="_blank"
                 className="p-2 bg-slate-300 hover:bg-slate-200 rounded-md text-slate-600  font-semibold hover:transform hover:scale-110 transition-transform duration-300 ease-in-out"
               >
-                Bimbingan KP
+                Bukti Lunas Sidang
               </Link>
               <Link
-                to={`${data.fileSertifikatSeminar}`}
+                to={`${data.lembarRevisi}`}
                 target="_blank"
-                className="p-2 bg-slate-300 hover:bg-slate-200 rounded-md text-slate-600  font-semibold hover:transform hover:scale-110 transition-transform duration-300 ease-in-out"
+                className="p-2  text-center bg-slate-300 hover:bg-slate-200 rounded-md text-slate-600  font-semibold hover:transform hover:scale-110 transition-transform duration-300 ease-in-out"
               >
-                Sertifikat Seminar STTI
+                Lembar Revisi
               </Link>
               <Link
-                to={`${data.fileSertifikatPSPT}`}
+                to={`${data.ktp}`}
                 target="_blank"
-                className="p-2 bg-slate-300 hover:bg-slate-200 rounded-md text-slate-600  font-semibold hover:transform hover:scale-110 transition-transform duration-300 ease-in-out"
+                className="p-2 mt-2 basis-1/4 text-center bg-slate-300 hover:bg-slate-200 rounded-md text-slate-600  font-semibold hover:transform hover:scale-110 transition-transform duration-300 ease-in-out"
               >
-                Sertifikat PSPT
+                Scan KTP
+              </Link>
+              <Link
+                to={`${data.kk}`}
+                target="_blank"
+                className="p-2 mt-2 basis-1/3 text-center bg-slate-300 hover:bg-slate-200 rounded-md text-slate-600  font-semibold hover:transform hover:scale-110 transition-transform duration-300 ease-in-out"
+              >
+                Scan KK
+              </Link>
+              <Link
+                to={`${data.bimbinganSkripsi}`}
+                target="_blank"
+                className="p-2 mt-2 basis-1/4 text-center bg-slate-300 hover:bg-slate-200 rounded-md text-slate-600  font-semibold hover:transform hover:scale-110 transition-transform duration-300 ease-in-out"
+              >
+                Form Bimbingan
               </Link>
             </div>
 
@@ -193,19 +227,25 @@ export const DetailSidangSkripsi = () => {
               <h1 className="mb-2 text-lg font-bold text-slate-600">NIM</h1>
               <p className="mb-2">{data.userInfo.nim}</p>
               <h1 className="mb-2 text-lg font-bold text-slate-600">Nama</h1>
-              <p className="mb-2">{data.userInfo.nama}</p>
+              <p className="mb-2 uppercase">{data.userInfo.nama}</p>
               <h1 className="mb-2 text-lg font-bold text-slate-600">Jurusan</h1>
-              <p className="mb-2">{data.userInfo.jurusan}</p>
+              <p className="mb-2 uppercase">{data.userInfo.jurusan}</p>
+              <h1 className="mb-2 text-lg font-bold text-slate-600">
+                Topik Penelitian
+              </h1>
+              <p className="mb-2 uppercase">
+                {data.pengajuanInfo.topikPenelitian}
+              </p>
               <h1 className="mb-2 text-lg font-bold text-slate-600">Judul</h1>
-              <p className="mb-2">{data.judul}</p>
+              <p className="mb-2 uppercase">{data.judul}</p>
               <h1 className="mb-2 text-lg font-bold text-slate-600">Status</h1>
-              <p className="mb-2">{data.status}</p>
+              <p className="mb-2 uppercase">{data.status}</p>
               <h1 className="mb-2 text-lg font-bold text-slate-600">Catatan</h1>
-              <p className="mb-2">{data.catatan}</p>
+              <p className="mb-2 uppercase">{data.catatan}</p>
               <h1 className="mb-2 text-lg font-bold text-slate-600">
                 Dosen Pembimbing
               </h1>
-              <p className="mb-2">
+              <p className="mb-2 uppercase">
                 {" "}
                 {data.dosenPembimbingInfo ? (
                   <p className="mb-2">{data.dosenPembimbingInfo.nama}</p>
@@ -217,20 +257,26 @@ export const DetailSidangSkripsi = () => {
 
             <div className="flex flex-1 justify-end p-4">
               <Link
-                to={`/pengajuan-kp/verifikasi/${itemId}`}
-                className="bg-green-600 hover:bg-green-500 p-2 m-2 rounded-lg w-[150px] text-center text-slate-100 drop-shadow-xl"
+                to={`/sidang-skripsi/ubah-judul/${itemId}`}
+                className="bg-emerald-500 hover:bg-emerald-600 p-2 m-2 rounded-md w-[150px] text-center text-slate-100 drop-shadow-xl"
+              >
+                Ubah Judul
+              </Link>
+              <Link
+                to={`/sidang-skripsi/verifikasi/${itemId}`}
+                className="bg-green-600 hover:bg-green-700 p-2 m-2 rounded-md w-[150px] text-center text-slate-100 drop-shadow-xl"
               >
                 Verifikasi
               </Link>
               <button
                 onClick={handleButtonPembimbing}
-                className="bg-blue-600 hover:bg-blue-500 p-2 m-2 rounded-lg w-[200px] text-center text-slate-100"
+                className="bg-blue-600 hover:bg-blue-700 p-2 m-2 rounded-md w-[200px] text-center text-slate-100"
               >
-                Beri Dosen Pembimbing
+                Beri Dosen Penguji
               </button>
               <Link
-                to={"/pengajuan-kp"}
-                className="bg-red-400 hover:bg-red-300 p-2 m-2 rounded-lg w-[150px] text-center text-slate-100"
+                to={"/sidang-sempro"}
+                className="bg-red-400 hover:bg-red-500 p-2 m-2 rounded-md w-[150px] text-center text-slate-100"
               >
                 Kembali
               </Link>
