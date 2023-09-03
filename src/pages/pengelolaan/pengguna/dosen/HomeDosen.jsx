@@ -40,7 +40,8 @@ export const HomeDosen = () => {
         const filteredData = fetchedData.filter(
           (item) =>
             item.nama.toLowerCase().includes(searchText.toLowerCase()) ||
-            item.email.toLowerCase().includes(searchText.toLowerCase())
+            item.email.toLowerCase().includes(searchText.toLowerCase()) ||
+            item.nidn.toLowerCase().includes(searchText.toLowerCase())
         );
 
         setData(filteredData);
