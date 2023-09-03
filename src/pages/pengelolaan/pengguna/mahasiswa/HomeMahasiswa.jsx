@@ -10,7 +10,7 @@ import {
   doc,
   where,
 } from "firebase/firestore";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { useAuthState } from "react-firebase-hooks/auth";
 
@@ -31,7 +31,14 @@ export const HomeMahasiswa = () => {
           id: doc.id,
           ...doc.data(),
         }));
-        setData(fetchedData);
+
+        const filteredData = fetchedData.filter(
+          (item) =>
+            item.nama.toLowerCase().includes(searchText.toLowerCase()) ||
+            item.email.toLowerCase().includes(searchText.toLowerCase()) ||
+            item.nim.toLowerCase().includes(searchText.toLowerCase())
+        );
+        setData(filteredData);
         setIsLoading(false);
       }
     );
@@ -41,7 +48,7 @@ export const HomeMahasiswa = () => {
 
     // Cleanup: unsubscribe when the component unmounts or when the effect re-runs
     return () => unsubscribe();
-  }, [user, loading, navigate]);
+  }, [user, loading, navigate, searchText]);
 
   const handleDelete = async (id) => {
     try {
@@ -121,6 +128,12 @@ export const HomeMahasiswa = () => {
                         <td className="text-center">{item.email}</td>
                         <td className="text-center p-4">
                           <div className="flex justify-center items-center">
+                            <Link
+                              to={`/kelola-pengguna/mahasiswa/edit/${item.id}`}
+                              className="p-2 bg-slate-200 rounded-md hover:bg-slate-300 mr-1"
+                            >
+                              Ubah
+                            </Link>
                             <button
                               className="p-2 bg-red-200 rounded-md hover:bg-red-300"
                               onClick={() => handleDelete(item.id)}

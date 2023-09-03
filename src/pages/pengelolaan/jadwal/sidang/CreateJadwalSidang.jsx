@@ -54,7 +54,7 @@ export const CreateJadwalSidang = () => {
     if (loading) return;
     if (!user) return navigate("/login");
     fetchTahunAjaran();
-  }, [loading, user]);
+  }, [loading, user, navigate]);
 
   const handleValueChange = (newValue) => {
     console.log("newValue:", newValue);

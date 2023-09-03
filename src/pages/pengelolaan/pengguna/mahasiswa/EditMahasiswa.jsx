@@ -18,11 +18,11 @@ export const EditMahasiswa = () => {
   const { itemId } = useParams();
   const navigate = useNavigate();
 
-  const [namaDosen, setNamaDosen] = useState("");
-  const [emailDosen, setEmailDosen] = useState("");
-  const [dataEmailDosen, setDataEmailDosen] = useState("");
-  const [nidnDosen, setNidnDosen] = useState("");
-  const [dataNidnDosen, setDataNidnDosen] = useState("");
+  const [nama, setNama] = useState("");
+  const [email, setEmail] = useState("");
+  const [dataEmail, setDataEmail] = useState("");
+  const [nim, setNim] = useState("");
+  const [dataNim, setDataNim] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [isLoading, setIsLoading] = useState(true);
@@ -31,27 +31,29 @@ export const EditMahasiswa = () => {
     const fetchData = async () => {
       try {
         // Ambil data dosen yang akan diedit
-        const dosenDoc = await getDoc(doc(db, "users", itemId));
-        if (dosenDoc.exists()) {
-          const data = dosenDoc.data();
-          setNamaDosen(data.nama);
-          setEmailDosen(data.email);
-          setNidnDosen(data.nidn);
-          setDataEmailDosen(data.email);
-          setDataNidnDosen(data.nidn);
+        const mhsDoc = await getDoc(doc(db, "users", itemId));
+        if (mhsDoc.exists()) {
+          const data = mhsDoc.data();
+          setNama(data.nama);
+          setEmail(data.email);
+          setNim(data.nim);
+          setDataEmail(data.email);
+          setDataNim(data.nim);
           setIsLoading(false);
         } else {
           setIsLoading(false);
-          Swal.fire("Error", "Dosen tidak ditemukan", "error").then(() => {
-            navigate("/kelola-pengguna/dosen");
+          Swal.fire("Error", "Mahasiswa tidak ditemukan", "error").then(() => {
+            navigate("/kelola-pengguna/mahasiswa");
           });
         }
       } catch (error) {
         setIsLoading(false);
         console.error("Error fetching data: ", error);
-        Swal.fire("Error", "Gagal mengambil data dosen", "error").then(() => {
-          navigate("/kelola-pengguna/dosen");
-        });
+        Swal.fire("Error", "Gagal mengambil data mahasiswa", "error").then(
+          () => {
+            navigate("/kelola-pengguna/mahasiswa");
+          }
+        );
       }
     };
 
@@ -62,9 +64,9 @@ export const EditMahasiswa = () => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    if (emailDosen !== dataEmailDosen) {
+    if (email !== dataEmail) {
       const querySnapshot = await getDocs(
-        query(collection(db, "users"), where("email", "==", emailDosen))
+        query(collection(db, "users"), where("email", "==", email))
       );
 
       if (!querySnapshot.empty) {
@@ -72,13 +74,13 @@ export const EditMahasiswa = () => {
         setIsSubmitting(false);
         return;
       }
-    } else if (nidnDosen !== dataNidnDosen) {
+    } else if (nim !== dataNim) {
       const querySnapshot = await getDocs(
-        query(collection(db, "users"), where("nidn", "==", nidnDosen))
+        query(collection(db, "users"), where("nim", "==", nim))
       );
 
       if (!querySnapshot.empty) {
-        Swal.fire("Error", "NIDN telah digunakan!", "error");
+        Swal.fire("Error", "NIM telah digunakan!", "error");
         setIsSubmitting(false);
         return;
       }
@@ -86,7 +88,7 @@ export const EditMahasiswa = () => {
 
     try {
       // Cek apakah email atau NIDN sudah ada
-      if (!namaDosen || !emailDosen || !nidnDosen) {
+      if (!nama || !email || !nim) {
         Swal.fire("Error", "Data harus diisi!", "error");
         return;
       }
@@ -94,19 +96,21 @@ export const EditMahasiswa = () => {
       // Update data dosen
       const dosenRef = doc(db, "users", itemId);
       await updateDoc(dosenRef, {
-        nidn: nidnDosen,
-        nama: namaDosen,
-        email: emailDosen,
+        nim: nim,
+        nama: nama,
+        email: email,
       });
 
-      Swal.fire("Success", "Data Dosen berhasil diperbarui", "success").then(
-        () => {
-          navigate("/kelola-pengguna/dosen");
-        }
-      );
+      Swal.fire(
+        "Success",
+        "Data Mahasiswa berhasil diperbarui",
+        "success"
+      ).then(() => {
+        navigate("/kelola-pengguna/mahasiswa");
+      });
     } catch (error) {
       console.error("Error updating data: ", error);
-      Swal.fire("Error", "Gagal memperbarui data dosen", "error");
+      Swal.fire("Error", "Gagal memperbarui data mahasiswa", "error");
     }
   };
 
@@ -121,7 +125,7 @@ export const EditMahasiswa = () => {
           <Sidebar />
           <div className="flex flex-col w-full pl-[300px] overflow-y-auto pr-4 pb-4">
             <h1 className="text-2xl text-white text-center shadow-md font-semibold rounded-lg p-4 m-4 mb-10 bg-slate-600">
-              Edit Data Dosen
+              Edit Data Mahasiswa
             </h1>
             <form
               onSubmit={handleSubmit}
@@ -129,14 +133,14 @@ export const EditMahasiswa = () => {
             >
               <div className="mb-4">
                 <label className="block text-slate-600 font-bold mb-2">
-                  NIDN
+                  NIM
                 </label>
                 <input
                   type="text"
                   className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring focus:border-slate-300 bg-white"
                   name="nidn"
-                  value={nidnDosen}
-                  onChange={(e) => setNidnDosen(e.target.value)}
+                  value={nim}
+                  onChange={(e) => setNim(e.target.value)}
                   required
                 />
               </div>
@@ -148,8 +152,8 @@ export const EditMahasiswa = () => {
                   type="text"
                   className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring focus:border-slate-300 bg-white"
                   name="nama"
-                  value={namaDosen}
-                  onChange={(e) => setNamaDosen(e.target.value)}
+                  value={nama}
+                  onChange={(e) => setNama(e.target.value)}
                   required
                 />
               </div>
@@ -161,8 +165,8 @@ export const EditMahasiswa = () => {
                   type="email"
                   className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring focus:border-slate-300 bg-white"
                   name="email"
-                  value={emailDosen}
-                  onChange={(e) => setEmailDosen(e.target.value)}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   required
                 />
               </div>
@@ -174,7 +178,7 @@ export const EditMahasiswa = () => {
                   {isSubmitting ? "Loading..." : "Submit"}
                 </button>
                 <Link
-                  to="/kelola-pengguna/dosen"
+                  to="/kelola-pengguna/mahasiswa"
                   className="px-4 py-2 bg-red-400 text-white rounded-md hover:bg-red-500 ml-1 drop-shadow-lg"
                 >
                   Cancel
