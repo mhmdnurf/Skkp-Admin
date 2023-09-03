@@ -225,7 +225,9 @@ export const HomePengajuanKP = () => {
                         <td className="text-center whitespace-nowrap">
                           {item.status}
                         </td>
-                        <td className="text-center p-4">{item.catatan}</td>
+                        <td className="text-center p-4 whitespace-nowrap">
+                          {item.catatan}
+                        </td>
                         <td className="text-center p-6 whitespace-nowrap">
                           {item.dosenPembimbingInfo
                             ? item.dosenPembimbingInfo.nama

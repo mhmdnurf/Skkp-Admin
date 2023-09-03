@@ -106,14 +106,14 @@ export const DetailKompre = () => {
             </div>
             <div className="flex justify-evenly items-center p-4">
               <Link
-                to={`${data.persetujuanKompre}`}
+                to={`${data.berkasPersyaratan.persetujuanKompre}`}
                 target="_blank"
                 className="p-2 bg-slate-300 hover:bg-slate-200 rounded-md text-slate-600  font-semibold hover:transform hover:scale-110 transition-transform duration-300 ease-in-out"
               >
                 Form Persetujuan Kompre
               </Link>
               <Link
-                to={`${data.sintak}`}
+                to={`${data.berkasPersyaratan.sintak}`}
                 target="_blank"
                 className="p-2 bg-slate-300 hover:bg-slate-200 rounded-md text-slate-600  font-semibold hover:transform hover:scale-110 transition-transform duration-300 ease-in-out"
               >

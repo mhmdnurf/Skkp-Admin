@@ -133,42 +133,42 @@ export const DetailSidangKP = () => {
             </div>
             <div className="flex justify-evenly items-center p-4">
               <Link
-                to={`${data.persetujuanKP}`}
+                to={`${data.berkasPersyaratan.persetujuanKP}`}
                 target="_blank"
                 className="p-2 bg-slate-300 hover:bg-slate-200 rounded-md text-slate-600  font-semibold hover:transform hover:scale-110 transition-transform duration-300 ease-in-out"
               >
                 Persetujuan KP
               </Link>
               <Link
-                to={`${data.penilaianPerusahaan}`}
+                to={`${data.berkasPersyaratan.penilaianPerusahaan}`}
                 target="_blank"
                 className="p-2 bg-slate-300 hover:bg-slate-200 rounded-md text-slate-600  font-semibold hover:transform hover:scale-110 transition-transform duration-300 ease-in-out"
               >
                 Penilaian Perusahaan
               </Link>
               <Link
-                to={`${data.formPendaftaranKP}`}
+                to={`${data.berkasPersyaratan.formPendaftaranKP}`}
                 target="_blank"
                 className="p-2 bg-slate-300 hover:bg-slate-200 rounded-md font-semibold text-slate-600 hover:transform hover:scale-110 transition-transform duration-300 ease-in-out"
               >
                 Pendaftaran KP
               </Link>
               <Link
-                to={`${data.bimbinganKP}`}
+                to={`${data.berkasPersyaratan.bimbinganKP}`}
                 target="_blank"
                 className="p-2 bg-slate-300 hover:bg-slate-200 rounded-md text-slate-600  font-semibold hover:transform hover:scale-110 transition-transform duration-300 ease-in-out"
               >
                 Bimbingan KP
               </Link>
               <Link
-                to={`${data.fileSertifikatSeminar}`}
+                to={`${data.berkasPersyaratan.fileSertifikatSeminar}`}
                 target="_blank"
                 className="p-2 bg-slate-300 hover:bg-slate-200 rounded-md text-slate-600  font-semibold hover:transform hover:scale-110 transition-transform duration-300 ease-in-out"
               >
                 Sertifikat Seminar STTI
               </Link>
               <Link
-                to={`${data.fileSertifikatPSPT}`}
+                to={`${data.berkasPersyaratan.fileSertifikatPSPT}`}
                 target="_blank"
                 className="p-2 bg-slate-300 hover:bg-slate-200 rounded-md text-slate-600  font-semibold hover:transform hover:scale-110 transition-transform duration-300 ease-in-out"
               >

@@ -120,63 +120,63 @@ export const DetailSidangSkripsi = () => {
             </div>
             <div className="flex justify-between items-center p-4 flex-wrap">
               <Link
-                to={`${data.ijazah}`}
+                to={`${data.berkasPersyaratan.ijazah}`}
                 target="_blank"
                 className="p-2 bg-slate-300 hover:bg-slate-200 rounded-md text-slate-600  font-semibold hover:transform hover:scale-110 transition-transform duration-300 ease-in-out"
               >
                 Ijazah SMA/SMK
               </Link>
               <Link
-                to={`${data.transkipNilai}`}
+                to={`${data.berkasPersyaratan.transkipNilai}`}
                 target="_blank"
                 className="p-2 bg-slate-300 hover:bg-slate-200 rounded-md text-slate-600  font-semibold hover:transform hover:scale-110 transition-transform duration-300 ease-in-out"
               >
                 Transkip Nilai
               </Link>
               <Link
-                to={`${data.pendaftaranSkripsi}`}
+                to={`${data.berkasPersyaratan.pendaftaranSkripsi}`}
                 target="_blank"
                 className="p-2 bg-slate-300 hover:bg-slate-200 rounded-md text-slate-600  font-semibold hover:transform hover:scale-110 transition-transform duration-300 ease-in-out"
               >
                 Form Pendaftaran Sidang
               </Link>
               <Link
-                to={`${data.persetujuanSkripsi}`}
+                to={`${data.berkasPersyaratan.persetujuanSkripsi}`}
                 target="_blank"
                 className="p-2 bg-slate-300 hover:bg-slate-200 rounded-md font-semibold text-slate-600 hover:transform hover:scale-110 transition-transform duration-300 ease-in-out"
               >
                 Form Persetujuan
               </Link>
               <Link
-                to={`${data.fileBuktiLunas}`}
+                to={`${data.berkasPersyaratan.fileBuktiLunas}`}
                 target="_blank"
                 className="p-2 bg-slate-300 hover:bg-slate-200 rounded-md text-slate-600  font-semibold hover:transform hover:scale-110 transition-transform duration-300 ease-in-out"
               >
                 Bukti Lunas Sidang
               </Link>
               <Link
-                to={`${data.lembarRevisi}`}
+                to={`${data.berkasPersyaratan.lembarRevisi}`}
                 target="_blank"
                 className="p-2  text-center bg-slate-300 hover:bg-slate-200 rounded-md text-slate-600  font-semibold hover:transform hover:scale-110 transition-transform duration-300 ease-in-out"
               >
                 Lembar Revisi
               </Link>
               <Link
-                to={`${data.ktp}`}
+                to={`${data.berkasPersyaratan.ktp}`}
                 target="_blank"
                 className="p-2 mt-2 basis-1/4 text-center bg-slate-300 hover:bg-slate-200 rounded-md text-slate-600  font-semibold hover:transform hover:scale-110 transition-transform duration-300 ease-in-out"
               >
                 Scan KTP
               </Link>
               <Link
-                to={`${data.kk}`}
+                to={`${data.berkasPersyaratan.kk}`}
                 target="_blank"
                 className="p-2 mt-2 basis-1/3 text-center bg-slate-300 hover:bg-slate-200 rounded-md text-slate-600  font-semibold hover:transform hover:scale-110 transition-transform duration-300 ease-in-out"
               >
                 Scan KK
               </Link>
               <Link
-                to={`${data.bimbinganSkripsi}`}
+                to={`${data.berkasPersyaratan.bimbinganSkripsi}`}
                 target="_blank"
                 className="p-2 mt-2 basis-1/4 text-center bg-slate-300 hover:bg-slate-200 rounded-md text-slate-600  font-semibold hover:transform hover:scale-110 transition-transform duration-300 ease-in-out"
               >

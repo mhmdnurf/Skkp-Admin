@@ -223,7 +223,9 @@ export const HomePengajuanSkripsi = () => {
                           {item.topikPenelitian}
                         </td>
                         <td className="text-center">{item.status}</td>
-                        <td className="text-center p-4">{item.catatan}</td>
+                        <td className="text-center p-4 whitespace-nowrap">
+                          {item.catatan}
+                        </td>
                         <td className="text-center p-6 whitespace-nowrap">
                           {item.dosenPembimbingInfo
                             ? item.dosenPembimbingInfo.nama

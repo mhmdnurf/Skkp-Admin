@@ -132,35 +132,35 @@ export const DetailSempro = () => {
             </div>
             <div className="flex justify-between items-center p-4 flex-wrap">
               <Link
-                to={`${data.transkipNilai}`}
+                to={`${data.berkasPersyaratan.transkipNilai}`}
                 target="_blank"
                 className="p-2 bg-slate-300 hover:bg-slate-200 rounded-md text-slate-600  font-semibold hover:transform hover:scale-110 transition-transform duration-300 ease-in-out"
               >
                 Transkip Nilai
               </Link>
               <Link
-                to={`${data.pendaftaranSempro}`}
+                to={`${data.berkasPersyaratan.pendaftaranSempro}`}
                 target="_blank"
                 className="p-2 bg-slate-300 hover:bg-slate-200 rounded-md text-slate-600  font-semibold hover:transform hover:scale-110 transition-transform duration-300 ease-in-out"
               >
                 Form Pendaftaran Seminar Proposal
               </Link>
               <Link
-                to={`${data.persetujuanSempro}`}
+                to={`${data.berkasPersyaratan.persetujuanSempro}`}
                 target="_blank"
                 className="p-2 bg-slate-300 hover:bg-slate-200 rounded-md font-semibold text-slate-600 hover:transform hover:scale-110 transition-transform duration-300 ease-in-out"
               >
                 Form Persetujuan Seminar Proposal
               </Link>
               <Link
-                to={`${data.fileSertifikatKeahlian}`}
+                to={`${data.berkasPersyaratan.fileSertifikatKeahlian}`}
                 target="_blank"
                 className="p-2 bg-slate-300 hover:bg-slate-200 rounded-md text-slate-600  font-semibold hover:transform hover:scale-110 transition-transform duration-300 ease-in-out"
               >
                 Sertifikat Keahlian
               </Link>
               <Link
-                to={`${data.fileMenghadiriSidang}`}
+                to={`${data.berkasPersyaratan.fileMenghadiriSidang}`}
                 target="_blank"
                 className="p-2 mt-2 flex-grow text-center bg-slate-300 hover:bg-slate-200 rounded-md text-slate-600  font-semibold hover:transform hover:scale-110 transition-transform duration-300 ease-in-out"
               >

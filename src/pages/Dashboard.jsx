@@ -367,7 +367,7 @@ export const Dashboard = () => {
                           </p>
                         </>
                       ) : (
-                        <p className="text-red-500 font-bold uppercase uppercase">
+                        <p className="text-red-500 font-bold uppercase">
                           Pendaftaran Sedang Ditutup
                         </p>
                       )}
