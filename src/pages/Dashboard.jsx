@@ -315,7 +315,7 @@ export const Dashboard = () => {
                   </div>
                 </div>
                 <div>
-                  <img src="../src/assets/undraw_slider_re_ch7w.svg" alt="" />
+                  <img src="../../undraw_slider_re_ch7w.svg" alt="" />
                 </div>
               </div>
               <div className="bg-slate-200 p-4 m-4 rounded-lg drop-shadow-xl">

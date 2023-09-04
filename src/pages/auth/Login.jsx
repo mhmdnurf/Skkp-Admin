@@ -85,7 +85,7 @@ export const Login = () => {
       <div className="flex justify-center items-center h-screen bg-slate-100">
         <div className="w-1/2">
           <img
-            src="../../src/assets/undraw_join_re_w1lh.svg"
+            src="../../../undraw_join_re_w1lh.svg"
             alt="Left"
             className="w-full"
           />
@@ -139,7 +139,7 @@ export const Login = () => {
         </div>
         <div className="w-1/2">
           <img
-            src="../../src/assets/undraw_sign_up_n6im.svg"
+            src="../../../undraw_sign_up_n6im.svg"
             alt="Right"
             className="w-full"
           />
