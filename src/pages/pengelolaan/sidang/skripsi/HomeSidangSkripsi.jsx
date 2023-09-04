@@ -61,8 +61,16 @@ export const HomeSidangSkripsi = () => {
           const dosenPembimbingInfo = await getUserInfo(
             pengajuanInfo.pembimbing_uid
           );
-          const pengujiSatuInfo = await getUserInfo(data.pengujiSatu_uid);
-          const pengujiDuaInfo = await getUserInfo(data.pengujiDua_uid);
+          let pengujiSatuInfo = null;
+          let pengujiDuaInfo = null;
+          if (data.penguji) {
+            pengujiSatuInfo = data.penguji.pengujiSatu
+              ? await getUserInfo(data.penguji.pengujiSatu)
+              : null;
+            pengujiDuaInfo = data.penguji.pengujiDua
+              ? await getUserInfo(data.penguji.pengujiDua)
+              : null;
+          }
           fetchedData.push({
             id: doc.id,
             ...data,
@@ -113,8 +121,6 @@ export const HomeSidangSkripsi = () => {
 
     if (loading) return;
     if (!user) return navigate("/login");
-
-    // Cleanup: unsubscribe when the component unmounts or when the effect re-runs
     return () => unsubscribe();
   }, [user, loading, navigate, searchText]);
 
