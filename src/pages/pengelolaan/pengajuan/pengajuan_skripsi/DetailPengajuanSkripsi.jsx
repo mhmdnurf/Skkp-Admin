@@ -81,7 +81,7 @@ export const DetailPengajuanSkripsi = () => {
         <Sidebar />
         <div className="flex flex-col w-full pl-[300px] overflow-y-auto pr-4 pb-4">
           <h1 className="text-2xl text-white text-center shadow-md font-bold rounded-lg p-4 m-4 mb-10 bg-slate-600">
-            Detail Pengajuan Kerja Praktek
+            Detail Pengajuan Skripsi
           </h1>
 
           <div className="flex flex-col px-4 mt-2 bg-white mx-4 rounded-lg p-4 drop-shadow-lg">

@@ -275,7 +275,7 @@ export const DetailSidangSkripsi = () => {
                 Beri Dosen Penguji
               </button>
               <Link
-                to={"/sidang-sempro"}
+                to={"/sidang-skripsi"}
                 className="bg-red-400 hover:bg-red-500 p-2 m-2 rounded-md w-[150px] text-center text-slate-100"
               >
                 Kembali

@@ -150,16 +150,24 @@ export const HomeSidangSkripsi = () => {
         const docSnapshot = await getDoc(docRef);
         if (docSnapshot.exists()) {
           const data = docSnapshot.data();
-          const transkipNilaiFileName = `persyaratan/sidangSempro/transkipNilai/${data.user_uid}`;
-          const pendaftaranSemproFileName = `persyaratan/sidangSempro/formPendaftaran/${data.user_uid}`;
-          const persetujuanSemproFileName = `persyaratan/sidangSempro/formPersetujuan/${data.user_uid}`;
-          const sertifikatKeahlianFileName = `persyaratan/sidangSempro/sertifikatKeahlian/${data.user_uid}`;
-          const menghadiriSidangFileName = `persyaratan/sidangSempro/formMenghadiriSidang/${data.user_uid}`;
+          const ijazahFileName = `persyaratan/sidangSkripsi/ijazah/${data.user_uid}`;
+          const transkipNilaiFileName = `persyaratan/sidangSkripsi/transkipNilai/${data.user_uid}`;
+          const pendaftaranSkripsiFileName = `persyaratan/sidangSkripsi/formPendaftaran/${data.user_uid}`;
+          const persetujuanSkripsiFileName = `persyaratan/sidangSkripsi/formPersetujuan/${data.user_uid}`;
+          const buktiLunasFileName = `persyaratan/sidangSkripsi/buktiLunas/${data.user_uid}`;
+          const lembarRevisiFileName = `persyaratan/sidangSkripsi/lembarRevisi/${data.user_uid}`;
+          const ktpFileName = `persyaratan/sidangSkripsi/ktp/${data.user_uid}`;
+          const kkFileName = `persyaratan/sidangSkripsi/kk/${data.user_uid}`;
+          const bimbinganSkripsiFileName = `persyaratan/sidangSkripsi/formBimbingan/${data.user_uid}`;
           await deleteObject(ref(storage, transkipNilaiFileName));
-          await deleteObject(ref(storage, pendaftaranSemproFileName));
-          await deleteObject(ref(storage, persetujuanSemproFileName));
-          await deleteObject(ref(storage, sertifikatKeahlianFileName));
-          await deleteObject(ref(storage, menghadiriSidangFileName));
+          await deleteObject(ref(storage, ijazahFileName));
+          await deleteObject(ref(storage, pendaftaranSkripsiFileName));
+          await deleteObject(ref(storage, persetujuanSkripsiFileName));
+          await deleteObject(ref(storage, buktiLunasFileName));
+          await deleteObject(ref(storage, lembarRevisiFileName));
+          await deleteObject(ref(storage, ktpFileName));
+          await deleteObject(ref(storage, kkFileName));
+          await deleteObject(ref(storage, bimbinganSkripsiFileName));
           await deleteDoc(docRef);
         }
         Swal.fire("Success", "Data Berhasil dihapus!", "success");

@@ -19,8 +19,7 @@ export const EditMahasiswa = () => {
   const navigate = useNavigate();
 
   const [nama, setNama] = useState("");
-  const [email, setEmail] = useState("");
-  const [dataEmail, setDataEmail] = useState("");
+  const [jurusan, setJurusan] = useState("");
   const [nim, setNim] = useState("");
   const [dataNim, setDataNim] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -35,9 +34,8 @@ export const EditMahasiswa = () => {
         if (mhsDoc.exists()) {
           const data = mhsDoc.data();
           setNama(data.nama);
-          setEmail(data.email);
           setNim(data.nim);
-          setDataEmail(data.email);
+          setJurusan(data.jurusan);
           setDataNim(data.nim);
           setIsLoading(false);
         } else {
@@ -64,17 +62,7 @@ export const EditMahasiswa = () => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    if (email !== dataEmail) {
-      const querySnapshot = await getDocs(
-        query(collection(db, "users"), where("email", "==", email))
-      );
-
-      if (!querySnapshot.empty) {
-        Swal.fire("Error", "Email telah digunakan!", "error");
-        setIsSubmitting(false);
-        return;
-      }
-    } else if (nim !== dataNim) {
+    if (nim !== dataNim) {
       const querySnapshot = await getDocs(
         query(collection(db, "users"), where("nim", "==", nim))
       );
@@ -88,7 +76,7 @@ export const EditMahasiswa = () => {
 
     try {
       // Cek apakah email atau NIDN sudah ada
-      if (!nama || !email || !nim) {
+      if (!nama || !nim) {
         Swal.fire("Error", "Data harus diisi!", "error");
         return;
       }
@@ -98,7 +86,7 @@ export const EditMahasiswa = () => {
       await updateDoc(dosenRef, {
         nim: nim,
         nama: nama,
-        email: email,
+        jurusan: jurusan,
       });
 
       Swal.fire(
@@ -159,17 +147,24 @@ export const EditMahasiswa = () => {
               </div>
               <div className="mb-4">
                 <label className="block text-slate-600 font-bold mb-2">
-                  Email
+                  Jurusan
                 </label>
-                <input
-                  type="email"
+                <select
                   className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring focus:border-slate-300 bg-white"
-                  name="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  name="jurusan"
+                  value={jurusan}
+                  onChange={(e) => setJurusan(e.target.value)}
                   required
-                />
+                >
+                  <option value="" disabled>
+                    Pilih Jurusan
+                  </option>
+                  <option value="Teknik Informatika">Teknik Informatika</option>
+                  <option value="Sistem Informasi">Sistem Informasi</option>
+                  <option value="Komputer Akuntansi">Komputer Akuntansi</option>
+                </select>
               </div>
+
               <div className="flex justify-end">
                 <button
                   type="submit"
