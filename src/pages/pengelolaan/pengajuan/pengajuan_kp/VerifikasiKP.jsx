@@ -57,7 +57,7 @@ export const VerifikasiKP = () => {
 
         if (status === "Sah") {
           const response = await fetch(
-            `http://localhost:3000/send-notification/hasil-verifikasi-kp-berhasil/${user_uid}`,
+            `https://fcm-skkp-cqk5st7fhq-uc.a.run.app/send-notification/hasil-verifikasi-kp-berhasil/${user_uid}`,
             {
               method: "POST",
               headers: {
@@ -75,7 +75,7 @@ export const VerifikasiKP = () => {
           }
         } else {
           const response = await fetch(
-            `http://localhost:3000/send-notification/hasil-verifikasi-kp-ditolak/${user_uid}`,
+            `https://fcm-skkp-cqk5st7fhq-uc.a.run.app/send-notification/hasil-verifikasi-kp-ditolak/${user_uid}`,
             {
               method: "POST",
               headers: {

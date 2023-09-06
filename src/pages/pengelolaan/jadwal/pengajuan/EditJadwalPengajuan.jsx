@@ -62,7 +62,7 @@ export const EditJadwalPengajuan = () => {
       if (status === "Tidak Aktif") {
         // Kirim permintaan ke server untuk mengirim notifikasi
         const response = await fetch(
-          "http://localhost:3000/send-notification/pengajuanTutup",
+          "https://fcm-skkp-cqk5st7fhq-uc.a.run.app/send-notification/pengajuanTutup",
           {
             method: "POST",
             headers: {

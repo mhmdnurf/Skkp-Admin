@@ -56,7 +56,7 @@ export const VerifikasiSkripsi = () => {
 
         if (status === "Sah") {
           const response = await fetch(
-            `http://localhost:3000/send-notification/hasil-verifikasi-skripsi-berhasil/${user_uid}`,
+            `https://fcm-skkp-cqk5st7fhq-uc.a.run.app/send-notification/hasil-verifikasi-skripsi-berhasil/${user_uid}`,
             {
               method: "POST",
               headers: {
@@ -75,7 +75,7 @@ export const VerifikasiSkripsi = () => {
           }
         } else {
           const response = await fetch(
-            `http://localhost:3000/send-notification/hasil-verifikasi-skripsi-ditolak/${user_uid}`,
+            `https://fcm-skkp-cqk5st7fhq-uc.a.run.app/send-notification/hasil-verifikasi-skripsi-ditolak/${user_uid}`,
             {
               method: "POST",
               headers: {

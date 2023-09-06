@@ -87,7 +87,7 @@ export const DosenPembimbingKP = () => {
         const registrationToken = userDocSnapshot.data().registrationToken;
 
         const response = await fetch(
-          `http://localhost:3000/send-notification/dosen-pembimbing-kp/${user_uid}`,
+          `https://fcm-skkp-cqk5st7fhq-uc.a.run.app/send-notification/dosen-pembimbing-kp/${user_uid}`,
           {
             method: "POST",
             headers: {

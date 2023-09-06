@@ -99,7 +99,7 @@ export const CreateJadwalSidang = () => {
 
         // Kirim permintaan ke server untuk mengirim notifikasi
         const response = await fetch(
-          "http://localhost:3000/send-notification/sidang",
+          "https://fcm-skkp-cqk5st7fhq-uc.a.run.app/send-notification/sidang",
           {
             method: "POST",
             headers: {

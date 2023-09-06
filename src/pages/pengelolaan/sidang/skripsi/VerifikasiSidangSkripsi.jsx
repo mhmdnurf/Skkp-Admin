@@ -58,7 +58,7 @@ export const VerifikasiSidangSkripsi = () => {
 
         if (status === "Sah") {
           const response = await fetch(
-            `http://localhost:3000/send-notification/hasil-verifikasi-sidang-skripsi-berhasil/${user_uid}`,
+            `https://fcm-skkp-cqk5st7fhq-uc.a.run.app/send-notification/hasil-verifikasi-sidang-skripsi-berhasil/${user_uid}`,
             {
               method: "POST",
               headers: {
@@ -77,7 +77,7 @@ export const VerifikasiSidangSkripsi = () => {
           }
         } else {
           const response = await fetch(
-            `http://localhost:3000/send-notification/hasil-verifikasi-sidang-skripsi-ditolak/${user_uid}`,
+            `https://fcm-skkp-cqk5st7fhq-uc.a.run.app/send-notification/hasil-verifikasi-sidang-skripsi-ditolak/${user_uid}`,
             {
               method: "POST",
               headers: {
