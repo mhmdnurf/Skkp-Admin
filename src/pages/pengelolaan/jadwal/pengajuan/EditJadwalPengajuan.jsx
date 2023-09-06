@@ -58,7 +58,7 @@ export const EditJadwalPengajuan = () => {
 
       // Update data pada Firestore
       const docRef = doc(db, "jadwalPengajuan", itemId);
-      await updateDoc(docRef, { status: status });
+      await updateDoc(docRef, { status: status, manualStatus: true });
       if (status === "Tidak Aktif") {
         // Kirim permintaan ke server untuk mengirim notifikasi
         const response = await fetch(

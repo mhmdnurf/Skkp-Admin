@@ -22,7 +22,7 @@ export const HomeNilaiSkripsi = () => {
   const [data, setData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
-  // const [searchText, setSearchText] = useState("");
+  const [searchText, setSearchText] = useState("");
   const navigate = useNavigate();
   const [user, loading] = useAuthState(auth);
 
@@ -56,7 +56,30 @@ export const HomeNilaiSkripsi = () => {
             dosenPembimbingInfo: dosenPembimbingInfo,
           });
         }
-        setData(fetchedData);
+        const filteredData = fetchedData.filter(
+          (item) =>
+            item.userInfo.nama
+              .toLowerCase()
+              .includes(searchText.toLowerCase()) ||
+            item.userInfo.jurusan
+              .toLowerCase()
+              .includes(searchText.toLowerCase()) ||
+            item.userInfo.nim
+              .toLowerCase()
+              .includes(searchText.toLowerCase()) ||
+            item.status.toLowerCase().includes(searchText.toLowerCase()) ||
+            (item.dosenPembimbingInfo &&
+              item.dosenPembimbingInfo.nama
+                .toLowerCase()
+                .includes(searchText.toLowerCase())) ||
+            new Date(item.createdAt.seconds * 1000)
+              .toLocaleDateString("en-US")
+              .includes(searchText) ||
+            item.topikPenelitian
+              .toLowerCase()
+              .includes(searchText.toLowerCase())
+        );
+        setData(filteredData);
         setIsLoading(false);
       }
     );
@@ -66,7 +89,7 @@ export const HomeNilaiSkripsi = () => {
 
     // Cleanup: unsubscribe when the component unmounts or when the effect re-runs
     return () => unsubscribe();
-  }, [user, loading, navigate, data]);
+  }, [user, loading, navigate, data, searchText]);
 
   const truncateTitle = (title, words = 3) => {
     const wordsArray = title.split(" ");
@@ -137,6 +160,8 @@ export const HomeNilaiSkripsi = () => {
                   type="text"
                   className="px-4 py-2 border w-[400px] rounded-md drop-shadow-sm"
                   placeholder="Search..."
+                  value={searchText}
+                  onChange={(e) => setSearchText(e.target.value)}
                 />
               </div>
 

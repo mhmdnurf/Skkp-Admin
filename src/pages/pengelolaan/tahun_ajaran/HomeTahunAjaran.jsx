@@ -31,7 +31,10 @@ export const HomeTahunAjaran = () => {
           id: doc.id,
           ...doc.data(),
         }));
-        setData(fetchedData);
+        const filteredData = fetchedData.filter((item) =>
+          item.tahunAjaran.toLowerCase().includes(searchText.toLowerCase())
+        );
+        setData(filteredData);
         setIsLoading(false);
       }
     );
@@ -41,7 +44,7 @@ export const HomeTahunAjaran = () => {
 
     // Cleanup: unsubscribe when the component unmounts or when the effect re-runs
     return () => unsubscribe();
-  }, [user, loading, navigate]);
+  }, [user, loading, navigate, searchText]);
 
   const handleDelete = async (id) => {
     try {

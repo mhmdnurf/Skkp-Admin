@@ -19,7 +19,7 @@ export const HomeNilaiKP = () => {
   const [data, setData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
-  // const [searchText, setSearchText] = useState("");
+  const [searchText, setSearchText] = useState("");
   const navigate = useNavigate();
   const [user, loading] = useAuthState(auth);
 
@@ -53,7 +53,28 @@ export const HomeNilaiKP = () => {
             dosenPembimbingInfo: dosenPembimbingInfo,
           });
         }
-        setData(fetchedData);
+        const filteredData = fetchedData.filter(
+          (item) =>
+            item.userInfo.nama
+              .toLowerCase()
+              .includes(searchText.toLowerCase()) ||
+            item.userInfo.jurusan
+              .toLowerCase()
+              .includes(searchText.toLowerCase()) ||
+            item.userInfo.nim
+              .toLowerCase()
+              .includes(searchText.toLowerCase()) ||
+            item.status.toLowerCase().includes(searchText.toLowerCase()) ||
+            (item.dosenPembimbingInfo &&
+              item.dosenPembimbingInfo.nama
+                .toLowerCase()
+                .includes(searchText.toLowerCase())) ||
+            new Date(item.createdAt.seconds * 1000)
+              .toLocaleDateString("en-US")
+              .includes(searchText) ||
+            item.judul.toLowerCase().includes(searchText.toLowerCase())
+        );
+        setData(filteredData);
         console.log(data);
         setIsLoading(false);
       }
@@ -64,7 +85,7 @@ export const HomeNilaiKP = () => {
 
     // Cleanup: unsubscribe when the component unmounts or when the effect re-runs
     return () => unsubscribe();
-  }, [user, loading, navigate, data]);
+  }, [user, loading, navigate, data, searchText]);
 
   const startIdx = (currentPage - 1) * itemsPerPage;
   const endIdx = currentPage * itemsPerPage;
@@ -88,6 +109,8 @@ export const HomeNilaiKP = () => {
                   type="text"
                   className="px-4 py-2 border w-[400px] rounded-md drop-shadow-sm"
                   placeholder="Search..."
+                  value={searchText}
+                  onChange={(e) => setSearchText(e.target.value)}
                 />
               </div>
 

@@ -36,7 +36,8 @@ export const HomeMahasiswa = () => {
           (item) =>
             item.nama.toLowerCase().includes(searchText.toLowerCase()) ||
             item.email.toLowerCase().includes(searchText.toLowerCase()) ||
-            item.nim.toLowerCase().includes(searchText.toLowerCase())
+            item.nim.toLowerCase().includes(searchText.toLowerCase()) ||
+            item.jurusan.toLowerCase().includes(searchText.toLowerCase())
         );
         setData(filteredData);
         setIsLoading(false);

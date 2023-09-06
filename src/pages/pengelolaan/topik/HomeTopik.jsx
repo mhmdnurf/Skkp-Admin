@@ -30,7 +30,20 @@ export const HomeTopik = () => {
           id: doc.id,
           ...doc.data(),
         }));
-        setData(fetchedData);
+
+        const filteredData = fetchedData.filter((item) => {
+          const namaTopikLower = item.namaTopik.toLowerCase();
+          const prodiTopikLower = Array.isArray(item.prodiTopik)
+            ? item.prodiTopik.join(" ").toLowerCase()
+            : item.prodiTopik.toLowerCase();
+
+          return (
+            namaTopikLower.includes(searchText.toLowerCase()) ||
+            prodiTopikLower.includes(searchText.toLowerCase())
+          );
+        });
+
+        setData(filteredData);
         setIsLoading(false);
       }
     );
@@ -40,7 +53,7 @@ export const HomeTopik = () => {
 
     // Cleanup: unsubscribe when the component unmounts or when the effect re-runs
     return () => unsubscribe();
-  }, [user, loading, navigate]);
+  }, [user, loading, navigate, searchText]);
 
   const handleDelete = async (id) => {
     try {
