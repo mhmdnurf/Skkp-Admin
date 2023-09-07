@@ -57,20 +57,20 @@ export const HomeDosen = () => {
     return () => unsubscribe();
   }, [user, loading, searchText, navigate]);
 
-  const cekDosenTerikat = async (uid) => {
+  const cekDosenTerikat = async (id) => {
     try {
       // Buat kueri untuk mengambil pengajuan yang terkait dengan dosenId
       const pengajuanQuery = query(
         collection(db, "pengajuan"),
-        where("pembimbing_uid", "==", uid)
+        where("pembimbing_uid", "==", id)
       );
       const pengajuanSnapshot = await getDocs(pengajuanQuery);
 
       // Buat kueri untuk mengambil sidang yang terkait dengan dosenId
       const sidangQuery = query(
         collection(db, "sidang"),
-        where("penguji.pengujiSatu", "in", uid),
-        where("pengujiDua", "in", uid)
+        where("penguji.pengujiSatu", "==", id),
+        where("penguji.pengujiDua", "==", id)
       );
       const sidangSnapshot = await getDocs(sidangQuery);
 
@@ -85,6 +85,7 @@ export const HomeDosen = () => {
   const handleDelete = async (id) => {
     try {
       const isDosenTerikat = await cekDosenTerikat(id);
+      console.log(isDosenTerikat);
       if (isDosenTerikat) {
         Swal.fire(
           "Error",

@@ -9,6 +9,7 @@ import {
   deleteDoc,
   doc,
   where,
+  getDocs,
 } from "firebase/firestore";
 import { Link, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
@@ -51,8 +52,42 @@ export const HomeMahasiswa = () => {
     return () => unsubscribe();
   }, [user, loading, navigate, searchText]);
 
+  const mahasiswaTerikat = async (id) => {
+    try {
+      // Buat kueri untuk mengambil pengajuan yang terkait dengan dosenId
+      const pengajuanQuery = query(
+        collection(db, "pengajuan"),
+        where("user_uid", "==", id)
+      );
+      const pengajuanSnapshot = await getDocs(pengajuanQuery);
+
+      // Buat kueri untuk mengambil sidang yang terkait dengan dosenId
+      const sidangQuery = query(
+        collection(db, "sidang"),
+        where("user_uid", "==", id)
+      );
+      const sidangSnapshot = await getDocs(sidangQuery);
+
+      // Jika ada pengajuan atau sidang yang terkait, kembalikan true
+      return !pengajuanSnapshot.empty || !sidangSnapshot.empty;
+    } catch (error) {
+      console.error("Error checking data: ", error);
+      return false;
+    }
+  };
+
   const handleDelete = async (id) => {
     try {
+      const isMahasiswaTerikat = await mahasiswaTerikat(id);
+      if (isMahasiswaTerikat) {
+        Swal.fire(
+          "Error",
+          "Mahasiswa terkait dengan pengajuan atau sidang. Tidak dapat dihapus.",
+          "error"
+        );
+        return;
+      }
+
       const result = await Swal.fire({
         title: "Apakah Anda Yakin?",
         text: "Data akan hilang permanen ketika dihapus",
