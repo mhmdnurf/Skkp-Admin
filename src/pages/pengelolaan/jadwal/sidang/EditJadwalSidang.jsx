@@ -62,7 +62,7 @@ export const EditJadwalSidang = () => {
       if (status === "Tidak Aktif") {
         // Kirim permintaan ke server untuk mengirim notifikasi
         const response = await fetch(
-          "https://fcm-skkp-cqk5st7fhq-uc.a.run.app/send-notification/sidangTutup",
+          "https://fcm-skkp-cqk5st7fhq-et.a.run.app/send-notification/sidangTutup",
           {
             method: "POST",
             headers: {

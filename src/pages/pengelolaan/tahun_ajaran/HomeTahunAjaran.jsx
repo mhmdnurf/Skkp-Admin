@@ -32,7 +32,7 @@ export const HomeTahunAjaran = () => {
           ...doc.data(),
         }));
         const filteredData = fetchedData.filter((item) =>
-          item.tahunAjaran.toLowerCase().includes(searchText.toLowerCase())
+          item.tahun.toLowerCase().includes(searchText.toLowerCase())
         );
         setData(filteredData);
         setIsLoading(false);

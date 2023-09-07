@@ -18,6 +18,15 @@ const firebaseConfig = {
   measurementId: "G-LN0HYGE0FN",
 };
 
+// const firebaseConfig = {
+//   apiKey: "AIzaSyAvaM2q9V9I8t3TNfxiTOCjoWQ3RL6ge2k",
+//   authDomain: "skkp-b586c.firebaseapp.com",
+//   projectId: "skkp-b586c",
+//   storageBucket: "skkp-b586c.appspot.com",
+//   messagingSenderId: "875382065023",
+//   appId: "1:875382065023:web:fa82e3b0ea7dcb2704bc4a",
+// };
+
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);

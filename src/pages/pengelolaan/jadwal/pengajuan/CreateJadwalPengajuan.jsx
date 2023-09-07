@@ -98,7 +98,7 @@ export const CreateJadwalPengajuan = () => {
         }
 
         const response = await fetch(
-          `https://fcm-skkp-cqk5st7fhq-uc.a.run.app/send-notification/${endpoint}`,
+          `https://fcm-skkp-cqk5st7fhq-et.a.run.app/send-notification/${endpoint}`,
           {
             method: "POST",
             headers: {

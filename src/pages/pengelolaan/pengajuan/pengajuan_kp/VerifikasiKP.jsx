@@ -75,7 +75,7 @@ export const VerifikasiKP = () => {
           }
         } else {
           const response = await fetch(
-            `https://fcm-skkp-cqk5st7fhq-uc.a.run.app/send-notification/hasil-verifikasi-kp-ditolak/${user_uid}`,
+            `https://fcm-skkp-cqk5st7fhq-et.a.run.app/send-notification/hasil-verifikasi-kp-ditolak/${user_uid}`,
             {
               method: "POST",
               headers: {

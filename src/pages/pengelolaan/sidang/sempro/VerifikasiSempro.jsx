@@ -58,7 +58,7 @@ export const VerifikasiSempro = () => {
 
         if (status === "Sah") {
           const response = await fetch(
-            `https://fcm-skkp-cqk5st7fhq-uc.a.run.app/send-notification/hasil-verifikasi-sempro-berhasil/${user_uid}`,
+            `https://fcm-skkp-cqk5st7fhq-et.a.run.app/send-notification/hasil-verifikasi-sempro-berhasil/${user_uid}`,
             {
               method: "POST",
               headers: {
@@ -77,7 +77,7 @@ export const VerifikasiSempro = () => {
           }
         } else {
           const response = await fetch(
-            `https://fcm-skkp-cqk5st7fhq-uc.a.run.app/send-notification/hasil-verifikasi-sempro-ditolak/${user_uid}`,
+            `https://fcm-skkp-cqk5st7fhq-et.a.run.app/send-notification/hasil-verifikasi-sempro-ditolak/${user_uid}`,
             {
               method: "POST",
               headers: {
