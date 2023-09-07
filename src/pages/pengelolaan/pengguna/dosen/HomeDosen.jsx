@@ -67,15 +67,24 @@ export const HomeDosen = () => {
       const pengajuanSnapshot = await getDocs(pengajuanQuery);
 
       // Buat kueri untuk mengambil sidang yang terkait dengan dosenId
-      const sidangQuery = query(
+      const sidangQuerySatu = query(
         collection(db, "sidang"),
-        where("penguji.pengujiSatu", "==", id),
+        where("penguji.pengujiSatu", "==", id)
+      );
+      const sidangQueryDua = query(
+        collection(db, "sidang"),
         where("penguji.pengujiDua", "==", id)
       );
-      const sidangSnapshot = await getDocs(sidangQuery);
+
+      const sidangSnapshotSatu = await getDocs(sidangQuerySatu);
+      const sidangSnapshotDua = await getDocs(sidangQueryDua);
 
       // Jika ada pengajuan atau sidang yang terkait, kembalikan true
-      return !pengajuanSnapshot.empty || !sidangSnapshot.empty;
+      return (
+        !pengajuanSnapshot.empty ||
+        !sidangSnapshotSatu.empty ||
+        !sidangSnapshotDua.empty
+      );
     } catch (error) {
       console.error("Error checking data: ", error);
       return false;
@@ -85,7 +94,7 @@ export const HomeDosen = () => {
   const handleDelete = async (id) => {
     try {
       const isDosenTerikat = await cekDosenTerikat(id);
-      console.log(isDosenTerikat);
+      // console.log(id);
       if (isDosenTerikat) {
         Swal.fire(
           "Error",
