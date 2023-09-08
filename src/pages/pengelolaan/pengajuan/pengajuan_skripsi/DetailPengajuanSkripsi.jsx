@@ -5,6 +5,7 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, db } from "../../../../utils/firebase";
 import { doc, getDoc } from "firebase/firestore";
+import Swal from "sweetalert2";
 
 export const DetailPengajuanSkripsi = () => {
   const { itemId } = useParams();
@@ -74,6 +75,19 @@ export const DetailPengajuanSkripsi = () => {
   if (!data) {
     return <p>Data not found.</p>;
   }
+
+  const handleButtonPembimbing = () => {
+    if (data.status != "Sah") {
+      Swal.fire({
+        title: "Error",
+        text: "Data belum diverifikasi",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
+    } else {
+      navigate(`/pengajuan-skripsi/dosen-pembimbing/${itemId}`);
+    }
+  };
 
   return (
     <>
@@ -208,12 +222,12 @@ export const DetailPengajuanSkripsi = () => {
               >
                 Verifikasi
               </Link>
-              <Link
-                to={`/pengajuan-skripsi/dosen-pembimbing/${itemId}`}
+              <button
+                onClick={handleButtonPembimbing}
                 className="bg-blue-600 hover:bg-blue-700 p-2 m-2 rounded-md w-[200px] text-center text-slate-100"
               >
                 Beri Dosen Pembimbing
-              </Link>
+              </button>
               <Link
                 to={"/pengajuan-skripsi"}
                 className="bg-red-400 hover:bg-red-500 p-2 m-2 rounded-md w-[150px] text-center text-slate-100"
