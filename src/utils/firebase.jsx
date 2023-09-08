@@ -19,12 +19,12 @@ const firebaseConfig = {
 };
 
 // const firebaseConfig = {
-//   apiKey: "AIzaSyAvaM2q9V9I8t3TNfxiTOCjoWQ3RL6ge2k",
-//   authDomain: "skkp-b586c.firebaseapp.com",
-//   projectId: "skkp-b586c",
-//   storageBucket: "skkp-b586c.appspot.com",
-//   messagingSenderId: "875382065023",
-//   appId: "1:875382065023:web:fa82e3b0ea7dcb2704bc4a",
+//   apiKey: "AIzaSyBcoqJPT27Zmnpp6uFOzpOdU4Exb5VJX98",
+//   authDomain: "skkp-dev.firebaseapp.com",
+//   projectId: "skkp-dev",
+//   storageBucket: "skkp-dev.appspot.com",
+//   messagingSenderId: "978372101950",
+//   appId: "1:978372101950:web:ff916d1389530256ba0e6f",
 // };
 
 // Initialize Firebase

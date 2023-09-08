@@ -17,6 +17,18 @@ import {
 } from "firebase/firestore";
 import { deleteObject, ref } from "firebase/storage";
 import Swal from "sweetalert2";
+import {
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalFooter,
+  ModalBody,
+  ModalCloseButton,
+  useDisclosure,
+} from "@chakra-ui/react";
+import Datepicker from "react-tailwindcss-datepicker";
+import { FaPrint } from "react-icons/fa";
 
 export const HomePengajuanKP = () => {
   const itemsPerPage = 5;
@@ -26,6 +38,11 @@ export const HomePengajuanKP = () => {
   const [searchText, setSearchText] = useState("");
   const navigate = useNavigate();
   const [user, loading] = useAuthState(auth);
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [tanggal, setTanggal] = useState({
+    startDate: new Date(),
+    endDate: new Date().setMonth(11),
+  });
 
   const getUserInfo = async (uid) => {
     const userDocRef = doc(db, "users", uid);
@@ -145,8 +162,21 @@ export const HomePengajuanKP = () => {
     }
   };
 
+  const handleRiwayatLaporan = () => {
+    alert("halo");
+  };
+
   const startIdx = (currentPage - 1) * itemsPerPage;
   const endIdx = currentPage * itemsPerPage;
+
+  const handleValueChange = (newValue) => {
+    console.log("newValue:", newValue);
+    setTanggal(newValue);
+  };
+
+  const handleLaporan = () => {
+    console.log(tanggal);
+  };
 
   return (
     <>
@@ -162,14 +192,65 @@ export const HomePengajuanKP = () => {
               <h1 className="text-2xl text-white text-center shadow-md font-bold rounded-lg p-4 m-4 mb-10 bg-slate-600">
                 Data Pengajuan Kerja Praktek
               </h1>
-              <div className="flex items-center mt-16 mb-2 mx-2 justify-end mr-4">
-                <input
-                  type="text"
-                  className="px-4 py-2 border w-[400px] rounded-md drop-shadow-sm"
-                  placeholder="Search..."
-                  value={searchText}
-                  onChange={(e) => setSearchText(e.target.value)}
-                />
+              <div className="flex mt-16 mb-2 ml-4 mr-4 items-center">
+                <div className="flex-grow">
+                  <input
+                    type="text"
+                    className="px-4 py-2 border rounded-md shadow-sm w-[500px]"
+                    placeholder="Search..."
+                    value={searchText}
+                    onChange={(e) => setSearchText(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <div className="space-x-2">
+                    <button
+                      onClick={onOpen}
+                      className="p-2 bg-slate-300 rounded-md text-slate-700 w-[200px] shadow-sm hover:bg-slate-500 hover:text-white"
+                    >
+                      Laporan
+                    </button>
+                    <Modal
+                      isCentered
+                      isOpen={isOpen}
+                      onClose={onClose}
+                      motionPreset="slideInBottom"
+                    >
+                      <ModalOverlay />
+                      <ModalContent>
+                        <ModalHeader>Periode Pengajuan</ModalHeader>
+                        <ModalCloseButton />
+                        <ModalBody>
+                          <div className="mb-4 relative mt-2">
+                            <label className="block text-slate-600 font-bold">
+                              Tanggal
+                            </label>
+                            <div>
+                              <Datepicker
+                                value={tanggal}
+                                onChange={handleValueChange}
+                              />
+                            </div>
+                          </div>
+                        </ModalBody>
+                        <ModalFooter>
+                          <button
+                            onClick={handleLaporan}
+                            className="hover:bg-slate-800 w-full justify-center items-center flex bg-slate-700 p-2 text-white rounded-md"
+                          >
+                            <FaPrint size={30} />
+                          </button>
+                        </ModalFooter>
+                      </ModalContent>
+                    </Modal>
+                    <button
+                      onClick={handleRiwayatLaporan}
+                      className="p-2 bg-gray-300 hover:bg-gray-500 hover:text-white text-slate-700 rounded-md shadow-sm w-[200px]"
+                    >
+                      Riwayat Laporan
+                    </button>
+                  </div>
+                </div>
               </div>
 
               {/* Tabel Data */}

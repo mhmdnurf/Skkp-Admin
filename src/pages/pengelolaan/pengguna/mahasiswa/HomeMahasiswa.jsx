@@ -123,7 +123,6 @@ export const HomeMahasiswa = () => {
               <h1 className="text-2xl text-white text-center shadow-md font-semibold rounded-lg p-4 m-4 mb-10 bg-slate-600">
                 Data Mahasiswa
               </h1>
-
               <div className="flex justify-between mt-16">
                 <div className="flex items-center ml-4 " />
                 <div className="flex items-center mr-4">
