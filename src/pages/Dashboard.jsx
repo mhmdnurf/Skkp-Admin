@@ -253,11 +253,6 @@ export const Dashboard = () => {
   return (
     <>
       <div className="flex bg-slate-100 h-screen">
-        {/* Sidebar Start */}
-
-        {/* Sidebar End */}
-        {/* Content Start */}
-
         {isLoading ? (
           <>
             <div className="flex items-center justify-center w-full h-screen overflow-y-auto ">

@@ -54,6 +54,7 @@ import { JudulSkripsi } from "./pages/pengelolaan/sidang/skripsi/JudulSkripsi";
 import { EditDosen } from "./pages/pengelolaan/pengguna/dosen/EditDosen";
 import { EditMahasiswa } from "./pages/pengelolaan/pengguna/mahasiswa/EditMahasiswa";
 import Excel from "./components/NewComponents/Excel";
+import { RiwayatLaporanKP } from "./pages/pengelolaan/pengajuan/pengajuan_kp/RiwayatLaporanKP";
 
 export default function App() {
   return (
@@ -78,6 +79,10 @@ export default function App() {
               element={<DosenPembimbingKP />}
             />
             <Route path="/pengajuan-kp/judul/:itemId" element={<JudulKP />} />
+            <Route
+              path="/pengajuan-kp/riwayat-laporan"
+              element={<RiwayatLaporanKP />}
+            />
             <Route
               path="/pengajuan-skripsi"
               element={<HomePengajuanSkripsi />}
