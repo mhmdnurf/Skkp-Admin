@@ -55,6 +55,7 @@ import { EditDosen } from "./pages/pengelolaan/pengguna/dosen/EditDosen";
 import { EditMahasiswa } from "./pages/pengelolaan/pengguna/mahasiswa/EditMahasiswa";
 import Excel from "./components/NewComponents/Excel";
 import { RiwayatLaporanKP } from "./pages/pengelolaan/pengajuan/pengajuan_kp/RiwayatLaporanKP";
+import { RiwayatLaporanSkripsi } from "./pages/pengelolaan/pengajuan/pengajuan_skripsi/RiwayatLaporanSkripsi";
 
 export default function App() {
   return (
@@ -102,6 +103,10 @@ export default function App() {
             <Route
               path="/pengajuan-skripsi/ubah-topik/:itemId"
               element={<UbahTopikSkripsi />}
+            />
+            <Route
+              path="/pengajuan-skripsi/riwayat-laporan"
+              element={<RiwayatLaporanSkripsi />}
             />
 
             <Route path="/tahun-ajaran" element={<HomeTahunAjaran />} />

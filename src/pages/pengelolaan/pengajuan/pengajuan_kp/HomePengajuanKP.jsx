@@ -34,7 +34,6 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import Datepicker from "react-tailwindcss-datepicker";
-import { FaPrint } from "react-icons/fa";
 import * as XLSX from "xlsx";
 
 export const HomePengajuanKP = () => {
@@ -270,7 +269,10 @@ export const HomePengajuanKP = () => {
           year: "numeric",
         }).format(date);
 
-        const storageRef = ref(storage, `laporan/pengajuan/${formattedDate}`);
+        const storageRef = ref(
+          storage,
+          `laporan/pengajuanKerjaPraktek/${formattedDate}`
+        );
         try {
           const uploadTask = await uploadBytes(storageRef, buffer, {
             contentType:
