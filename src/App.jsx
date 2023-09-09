@@ -60,6 +60,8 @@ import { RiwayatLaporanSidangKP } from "./pages/pengelolaan/sidang/kerja_praktek
 import { RiwayatLaporanKompre } from "./pages/pengelolaan/sidang/kompre/RiwayatLaporanKompre";
 import { RiwayatLaporanSempro } from "./pages/pengelolaan/sidang/sempro/RiwayatLaporanSempro";
 import { RiwayatLaporanSidangSkripsi } from "./pages/pengelolaan/sidang/skripsi/RiwayatLaporanSidangSkripsi";
+import { RiwayatNilaiKP } from "./pages/pengelolaan/nilai/kerja_praktek/RiwayatNilaiKP";
+import { RiwayatNilaiSkripsi } from "./pages/pengelolaan/nilai/skripsi/RiwayatNilaiSkripsi";
 
 export default function App() {
   return (
@@ -152,6 +154,10 @@ export default function App() {
             {/* Rute Kelola Nilai KP */}
             <Route path="/kelola-nilai/kp" element={<HomeNilaiKP />} />
             <Route path="/kelola-nilai/kp/:itemId" element={<EditNilaiKP />} />
+            <Route
+              path="/kelola-nilai/kp/riwayat-laporan"
+              element={<RiwayatNilaiKP />}
+            />
 
             {/* Rute Kelola Nilai Skripsi */}
             <Route
@@ -173,6 +179,10 @@ export default function App() {
             <Route
               path="/kelola-nilai/skripsi/:itemId"
               element={<EditNilaiSkripsi />}
+            />
+            <Route
+              path="/kelola-nilai/skripsi/riwayat-laporan"
+              element={<RiwayatNilaiSkripsi />}
             />
 
             {/* Rute Sidang KP */}

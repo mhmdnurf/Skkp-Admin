@@ -3,16 +3,32 @@ import { Sidebar } from "../../../../components/sidebar/Sidebar";
 import { InfinitySpin } from "react-loader-spinner";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { auth, db } from "../../../../utils/firebase";
+import { auth, db, storage } from "../../../../utils/firebase";
 import {
+  addDoc,
   collection,
   doc,
   getDoc,
+  getDocs,
   onSnapshot,
   orderBy,
   query,
   where,
 } from "firebase/firestore";
+import Swal from "sweetalert2";
+import {
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalFooter,
+  ModalBody,
+  ModalCloseButton,
+  useDisclosure,
+} from "@chakra-ui/react";
+import Datepicker from "react-tailwindcss-datepicker";
+import * as XLSX from "xlsx";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 
 export const HomeNilaiKP = () => {
   const itemsPerPage = 5;
@@ -22,6 +38,11 @@ export const HomeNilaiKP = () => {
   const [searchText, setSearchText] = useState("");
   const navigate = useNavigate();
   const [user, loading] = useAuthState(auth);
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [tanggal, setTanggal] = useState({
+    startDate: new Date(),
+    endDate: new Date().setMonth(11),
+  });
 
   const getUserInfo = async (uid) => {
     const userDocRef = doc(db, "users", uid);
@@ -87,6 +108,157 @@ export const HomeNilaiKP = () => {
     return () => unsubscribe();
   }, [user, loading, navigate, data, searchText]);
 
+  const handleRiwayatLaporan = () => {
+    navigate("/kelola-nilai/kp/riwayat-laporan");
+  };
+
+  const handleValueChange = (newValue) => {
+    // console.log("newValue:", newValue);
+    setTanggal(newValue);
+  };
+
+  const handleLaporan = async () => {
+    try {
+      const startDate = new Date(tanggal.startDate);
+      const endDate = new Date(tanggal.endDate);
+      endDate.setHours(23, 59, 59);
+
+      const q = query(
+        collection(db, "pengajuan"),
+        where("createdAt", ">=", startDate),
+        where("createdAt", "<=", endDate),
+        where("jenisPengajuan", "==", "Kerja Praktek")
+      );
+
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) {
+        Swal.fire(
+          "Gagal",
+          "Data Pengajuan Kerja Praktek tidak ditemukan",
+          "error"
+        );
+      } else {
+        const pengajuanData = [];
+        const rows = [];
+        let no = 1;
+        await Promise.all(
+          querySnapshot.docs.map(async (doc) => {
+            const pengajuan = doc.data();
+            const userInfo = await getUserInfo(pengajuan.user_uid);
+            const tanggalDaftar = new Date(pengajuan.createdAt.seconds * 1000);
+
+            // Memasukkan data ke dalam array pengajuanData
+            pengajuanData.push({
+              id: doc.id,
+              ...pengajuan,
+              userInfo: userInfo,
+            });
+
+            // Memasukkan data yang akan dicetak ke dalam array rows dengan nomor
+            rows.push({
+              no: no++,
+              tanggalDaftar: tanggalDaftar.toLocaleDateString("id-ID", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+              }),
+              nim: userInfo.nim,
+              nama: userInfo.nama,
+              jurusan: userInfo.jurusan,
+              judul: pengajuan.judul,
+              nilaiBimbingan: pengajuan.nilaiKP.nilaiBimbingan,
+              nilaiPerusahaan: pengajuan.nilaiKP.nilaiPerusahaan,
+              nilaiPengujiSatu: pengajuan.nilaiKP.nilaiPengujiSatu,
+              nilaiPengujiDua: pengajuan.nilaiKP.nilaiPengujiDua,
+              nilaiAkhir: pengajuan.nilaiKP.nilaiAkhir,
+              indeks: pengajuan.indeks,
+            });
+          })
+        );
+        console.log(rows);
+
+        const workbook = XLSX.utils.book_new();
+        const worksheet = XLSX.utils.json_to_sheet(rows);
+
+        XLSX.utils.book_append_sheet(
+          workbook,
+          worksheet,
+          "Pengajuan Kerja Praktek"
+        );
+        XLSX.utils.sheet_add_aoa(worksheet, [
+          [
+            "No",
+            "Tanggal Daftar",
+            "NIM",
+            "Nama",
+            "Jurusan",
+            "Judul",
+            "Nilai Bimbingan",
+            "Nilai Perusahaan",
+            "Nilai Penguji 1",
+            "Nilai Penguji 2",
+            "Nilai Akhir",
+            "Indeks",
+          ],
+        ]);
+
+        const buffer = XLSX.write(workbook, {
+          bookType: "xlsx",
+          type: "array",
+        });
+        const date = new Date(); // Gantilah dengan tanggal yang sesuai
+        const formattedDate = new Intl.DateTimeFormat("id-ID", {
+          day: "2-digit",
+          month: "long",
+          year: "numeric",
+        }).format(date);
+
+        const storageRef = ref(
+          storage,
+          `laporan/nilaiKerjaPraktek/${formattedDate}`
+        );
+        try {
+          const uploadTask = await uploadBytes(storageRef, buffer, {
+            contentType:
+              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          });
+          console.log("File Excel berhasil disimpan di Firebase Storage!");
+          const fileUrl = await getDownloadURL(uploadTask.ref);
+
+          const a = document.createElement("a");
+          a.href = fileUrl;
+          a.download = `Laporan_Nilai_KP_${formattedDate}.xlsx`; // Nama file yang akan diunduh
+          a.style.display = "none";
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+
+          const laporanData = {
+            jenisLaporan: "Kerja Praktek",
+            createdAt: new Date(),
+            fileURL: fileUrl,
+            namaLaporan: `Laporan Nilai KP - ${formattedDate}`,
+          };
+
+          const docRef = await addDoc(
+            collection(db, "riwayatLaporanNilai"),
+            laporanData
+          );
+          console.log(
+            "Data laporan berhasil ditambahkan ke koleksi riwayatLaporan dengan ID:",
+            docRef.id
+          );
+          Swal.fire("Success", "Laporan berhasil dibuat", "success");
+        } catch (error) {
+          console.error("Gagal menyimpan file Excel:", error);
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching data: ", error);
+    }
+  };
+
   const startIdx = (currentPage - 1) * itemsPerPage;
   const endIdx = currentPage * itemsPerPage;
 
@@ -104,14 +276,68 @@ export const HomeNilaiKP = () => {
               <h1 className="text-2xl text-white text-center shadow-md font-bold rounded-lg p-4 m-4 mb-10 bg-slate-600">
                 Data Nilai Kerja Praktek
               </h1>
-              <div className="flex items-center mt-16 mb-2 mx-2 justify-end mr-4">
-                <input
-                  type="text"
-                  className="px-4 py-2 border w-[400px] rounded-md drop-shadow-sm"
-                  placeholder="Search..."
-                  value={searchText}
-                  onChange={(e) => setSearchText(e.target.value)}
-                />
+              <div className="flex mt-16 mb-2 ml-4 mr-4 items-center">
+                <div className="flex-grow">
+                  <input
+                    type="text"
+                    className="px-4 py-2 border rounded-md shadow-sm w-[500px]"
+                    placeholder="Search..."
+                    value={searchText}
+                    onChange={(e) => setSearchText(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <div className="space-x-2">
+                    <button
+                      onClick={onOpen}
+                      className="p-2 bg-slate-300 rounded-md text-slate-700 w-[200px] shadow-sm hover:bg-slate-500 hover:text-white"
+                    >
+                      Laporan
+                    </button>
+                    <Modal
+                      isCentered
+                      isOpen={isOpen}
+                      onClose={onClose}
+                      motionPreset="slideInBottom"
+                    >
+                      <ModalOverlay />
+                      <ModalContent>
+                        <ModalHeader>Periode Pengajuan</ModalHeader>
+                        <ModalCloseButton />
+                        <ModalBody>
+                          <div className="mb-4 relative mt-2">
+                            <label className="block text-slate-600 font-bold">
+                              Tanggal
+                            </label>
+                            <div>
+                              <Datepicker
+                                value={tanggal}
+                                onChange={handleValueChange}
+                                classNames="z-0"
+                              />
+                            </div>
+                          </div>
+                        </ModalBody>
+                        <ModalFooter>
+                          <button
+                            onClick={() => {
+                              handleLaporan(), onClose();
+                            }}
+                            className="hover:bg-slate-800 w-full justify-center items-center flex bg-slate-700 p-2 text-white rounded-md"
+                          >
+                            Print
+                          </button>
+                        </ModalFooter>
+                      </ModalContent>
+                    </Modal>
+                    <button
+                      onClick={handleRiwayatLaporan}
+                      className="p-2 bg-gray-300 hover:bg-gray-500 hover:text-white text-slate-700 rounded-md shadow-sm w-[200px]"
+                    >
+                      Riwayat Laporan
+                    </button>
+                  </div>
+                </div>
               </div>
 
               {/* Tabel Data */}

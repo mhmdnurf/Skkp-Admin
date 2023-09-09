@@ -3,7 +3,6 @@ import {
   FaFileContract,
   FaHistory,
   FaHome,
-  FaLinux,
   FaRegClock,
   FaRegFolderOpen,
   FaServer,
@@ -121,7 +120,13 @@ export const Sidebar = () => {
     <>
       <div className="bg-slate-100 h-full min-w-[300px] text-slate-600 border-2 overflow-y-auto transition-opacity duration-300 drop-shadow-xl border-r-slate-300 fixed top-0 left-0">
         <div className="flex items-center justify-center pt-10 pb-4">
-          <FaLinux className="text-2xl mr-2" />
+          <div className="p-2 bg-white rounded-xl mr-2 shadow-md border-2">
+            <img
+              src="https://api-frontend.kemdikbud.go.id/v2/detail_pt_logo/RjFDMjk0MDktMzJDNi00QThFLUI0NDQtNTU2MTU4Qjk5MjZG"
+              alt="logo stti"
+              className="object-contain w-10 h-10"
+            />
+          </div>
           <h1 className="text-xl font-bold">SKKP ADMIN</h1>
         </div>
         <hr />
