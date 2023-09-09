@@ -56,6 +56,10 @@ import { EditMahasiswa } from "./pages/pengelolaan/pengguna/mahasiswa/EditMahasi
 import Excel from "./components/NewComponents/Excel";
 import { RiwayatLaporanKP } from "./pages/pengelolaan/pengajuan/pengajuan_kp/RiwayatLaporanKP";
 import { RiwayatLaporanSkripsi } from "./pages/pengelolaan/pengajuan/pengajuan_skripsi/RiwayatLaporanSkripsi";
+import { RiwayatLaporanSidangKP } from "./pages/pengelolaan/sidang/kerja_praktek/RiwayatLaporanSidangKP";
+import { RiwayatLaporanKompre } from "./pages/pengelolaan/sidang/kompre/RiwayatLaporanKompre";
+import { RiwayatLaporanSempro } from "./pages/pengelolaan/sidang/sempro/RiwayatLaporanSempro";
+import { RiwayatLaporanSidangSkripsi } from "./pages/pengelolaan/sidang/skripsi/RiwayatLaporanSidangSkripsi";
 
 export default function App() {
   return (
@@ -185,6 +189,10 @@ export default function App() {
               path="/sidang-kp/penguji/:itemId"
               element={<DosenPengujiKP />}
             />
+            <Route
+              path="/sidang-kp/riwayat-laporan"
+              element={<RiwayatLaporanSidangKP />}
+            />
 
             {/* Rute Sempro */}
             <Route path="/sidang-sempro/" element={<HomeSempro />} />
@@ -204,6 +212,10 @@ export default function App() {
               path="/sidang-sempro/ubah-judul/:itemId"
               element={<JudulSempro />}
             />
+            <Route
+              path="/sidang-sempro/riwayat-laporan"
+              element={<RiwayatLaporanSempro />}
+            />
 
             {/* Rute Komprehensif */}
             <Route path="/sidang-kompre/" element={<HomeKompre />} />
@@ -218,6 +230,10 @@ export default function App() {
             <Route
               path="/sidang-kompre/ubah-judul/:itemId"
               element={<JudulKompre />}
+            />
+            <Route
+              path="/sidang-kompre/riwayat-laporan"
+              element={<RiwayatLaporanKompre />}
             />
 
             {/* Rute Sidang Skripsi */}
@@ -237,6 +253,10 @@ export default function App() {
             <Route
               path="/sidang-skripsi/ubah-judul/:itemId"
               element={<JudulSkripsi />}
+            />
+            <Route
+              path="/sidang-skripsi/riwayat-laporan"
+              element={<RiwayatLaporanSidangSkripsi />}
             />
 
             {/* Rute Kelola Topik */}

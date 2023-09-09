@@ -27,7 +27,7 @@ export const RiwayatLaporanSkripsi = () => {
   useEffect(() => {
     const unsubscribe = onSnapshot(
       query(
-        collection(db, "riwayatLaporan"),
+        collection(db, "riwayatLaporanPengajuan"),
         where("jenisLaporan", "==", "Skripsi")
       ),
       (snapshot) => {
@@ -79,7 +79,7 @@ export const RiwayatLaporanSkripsi = () => {
 
   const handleUnduhLaporan = async (id) => {
     try {
-      const docRef = doc(db, "riwayatLaporan", id);
+      const docRef = doc(db, "riwayatLaporanPengajuan", id);
       const docSnap = await getDoc(docRef);
 
       if (docSnap.exists()) {

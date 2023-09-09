@@ -290,7 +290,7 @@ export const HomePengajuanSkripsi = () => {
           };
 
           const docRef = await addDoc(
-            collection(db, "riwayatLaporan"),
+            collection(db, "riwayatLaporanPengajuan"),
             laporanData
           );
           console.log(

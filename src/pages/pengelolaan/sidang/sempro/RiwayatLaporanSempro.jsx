@@ -15,7 +15,7 @@ import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { useAuthState } from "react-firebase-hooks/auth";
 
-export const RiwayatLaporanKP = () => {
+export const RiwayatLaporanSempro = () => {
   const itemsPerPage = 5;
   const [data, setData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -27,7 +27,7 @@ export const RiwayatLaporanKP = () => {
   useEffect(() => {
     const unsubscribe = onSnapshot(
       query(
-        collection(db, "riwayatLaporanPengajuan"),
+        collection(db, "riwayatLaporan"),
         where("jenisLaporan", "==", "Kerja Praktek")
       ),
       (snapshot) => {
@@ -79,7 +79,7 @@ export const RiwayatLaporanKP = () => {
 
   const handleUnduhLaporan = async (id) => {
     try {
-      const docRef = doc(db, "riwayatLaporanPengajuan", id);
+      const docRef = doc(db, "riwayatLaporan", id);
       const docSnap = await getDoc(docRef);
 
       if (docSnap.exists()) {

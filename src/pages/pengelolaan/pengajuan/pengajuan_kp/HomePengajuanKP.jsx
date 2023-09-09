@@ -172,9 +172,6 @@ export const HomePengajuanKP = () => {
     navigate("/pengajuan-kp/riwayat-laporan");
   };
 
-  const startIdx = (currentPage - 1) * itemsPerPage;
-  const endIdx = currentPage * itemsPerPage;
-
   const handleValueChange = (newValue) => {
     // console.log("newValue:", newValue);
     setTanggal(newValue);
@@ -297,7 +294,7 @@ export const HomePengajuanKP = () => {
           };
 
           const docRef = await addDoc(
-            collection(db, "riwayatLaporan"),
+            collection(db, "riwayatLaporanPengajuan"),
             laporanData
           );
           console.log(
@@ -313,6 +310,9 @@ export const HomePengajuanKP = () => {
       console.error("Error fetching data: ", error);
     }
   };
+
+  const startIdx = (currentPage - 1) * itemsPerPage;
+  const endIdx = currentPage * itemsPerPage;
 
   return (
     <>
