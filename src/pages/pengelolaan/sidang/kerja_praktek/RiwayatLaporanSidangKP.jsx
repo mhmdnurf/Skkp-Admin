@@ -68,7 +68,7 @@ export const RiwayatLaporanSidangKP = () => {
       });
 
       if (result.isConfirmed) {
-        const docRef = doc(db, "riwayatLaporan", id);
+        const docRef = doc(db, "riwayatLaporanSidang", id);
         await deleteDoc(docRef);
         Swal.fire("Success", "Data Berhasil dihapus!", "success");
       }
@@ -79,7 +79,7 @@ export const RiwayatLaporanSidangKP = () => {
 
   const handleUnduhLaporan = async (id) => {
     try {
-      const docRef = doc(db, "riwayatLaporan", id);
+      const docRef = doc(db, "riwayatLaporanSidang", id);
       const docSnap = await getDoc(docRef);
 
       if (docSnap.exists()) {
@@ -113,7 +113,7 @@ export const RiwayatLaporanSidangKP = () => {
             <Sidebar />
             <div className="flex flex-col w-full pl-[300px] overflow-y-auto pr-4 pb-4">
               <h1 className="text-2xl text-white text-center shadow-md font-semibold rounded-lg p-4 m-4 mb-10 bg-slate-600">
-                Riwayat Laporan Pengajuan Kerja Praktek
+                Riwayat Laporan Sidang Kerja Praktek
               </h1>
 
               <div className="flex justify-end mt-16">

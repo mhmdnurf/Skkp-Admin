@@ -27,8 +27,8 @@ export const RiwayatLaporanSidangSkripsi = () => {
   useEffect(() => {
     const unsubscribe = onSnapshot(
       query(
-        collection(db, "riwayatLaporan"),
-        where("jenisLaporan", "==", "Kerja Praktek")
+        collection(db, "riwayatLaporanSidang"),
+        where("jenisLaporan", "==", "Skripsi")
       ),
       (snapshot) => {
         const fetchedData = snapshot.docs.map((doc) => ({
@@ -68,7 +68,7 @@ export const RiwayatLaporanSidangSkripsi = () => {
       });
 
       if (result.isConfirmed) {
-        const docRef = doc(db, "riwayatLaporan", id);
+        const docRef = doc(db, "riwayatLaporanSidang", id);
         await deleteDoc(docRef);
         Swal.fire("Success", "Data Berhasil dihapus!", "success");
       }
@@ -79,7 +79,7 @@ export const RiwayatLaporanSidangSkripsi = () => {
 
   const handleUnduhLaporan = async (id) => {
     try {
-      const docRef = doc(db, "riwayatLaporan", id);
+      const docRef = doc(db, "riwayatLaporanSidang", id);
       const docSnap = await getDoc(docRef);
 
       if (docSnap.exists()) {
@@ -113,7 +113,7 @@ export const RiwayatLaporanSidangSkripsi = () => {
             <Sidebar />
             <div className="flex flex-col w-full pl-[300px] overflow-y-auto pr-4 pb-4">
               <h1 className="text-2xl text-white text-center shadow-md font-semibold rounded-lg p-4 m-4 mb-10 bg-slate-600">
-                Riwayat Laporan Pengajuan Kerja Praktek
+                Riwayat Laporan Komprehensif
               </h1>
 
               <div className="flex justify-end mt-16">

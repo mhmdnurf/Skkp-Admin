@@ -68,7 +68,7 @@ export const RiwayatLaporanKP = () => {
       });
 
       if (result.isConfirmed) {
-        const docRef = doc(db, "riwayatLaporan", id);
+        const docRef = doc(db, "riwayatLaporanPengajuan", id);
         await deleteDoc(docRef);
         Swal.fire("Success", "Data Berhasil dihapus!", "success");
       }

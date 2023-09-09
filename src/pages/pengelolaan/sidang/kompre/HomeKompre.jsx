@@ -5,17 +5,36 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, db, storage } from "../../../../utils/firebase";
 import {
+  addDoc,
   collection,
   deleteDoc,
   doc,
   getDoc,
+  getDocs,
   onSnapshot,
   orderBy,
   query,
   where,
 } from "firebase/firestore";
 import Swal from "sweetalert2";
-import { deleteObject, ref } from "firebase/storage";
+import {
+  deleteObject,
+  getDownloadURL,
+  ref,
+  uploadBytes,
+} from "firebase/storage";
+import Datepicker from "react-tailwindcss-datepicker";
+import * as XLSX from "xlsx";
+import {
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalFooter,
+  ModalBody,
+  ModalCloseButton,
+  useDisclosure,
+} from "@chakra-ui/react";
 
 export const HomeKompre = () => {
   const itemsPerPage = 5;
@@ -25,6 +44,11 @@ export const HomeKompre = () => {
   const [searchText, setSearchText] = useState("");
   const navigate = useNavigate();
   const [user, loading] = useAuthState(auth);
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [tanggal, setTanggal] = useState({
+    startDate: new Date(),
+    endDate: new Date().setMonth(11),
+  });
 
   const getUserInfo = async (uid) => {
     const userDocRef = doc(db, "users", uid);
@@ -133,6 +157,168 @@ export const HomeKompre = () => {
       console.error("Error deleting data: ", error);
     }
   };
+
+  const handleRiwayatLaporan = () => {
+    navigate("/sidang-kompre/riwayat-laporan");
+  };
+
+  const handleValueChange = (newValue) => {
+    // console.log("newValue:", newValue);
+    setTanggal(newValue);
+  };
+
+  const handleLaporan = async () => {
+    try {
+      const startDate = new Date(tanggal.startDate);
+      const endDate = new Date(tanggal.endDate);
+      endDate.setHours(23, 59, 59);
+
+      const q = query(
+        collection(db, "sidang"),
+        where("createdAt", ">=", startDate),
+        where("createdAt", "<=", endDate),
+        where("jenisSidang", "==", "Komprehensif")
+      );
+
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) {
+        Swal.fire("Gagal", "Data Sidang Komprehensif tidak ditemukan", "error");
+      } else {
+        const sidangData = [];
+        const rows = [];
+        let no = 1;
+        await Promise.all(
+          querySnapshot.docs.map(async (doc) => {
+            const sidang = doc.data();
+            const userInfo = await getUserInfo(sidang.user_uid);
+            const tanggalDaftar = new Date(sidang.createdAt.seconds * 1000);
+            const pengajuanInfo = await getPengajuanInfo(sidang.pengajuan_uid);
+            const dosenPembimbingInfo = await getUserInfo(
+              pengajuanInfo.pembimbing_uid
+            );
+            let pengujiSatuInfo = null;
+            let pengujiDuaInfo = null;
+            if (sidang.penguji) {
+              pengujiSatuInfo = sidang.penguji.pengujiSatu
+                ? await getUserInfo(sidang.penguji.pengujiSatu)
+                : null;
+              pengujiDuaInfo = sidang.penguji.pengujiDua
+                ? await getUserInfo(sidang.penguji.pengujiDua)
+                : null;
+            }
+
+            // Memasukkan data ke dalam array sidangData
+            sidangData.push({
+              id: doc.id,
+              ...sidang,
+              userInfo: userInfo,
+              dosenPembimbingInfo: dosenPembimbingInfo,
+              pengajuanInfo: pengajuanInfo,
+              pengujiSatuInfo: pengujiSatuInfo,
+              pengujiDuaInfo: pengujiDuaInfo,
+            });
+
+            // Memasukkan data yang akan dicetak ke dalam array rows dengan nomor
+            rows.push({
+              no: no++,
+              tanggalDaftar: tanggalDaftar.toLocaleDateString("id-ID", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+              }),
+              nim: userInfo.nim,
+              nama: userInfo.nama,
+              jurusan: userInfo.jurusan,
+              topikPenelitian: pengajuanInfo.topikPenelitian,
+              judul: sidang.judul,
+              status: sidang.status,
+              catatan: sidang.catatan,
+              dosenPembimbing: dosenPembimbingInfo.nama,
+            });
+          })
+        );
+        console.log(rows);
+
+        const workbook = XLSX.utils.book_new();
+        const worksheet = XLSX.utils.json_to_sheet(rows);
+
+        XLSX.utils.book_append_sheet(
+          workbook,
+          worksheet,
+          "Sidang Komprehensif"
+        );
+        XLSX.utils.sheet_add_aoa(worksheet, [
+          [
+            "No",
+            "Tanggal Daftar",
+            "NIM",
+            "Nama",
+            "Jurusan",
+            "Topik Penelitian",
+            "Judul",
+            "Status",
+            "Catatan",
+            "Dosen Pembimbing",
+          ],
+        ]);
+
+        const buffer = XLSX.write(workbook, {
+          bookType: "xlsx",
+          type: "array",
+        });
+        const date = new Date(); // Gantilah dengan tanggal yang sesuai
+        const formattedDate = new Intl.DateTimeFormat("id-ID", {
+          day: "2-digit",
+          month: "long",
+          year: "numeric",
+        }).format(date);
+
+        const storageRef = ref(
+          storage,
+          `laporan/komprehensif/${formattedDate}`
+        );
+        try {
+          const uploadTask = await uploadBytes(storageRef, buffer, {
+            contentType:
+              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          });
+          console.log("File Excel berhasil disimpan di Firebase Storage!");
+          const fileUrl = await getDownloadURL(uploadTask.ref);
+
+          const a = document.createElement("a");
+          a.href = fileUrl;
+          a.download = `Laporan_Komprehensif_${formattedDate}.xlsx`; // Nama file yang akan diunduh
+          a.style.display = "none";
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+
+          const laporanData = {
+            jenisLaporan: "Komprehensif",
+            createdAt: new Date(),
+            fileURL: fileUrl,
+            namaLaporan: `Laporan Komprehensif - ${formattedDate}`,
+          };
+
+          const docRef = await addDoc(
+            collection(db, "riwayatLaporanSidang"),
+            laporanData
+          );
+          console.log(
+            "Data laporan berhasil ditambahkan ke koleksi riwayatLaporan dengan ID:",
+            docRef.id
+          );
+          Swal.fire("Success", "Laporan berhasil dibuat", "success");
+        } catch (error) {
+          console.error("Gagal menyimpan file Excel:", error);
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching data: ", error);
+    }
+  };
+
   const startIdx = (currentPage - 1) * itemsPerPage;
   const endIdx = currentPage * itemsPerPage;
 
@@ -150,14 +336,68 @@ export const HomeKompre = () => {
               <h1 className="text-2xl text-white text-center shadow-md font-bold rounded-lg p-4 m-4 mb-10 bg-slate-600">
                 Data Sidang Komprehensif
               </h1>
-              <div className="flex items-center mt-16 mb-2 mx-2 justify-end mr-4">
-                <input
-                  type="text"
-                  className="px-4 py-2 border w-[400px] rounded-md drop-shadow-sm"
-                  placeholder="Search..."
-                  value={searchText}
-                  onChange={(e) => setSearchText(e.target.value)}
-                />
+              <div className="flex mt-16 mb-2 ml-4 mr-4 items-center">
+                <div className="flex-grow">
+                  <input
+                    type="text"
+                    className="px-4 py-2 border rounded-md shadow-sm w-[500px]"
+                    placeholder="Search..."
+                    value={searchText}
+                    onChange={(e) => setSearchText(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <div className="space-x-2">
+                    <button
+                      onClick={onOpen}
+                      className="p-2 bg-slate-300 rounded-md text-slate-700 w-[200px] shadow-sm hover:bg-slate-500 hover:text-white"
+                    >
+                      Laporan
+                    </button>
+                    <Modal
+                      isCentered
+                      isOpen={isOpen}
+                      onClose={onClose}
+                      motionPreset="slideInBottom"
+                    >
+                      <ModalOverlay />
+                      <ModalContent>
+                        <ModalHeader>Periode Pengajuan</ModalHeader>
+                        <ModalCloseButton />
+                        <ModalBody>
+                          <div className="mb-4 relative mt-2">
+                            <label className="block text-slate-600 font-bold">
+                              Tanggal
+                            </label>
+                            <div>
+                              <Datepicker
+                                value={tanggal}
+                                onChange={handleValueChange}
+                                classNames="z-0"
+                              />
+                            </div>
+                          </div>
+                        </ModalBody>
+                        <ModalFooter>
+                          <button
+                            onClick={() => {
+                              handleLaporan(), onClose();
+                            }}
+                            className="hover:bg-slate-800 w-full justify-center items-center flex bg-slate-700 p-2 text-white rounded-md"
+                          >
+                            Print
+                          </button>
+                        </ModalFooter>
+                      </ModalContent>
+                    </Modal>
+                    <button
+                      onClick={handleRiwayatLaporan}
+                      className="p-2 bg-gray-300 hover:bg-gray-500 hover:text-white text-slate-700 rounded-md shadow-sm w-[200px]"
+                    >
+                      Riwayat Laporan
+                    </button>
+                  </div>
+                </div>
               </div>
 
               {/* Tabel Data */}
