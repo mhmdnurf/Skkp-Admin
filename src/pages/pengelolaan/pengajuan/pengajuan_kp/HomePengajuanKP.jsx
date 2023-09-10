@@ -268,7 +268,7 @@ export const HomePengajuanKP = () => {
 
         const storageRef = ref(
           storage,
-          `laporan/pengajuanKerjaPraktek/${formattedDate}`
+          `laporan/pengajuanKerjaPraktek/${formattedDate}.xlsx`
         );
         try {
           const uploadTask = await uploadBytes(storageRef, buffer, {

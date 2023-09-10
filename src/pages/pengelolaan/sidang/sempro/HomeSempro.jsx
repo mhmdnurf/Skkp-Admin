@@ -309,7 +309,7 @@ export const HomeSempro = () => {
 
         const storageRef = ref(
           storage,
-          `laporan/seminarProposal/${formattedDate}`
+          `laporan/seminarProposal/${formattedDate}.xlsx`
         );
         try {
           const uploadTask = await uploadBytes(storageRef, buffer, {

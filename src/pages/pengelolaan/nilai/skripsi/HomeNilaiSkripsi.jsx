@@ -223,7 +223,7 @@ export const HomeNilaiSkripsi = () => {
 
         const storageRef = ref(
           storage,
-          `laporan/nilaiSkripsi/${formattedDate}`
+          `laporan/nilaiSkripsi/${formattedDate}.xlsx`
         );
         try {
           const uploadTask = await uploadBytes(storageRef, buffer, {

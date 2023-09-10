@@ -276,7 +276,7 @@ export const HomeKompre = () => {
 
         const storageRef = ref(
           storage,
-          `laporan/komprehensif/${formattedDate}`
+          `laporan/komprehensif/${formattedDate}.xlsx`
         );
         try {
           const uploadTask = await uploadBytes(storageRef, buffer, {
