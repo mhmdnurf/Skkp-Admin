@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import {
+  FaBullhorn,
   FaFileContract,
   FaHistory,
   FaHome,
@@ -51,6 +52,8 @@ export const Sidebar = () => {
       setActive("kelolaPengguna");
     } else if (path.startsWith("tahun-ajaran")) {
       setActive("tahunAjaran");
+    } else if (path.startsWith("pengumuman")) {
+      setActive("pengumuman");
     } else {
       setActive("dashboard");
     }
@@ -257,6 +260,21 @@ export const Sidebar = () => {
           >
             <FaHistory className="font-bold mr-2 text-lg" />
             <h1 className="font-bold">Tahun Ajaran</h1>
+          </Link>
+        </div>
+
+        {/* Buka Pengumuman */}
+        <div className="flex items-center justify-center mt-4">
+          <Link
+            to="/pengumuman"
+            className={`flex w-[200px] p-4 items-center cursor-pointer ${
+              active === "pengumuman"
+                ? " bg-white rounded-md drop-shadow-lg"
+                : "opacity-50"
+            }`}
+          >
+            <FaBullhorn className="font-bold mr-2 text-lg" />
+            <h1 className="font-bold">Pengumuman</h1>
           </Link>
         </div>
 

@@ -60,6 +60,8 @@ import { EditMahasiswa } from "./pages/pengelolaan/pengguna/mahasiswa/EditMahasi
 import { HomeDosen } from "./pages/pengelolaan/pengguna/dosen/HomeDosen";
 import { CreateDosen } from "./pages/pengelolaan/pengguna/dosen/CreateDosen";
 import { EditDosen } from "./pages/pengelolaan/pengguna/dosen/EditDosen";
+import { CreatePengumuman } from "./pages/pengelolaan/pengumuman/CreatePengumuman";
+import { HomePengumuman } from "./pages/pengelolaan/pengumuman/HomeBukaPengumuman";
 
 const routes = [
   { path: "/login", element: <Login /> },
@@ -163,6 +165,8 @@ const routes = [
   { path: "/kelola-pengguna/dosen", element: <HomeDosen /> },
   { path: "/kelola-pengguna/dosen/create", element: <CreateDosen /> },
   { path: "/kelola-pengguna/dosen/edit/:itemId", element: <EditDosen /> },
+  { path: "/pengumuman", element: <HomePengumuman /> },
+  { path: "/pengumuman/create", element: <CreatePengumuman /> },
 ];
 
 export default routes;
