@@ -100,11 +100,12 @@ export const Sidebar = () => {
   const handleLogout = async () => {
     try {
       const result = await Swal.fire({
-        title: "Apakah anda yakin untuk logout?",
+        title: "Apakah Anda Yakin?",
+        text: "Data akan hilang permanen ketika dihapus",
         icon: "warning",
         showCancelButton: true,
-        confirmButtonColor: "#d33",
-        cancelButtonColor: "#3085d6",
+        confirmButtonColor: "#334155",
+        cancelButtonColor: "#94a3b8",
         cancelButtonText: "Batal",
         confirmButtonText: "Confirm",
       });
