@@ -131,9 +131,6 @@ export const HomeSidangSkripsi = () => {
             new Date(item.createdAt.seconds * 1000)
               .toLocaleDateString("en-US")
               .includes(searchText) ||
-            item.pengajuanInfo.judul
-              .toLowerCase()
-              .includes(searchText.toLowerCase()) ||
             item.pengajuanInfo.topikPenelitian
               .toLowerCase()
               .includes(searchText.toLowerCase())
@@ -449,7 +446,9 @@ export const HomeSidangSkripsi = () => {
                   <thead className=" shadow-sm font-extralight text-sm">
                     <tr className="">
                       <th className="p-2 px-6">No</th>
-                      <th className="p-2 px-6">Tanggal Daftar</th>
+                      <th className="p-2 px-6 whitespace-nowrap">
+                        Tanggal Daftar
+                      </th>
                       <th className="p-2 px-6">NIM</th>
                       <th className="p-2 px-6">Nama</th>
                       <th className="p-2 px-6">Jurusan</th>

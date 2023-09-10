@@ -131,9 +131,6 @@ export const HomeSempro = () => {
             new Date(item.createdAt.seconds * 1000)
               .toLocaleDateString("en-US")
               .includes(searchText) ||
-            item.pengajuanInfo.judul
-              .toLowerCase()
-              .includes(searchText.toLowerCase()) ||
             item.pengajuanInfo.topikPenelitian
               .toLowerCase()
               .includes(searchText.toLowerCase())
