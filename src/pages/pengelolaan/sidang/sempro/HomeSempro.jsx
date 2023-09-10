@@ -157,8 +157,8 @@ export const HomeSempro = () => {
         text: "Data akan hilang permanen ketika dihapus",
         icon: "warning",
         showCancelButton: true,
-        confirmButtonColor: "#d33",
-        cancelButtonColor: "#3085d6",
+        confirmButtonColor: "#334155",
+        cancelButtonColor: "#94a3b8",
         cancelButtonText: "Batal",
         confirmButtonText: "Confirm",
       });
