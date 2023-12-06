@@ -54,9 +54,8 @@ export const Dashboard = () => {
         const userData = userDocSnapshot.data();
         setUsername(userData.nama);
         setIsLoading(false);
-
         if (userData.role !== "prodi") {
-          navigate("/login"); // Redirect jika peran bukan "prodi"
+          navigate("/login");
         }
       }
     } catch (err) {

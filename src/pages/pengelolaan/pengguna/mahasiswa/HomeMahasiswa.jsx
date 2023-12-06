@@ -10,6 +10,7 @@ import {
   doc,
   where,
   getDocs,
+  getDoc,
 } from "firebase/firestore";
 import { Link, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
@@ -23,6 +24,18 @@ export const HomeMahasiswa = () => {
   const [searchText, setSearchText] = useState("");
   const navigate = useNavigate();
   const [user, loading] = useAuthState(auth);
+
+  const validateUser = async () => {
+    const userDocRef = doc(db, "users", user.uid);
+    const userDocSnapshot = await getDoc(userDocRef);
+
+    if (userDocSnapshot.exists()) {
+      const userData = userDocSnapshot.data();
+      if (userData.role !== "prodi") {
+        navigate("/login");
+      }
+    }
+  };
 
   useEffect(() => {
     const unsubscribe = onSnapshot(
@@ -44,6 +57,8 @@ export const HomeMahasiswa = () => {
         setIsLoading(false);
       }
     );
+
+    validateUser();
 
     if (loading) return;
     if (!user) return navigate("/login");

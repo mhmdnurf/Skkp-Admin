@@ -27,6 +27,18 @@ export const HomeJadwalPengajuan = () => {
 
   const navigate = useNavigate();
 
+  const validateUser = async () => {
+    const userDocRef = doc(db, "users", user.uid);
+    const userDocSnapshot = await getDoc(userDocRef);
+
+    if (userDocSnapshot.exists()) {
+      const userData = userDocSnapshot.data();
+      if (userData.role !== "prodi") {
+        navigate("/login");
+      }
+    }
+  };
+
   useEffect(() => {
     const unsubscribe = onSnapshot(
       query(
@@ -62,6 +74,7 @@ export const HomeJadwalPengajuan = () => {
     if (loading) return;
     if (!user) return navigate("/login");
 
+    validateUser();
     // Cleanup the subscription when component unmounts
     return () => unsubscribe();
   }, [user, loading, data, navigate]);
