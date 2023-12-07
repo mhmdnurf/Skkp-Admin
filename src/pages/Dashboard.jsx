@@ -1,13 +1,6 @@
 import { useEffect, useState } from "react";
-import {
-  FaInfoCircle,
-  FaLaptopCode,
-  FaRegFileAlt,
-  FaToolbox,
-  FaUserGraduate,
-} from "react-icons/fa";
+import { FaInfoCircle } from "react-icons/fa";
 import { Sidebar } from "../components/Sidebar";
-import { InfinitySpin } from "react-loader-spinner";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useNavigate } from "react-router-dom";
 import {
@@ -22,6 +15,9 @@ import {
 import { db } from "../utils/firebase";
 import { auth } from "../utils/firebase";
 import Header from "../components/Header";
+import PengumumanCard from "../components/PengumumanCard";
+import PendaftarCard from "../components/PendaftarCard";
+import Loader from "../components/Loader";
 
 /**
  * Dashboard component.
@@ -290,9 +286,7 @@ const Dashboard = () => {
       <div className="flex bg-slate-100 h-screen">
         {isLoading ? (
           <>
-            <div className="flex items-center justify-center w-full h-screen overflow-y-auto ">
-              <InfinitySpin width="200" color="#475569" />
-            </div>
+            <Loader />
           </>
         ) : (
           <>
@@ -306,37 +300,29 @@ const Dashboard = () => {
                 <div className="data-pendaftar flex text-slate-600 text-xl drop-shadow-lg">
                   {/* Data Pendaftar Kiri */}
                   <div>
-                    <div className="p-4 bg-white m-2 flex items-center justify-center rounded-xl hover:transform hover:scale-110 transition-transform duration-300 ease-in-out">
-                      <FaToolbox className="mr-2" size={80} />
-                      <div className="text-right">
-                        <p>Pendaftar Sidang Kerja Praktek</p>
-                        <p>{jumlahPendaftar.jumlahPendaftarKP}</p>
-                      </div>
-                    </div>
-                    <div className="p-4 bg-white m-2 flex items-center justify-center rounded-xl hover:transform hover:scale-110 transition-transform duration-300 ease-in-out">
-                      <FaRegFileAlt className="mr-2" size={80} />
-                      <div className="text-right">
-                        <p>Pendaftar Seminar Proposal</p>
-                        <p>{jumlahPendaftar.jumlahPendaftarSempro}</p>
-                      </div>
-                    </div>
+                    <PendaftarCard
+                      title="Pendaftar Sidang Kerja Praktek"
+                      count={jumlahPendaftar.jumlahPendaftarKP}
+                      icon="FaToolbox"
+                    />
+                    <PendaftarCard
+                      title="Pendaftar Seminar Proposal"
+                      count={jumlahPendaftar.jumlahPendaftarSempro}
+                      icon="FaRegFileAlt"
+                    />
                   </div>
                   {/* Data Pendaftar Kanan */}
                   <div>
-                    <div className="p-4 bg-white m-2 flex items-center justify-center rounded-xl hover:transform hover:scale-110 transition-transform duration-300 ease-in-out">
-                      <FaLaptopCode className="mr-2" size={80} />
-                      <div className="text-right">
-                        <p>Pendaftar Sidang Komprehensif</p>
-                        <p>{jumlahPendaftar.jumlahPendaftarKompre}</p>
-                      </div>
-                    </div>
-                    <div className="p-4 bg-white m-2 flex items-center justify-center rounded-xl hover:transform hover:scale-110 transition-transform duration-300 ease-in-out">
-                      <FaUserGraduate className="mr-2" size={80} />
-                      <div className="text-right">
-                        <p>Pendaftar Sidang Akhir Skripsi</p>
-                        <p>{jumlahPendaftar.jumlahPendaftarSkripsi}</p>
-                      </div>
-                    </div>
+                    <PendaftarCard
+                      title="Pendaftar Sidang Komprehensif"
+                      count={jumlahPendaftar.jumlahPendaftarKompre}
+                      icon="FaLaptopCode"
+                    />
+                    <PendaftarCard
+                      title="Pendaftar Sidang Akhir Skripsi"
+                      count={jumlahPendaftar.jumlahPendaftarSkripsi}
+                      icon="FaUserGraduate"
+                    />
                   </div>
                 </div>
                 <div>
@@ -350,200 +336,38 @@ const Dashboard = () => {
                 </div>
                 <div className="flex-row">
                   <div className="px-10">
-                    <div className="proporsal bg-white p-4 rounded-lg mb-4 hover:transform hover:scale-105 transition-transform duration-300 ease-in-out text-slate-600 drop-shadow-lg">
-                      <h3 className="font-bold text-md">
-                        INFORMASI SEMINAR PROPOSAL !
-                      </h3>
-                      {periode.tanggalBukaSempro &&
-                      periode.tanggalTutupSempro ? (
-                        <>
-                          <p>
-                            Diberitahukan kepada mahasiswa/i Seminar Proposal
-                            akan diadakan pada periode :{" "}
-                            <b>
-                              {" "}
-                              {new Intl.DateTimeFormat("id-ID", {
-                                weekday: "long",
-                                day: "2-digit",
-                                month: "long",
-                                year: "numeric",
-                              }).format(tanggalSidang.tanggalSidangSempro)}
-                            </b>
-                          </p>
-                          <p>
-                            Pendaftaran dibuka Tanggal:{" "}
-                            <b>
-                              {new Intl.DateTimeFormat("id-ID", {
-                                weekday: "long",
-                                day: "2-digit",
-                                month: "long",
-                                year: "numeric",
-                              }).format(periode.tanggalBukaSempro)}
-                            </b>
-                          </p>
-                          <p>
-                            Pendaftaran ditutup Tanggal:{" "}
-                            <b>
-                              {new Intl.DateTimeFormat("id-ID", {
-                                weekday: "long",
-                                day: "2-digit",
-                                month: "long",
-                                year: "numeric",
-                              }).format(periode.tanggalTutupSempro)}
-                            </b>
-                          </p>
-                        </>
-                      ) : (
-                        <p className="text-red-500 font-bold uppercase">
-                          Pendaftaran Sedang Ditutup
-                        </p>
-                      )}
-                    </div>
-                    <div className="proporsal bg-white p-4 rounded-lg mb-4 hover:transform hover:scale-105 transition-transform duration-300 ease-in-out text-slate-600 drop-shadow-lg">
-                      <h3 className="font-bold text-md">
-                        INFORMASI SIDANG AKHIR SKRIPSI !
-                      </h3>
-                      {periode.tanggalBukaSkripsi &&
-                      periode.tanggalTutupSkripsi ? (
-                        <>
-                          <p>
-                            Diberitahukan kepada mahasiswa/i Sidang Skripsi akan
-                            diadakan pada periode :{" "}
-                            <b>
-                              {" "}
-                              {new Intl.DateTimeFormat("id-ID", {
-                                weekday: "long",
-                                day: "2-digit",
-                                month: "long",
-                                year: "numeric",
-                              }).format(tanggalSidang.tanggalSidangSkripsi)}
-                            </b>
-                          </p>
-                          <p>
-                            Pendaftaran dibuka Tanggal:{" "}
-                            <b>
-                              {new Intl.DateTimeFormat("id-ID", {
-                                weekday: "long",
-                                day: "2-digit",
-                                month: "long",
-                                year: "numeric",
-                              }).format(periode.tanggalBukaSkripsi)}
-                            </b>
-                          </p>
-                          <p>
-                            Pendaftaran ditutup Tanggal:{" "}
-                            <b>
-                              {new Intl.DateTimeFormat("id-ID", {
-                                weekday: "long",
-                                day: "2-digit",
-                                month: "long",
-                                year: "numeric",
-                              }).format(periode.tanggalTutupSkripsi)}
-                            </b>
-                          </p>
-                        </>
-                      ) : (
-                        <p className="text-red-500 font-bold uppercase">
-                          Pendaftaran Sedang Ditutup
-                        </p>
-                      )}
-                    </div>
-                    <div className="proporsal bg-white p-4 rounded-lg mb-4 hover:transform hover:scale-105 transition-transform duration-300 ease-in-out text-slate-600 drop-shadow-lg">
-                      <h3 className="font-bold text-md">
-                        INFORMASI SIDANG KERJA PRAKTEK !
-                      </h3>
-                      {periode.tanggalBukaKP && periode.tanggalTutupKP ? (
-                        <>
-                          <p>
-                            Diberitahukan kepada mahasiswa/i Sidang Kerja
-                            Praktek akan diadakan pada periode :{" "}
-                            <b>
-                              {new Intl.DateTimeFormat("id-ID", {
-                                weekday: "long",
-                                day: "2-digit",
-                                month: "long",
-                                year: "numeric",
-                              }).format(tanggalSidang.tanggalSidangKP)}
-                            </b>
-                          </p>
-                          <p>
-                            Pendaftaran dibuka Tanggal:{" "}
-                            <b>
-                              {new Intl.DateTimeFormat("id-ID", {
-                                weekday: "long",
-                                day: "2-digit",
-                                month: "long",
-                                year: "numeric",
-                              }).format(periode.tanggalBukaKP)}
-                            </b>
-                          </p>
-                          <p>
-                            Pendaftaran ditutup Tanggal:{" "}
-                            <b>
-                              {new Intl.DateTimeFormat("id-ID", {
-                                weekday: "long",
-                                day: "2-digit",
-                                month: "long",
-                                year: "numeric",
-                              }).format(periode.tanggalTutupKP)}
-                            </b>
-                          </p>
-                        </>
-                      ) : (
-                        <p className="text-red-500 font-bold uppercase">
-                          Pendaftaran Sedang Ditutup
-                        </p>
-                      )}
-                    </div>
-                    <div className="proporsal bg-white p-4 rounded-lg mb-4 hover:transform hover:scale-105 transition-transform duration-300 ease-in-out text-slate-600 drop-shadow-lg">
-                      <h3 className="font-bold text-md">
-                        INFORMASI SIDANG KOMPREHENSIF !
-                      </h3>
-                      {periode.tanggalBukaKompre &&
-                      periode.tanggalTutupKompre ? (
-                        <>
-                          <p>
-                            Diberitahukan kepada mahasiswa/i Sidang Komprehensif
-                            akan diadakan pada periode :{" "}
-                            <b>
-                              {" "}
-                              {new Intl.DateTimeFormat("id-ID", {
-                                weekday: "long",
-                                day: "2-digit",
-                                month: "long",
-                                year: "numeric",
-                              }).format(tanggalSidang.tanggalSidangKompre)}
-                            </b>
-                          </p>
-                          <p>
-                            Pendaftaran dibuka Tanggal:{" "}
-                            <b>
-                              {new Intl.DateTimeFormat("id-ID", {
-                                weekday: "long",
-                                day: "2-digit",
-                                month: "long",
-                                year: "numeric",
-                              }).format(periode.tanggalBukaKompre)}
-                            </b>
-                          </p>
-                          <p>
-                            Pendaftaran ditutup Tanggal:{" "}
-                            <b>
-                              {new Intl.DateTimeFormat("id-ID", {
-                                weekday: "long",
-                                day: "2-digit",
-                                month: "long",
-                                year: "numeric",
-                              }).format(periode.tanggalTutupKompre)}
-                            </b>
-                          </p>
-                        </>
-                      ) : (
-                        <p className="text-red-500 font-bold uppercase">
-                          Pendaftaran Sedang Ditutup
-                        </p>
-                      )}
-                    </div>
+                    <PengumumanCard
+                      title="INFORMASI SEMINAR PROPOSAL !"
+                      dates={{ start: tanggalSidang.tanggalSidangSempro }}
+                      registrationDates={{
+                        start: periode.tanggalBukaSempro,
+                        end: periode.tanggalTutupSempro,
+                      }}
+                    />
+                    <PengumumanCard
+                      title="INFORMASI SIDANG AKHIR SKRIPSI !"
+                      dates={{ start: tanggalSidang.tanggalSidangSkripsi }}
+                      registrationDates={{
+                        start: periode.tanggalBukaSkripsi,
+                        end: periode.tanggalTutupSkripsi,
+                      }}
+                    />
+                    <PengumumanCard
+                      title="INFORMASI SIDANG KERJA PRAKTEK !"
+                      dates={{ start: tanggalSidang.tanggalSidangKP }}
+                      registrationDates={{
+                        start: periode.tanggalBukaKP,
+                        end: periode.tanggalTutupKP,
+                      }}
+                    />
+                    <PengumumanCard
+                      title="INFORMASI SIDANG KOMPREHENSIF !"
+                      dates={{ start: tanggalSidang.tanggalSidangKompre }}
+                      registrationDates={{
+                        start: periode.tanggalBukaKompre,
+                        end: periode.tanggalTutupKompre,
+                      }}
+                    />
                   </div>
                 </div>
               </div>
