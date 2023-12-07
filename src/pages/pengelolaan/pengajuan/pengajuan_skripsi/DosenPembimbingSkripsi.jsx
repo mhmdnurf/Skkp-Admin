@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Sidebar } from "../../../../components/sidebar/Sidebar";
+import { Sidebar } from "../../../../components/Sidebar";
 import { auth, db } from "../../../../utils/firebase";
 import {
   collection,

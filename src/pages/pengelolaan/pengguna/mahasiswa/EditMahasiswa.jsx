@@ -11,7 +11,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../../../../utils/firebase";
 import Swal from "sweetalert2";
-import { Sidebar } from "../../../../components/sidebar/Sidebar";
+import { Sidebar } from "../../../../components/Sidebar";
 import { InfinitySpin } from "react-loader-spinner";
 
 export const EditMahasiswa = () => {

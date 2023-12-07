@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Sidebar } from "../../../components/sidebar/Sidebar";
+import { Sidebar } from "../../../components/Sidebar";
 import { db } from "../../../utils/firebase";
 import { addDoc, collection, getDocs, query, where } from "firebase/firestore";
 import { utcToZonedTime } from "date-fns-tz";

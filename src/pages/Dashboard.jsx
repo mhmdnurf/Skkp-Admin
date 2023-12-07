@@ -3,11 +3,10 @@ import {
   FaInfoCircle,
   FaLaptopCode,
   FaRegFileAlt,
-  FaRegPaperPlane,
   FaToolbox,
   FaUserGraduate,
 } from "react-icons/fa";
-import { Sidebar } from "../components/sidebar/Sidebar";
+import { Sidebar } from "../components/Sidebar";
 import { InfinitySpin } from "react-loader-spinner";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useNavigate } from "react-router-dom";
@@ -22,7 +21,12 @@ import {
 } from "firebase/firestore";
 import { db } from "../utils/firebase";
 import { auth } from "../utils/firebase";
+import Header from "../components/Header";
 
+/**
+ * Dashboard component.
+ * Renders the dashboard page with user information and data about registered students for different types of exams.
+ */
 const Dashboard = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
@@ -191,74 +195,55 @@ const Dashboard = () => {
           jadwalPengajuanSnapshot.forEach((doc) => {
             const jadwalData = doc.data();
             const jenisSidang = jadwalData.jenisSidang;
+            const periodePendaftaran = jadwalData.periodePendaftaran;
+
             if (jenisSidang.includes("Kerja Praktek")) {
-              // Memeriksa jenis pengajuan
-              const periodePendaftaran = jadwalData.periodePendaftaran;
-              setPeriode({
+              setPeriode((prevPeriode) => ({
+                ...prevPeriode,
                 tanggalBukaKP: periodePendaftaran.tanggalBuka.toDate(),
                 tanggalTutupKP: periodePendaftaran.tanggalTutup.toDate(),
-              });
-              setTanggalSidang({
+              }));
+              setTanggalSidang((prevTanggalSidang) => ({
+                ...prevTanggalSidang,
                 tanggalSidangKP: jadwalData.tanggalSidang.toDate(),
-              });
+              }));
             }
+
             if (jenisSidang.includes("Seminar Proposal")) {
-              // Memeriksa jenis pengajuan
-              const periodePendaftaran = jadwalData.periodePendaftaran;
-              setPeriode({
+              setPeriode((prevPeriode) => ({
+                ...prevPeriode,
                 tanggalBukaSempro: periodePendaftaran.tanggalBuka.toDate(),
                 tanggalTutupSempro: periodePendaftaran.tanggalTutup.toDate(),
-              });
-              setTanggalSidang({
+              }));
+              setTanggalSidang((prevTanggalSidang) => ({
+                ...prevTanggalSidang,
                 tanggalSidangSempro: jadwalData.tanggalSidang.toDate(),
-              });
+              }));
             }
+
             if (jenisSidang.includes("Komprehensif")) {
-              // Memeriksa jenis pengajuan
-              const periodePendaftaran = jadwalData.periodePendaftaran;
-              setPeriode({
+              setPeriode((prevPeriode) => ({
+                ...prevPeriode,
                 tanggalBukaKompre: periodePendaftaran.tanggalBuka.toDate(),
                 tanggalTutupKompre: periodePendaftaran.tanggalTutup.toDate(),
-              });
-              setTanggalSidang({
+              }));
+              setTanggalSidang((prevTanggalSidang) => ({
+                ...prevTanggalSidang,
                 tanggalSidangKompre: jadwalData.tanggalSidang.toDate(),
-              });
+              }));
             }
+
             if (jenisSidang.includes("Skripsi")) {
-              // Memeriksa jenis pengajuan
-              const periodePendaftaran = jadwalData.periodePendaftaran;
-              setPeriode({
+              setPeriode((prevPeriode) => ({
+                ...prevPeriode,
                 tanggalBukaSkripsi: periodePendaftaran.tanggalBuka.toDate(),
                 tanggalTutupSkripsi: periodePendaftaran.tanggalTutup.toDate(),
-              });
-              setTanggalSidang({
+              }));
+              setTanggalSidang((prevTanggalSidang) => ({
+                ...prevTanggalSidang,
                 tanggalSidangSkripsi: jadwalData.tanggalSidang.toDate(),
-              });
+              }));
             }
-          });
-        } else {
-          // Tidak ada jadwal sidang aktif
-          setTanggalSidang({
-            tanggalSidangKP: null,
-            tanggalSidangSempro: null,
-            tanggalSidangKompre: null,
-            tanggalSidangSkripsi: null,
-          });
-          setJumlahPendaftar({
-            jumlahPendaftarKP: 0,
-            jumlahPendaftarSempro: 0,
-            jumlahPendaftarKompre: 0,
-            jumlahPendaftarSkripsi: 0,
-          });
-          setPeriode({
-            tanggalBukaKP: null,
-            tanggalTutupKP: null,
-            tanggalBukaSempro: null,
-            tanggalTutupSempro: null,
-            tanggalBukaKompre: null,
-            tanggalTutupKompre: null,
-            tanggalBukaSkripsi: null,
-            tanggalTutupSkripsi: null,
           });
         }
       }
@@ -313,12 +298,7 @@ const Dashboard = () => {
           <>
             <Sidebar />
             <div className="flex flex-col w-full pl-[300px] overflow-y-auto pr-4 pb-4">
-              <h1 className="m-2 p-6 bg-white mb-4 rounded-xl drop-shadow-xl text-xl text-slate-600 font-extrabold flex items-center">
-                Welcome Back, {username}
-                <div className="ml-4 flex ">
-                  <FaRegPaperPlane size={40} />
-                </div>
-              </h1>
+              <Header username={username} />
               <h1 className="p-4 text-4xl text-slate-600 font-bold">
                 Dashboard
               </h1>

@@ -20,7 +20,7 @@ import {
   SubMenuNilai,
 } from "./SubMenu";
 import { signOut } from "firebase/auth";
-import { auth } from "../../utils/firebase";
+import { auth } from "../utils/firebase";
 import Swal from "sweetalert2";
 
 const Menus = [{ title: "dashboard", label: "Dashboard", icon: FaHome }];
