@@ -5,18 +5,23 @@ import { signInWithEmailAndPassword } from "firebase/auth";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { getDoc, doc } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
-import { InfinitySpin } from "react-loader-spinner"; // Import loader library
+import { InfinitySpin } from "react-loader-spinner";
 import Swal from "sweetalert2";
-export const Login = () => {
+
+const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [user, loading, error] = useAuthState(auth);
-  const [isLoading, setIsLoading] = useState(false); // State for loader
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     if (!loading && user) {
-      // Pengguna terautentikasi, cek role
+      /**
+       * Checks the role of the user and performs actions based on the role.
+       * If the user's role is "prodi", it displays a success message and navigates to the home page.
+       * If the user's role is not "prodi", it displays an error message.
+       */
       const checkUserRole = async () => {
         const userDocRef = doc(db, "users", user.uid);
         const userDoc = await getDoc(userDocRef);
@@ -26,15 +31,11 @@ export const Login = () => {
           if (userData.role === "prodi") {
             await Swal.fire("Success", "Login Berhasil!", "success");
             navigate("/");
-            // } else if (userData.role === "Dosen") {
-            //   await Swal.fire("Success", "Login Berhasil!", "success");
-            //   navigate("/");
           } else {
             await Swal.fire("Error", "Anda bukan bagian dari prodi", "error");
           }
         }
       };
-
       checkUserRole();
     }
   }, [user, loading, navigate]);
@@ -43,18 +44,14 @@ export const Login = () => {
     e.preventDefault();
 
     try {
-      setIsLoading(true); // Memulai loader saat proses otentikasi dimulai
+      setIsLoading(true);
 
       const userCredential = await signInWithEmailAndPassword(
         auth,
         email,
         password
       );
-
-      // Mengambil data pengguna dari Firebase Authentication
       const user = userCredential.user;
-
-      // Mengambil data pengguna dari Firestore menggunakan user.uid sebagai referensi
       const userDoc = await getDoc(doc(db, "users", user.uid));
 
       if (userDoc.exists()) {
@@ -63,20 +60,19 @@ export const Login = () => {
         // Memeriksa role pengguna
         if (userData.role === "prodi") {
           console.log("Logged in user:", user);
-          // Reset input fields dan error
           setEmail("");
           setPassword("");
         }
       }
-
-      setIsLoading(false); // Menghentikan loader setelah proses otentikasi selesai
+      setIsLoading(false);
     } catch (error) {
       if (error.code === "auth/user-not-found") {
         await Swal.fire("Error", "Akun anda tidak terdaftar", "error");
       } else if (error.code === "auth/wrong-password") {
         await Swal.fire("Error", "Email atau password salah", "error");
       }
-      setIsLoading(false); // Menghentikan loader jika terjadi kesalahan
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -130,7 +126,7 @@ export const Login = () => {
             <button
               type="submit"
               className="w-full bg-slate-600 text-white py-2 rounded-md hover:bg-slate-700 focus:ring focus:ring-slate-600"
-              disabled={isLoading} // Menonaktifkan tombol login selama isLoading true
+              disabled={isLoading}
             >
               Login{" "}
             </button>
@@ -153,3 +149,5 @@ export const Login = () => {
     </>
   );
 };
+
+export default Login;

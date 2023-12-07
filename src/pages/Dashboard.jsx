@@ -23,7 +23,7 @@ import {
 import { db } from "../utils/firebase";
 import { auth } from "../utils/firebase";
 
-export const Dashboard = () => {
+const Dashboard = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   const [username, setUsername] = useState("");
@@ -44,25 +44,6 @@ export const Dashboard = () => {
   const [jumlahPendaftarSempro, setJumlahPendaftarSempro] = useState(0);
   const [jumlahPendaftarKompre, setJumlahPendaftarKompre] = useState(0);
   const [jumlahPendaftarSkripsi, setJumlahPendaftarSkripsi] = useState(0);
-
-  const fetchUserName = async () => {
-    try {
-      const userDocRef = doc(db, "users", user.uid);
-      const userDocSnapshot = await getDoc(userDocRef);
-
-      if (userDocSnapshot.exists()) {
-        const userData = userDocSnapshot.data();
-        setUsername(userData.nama);
-        setIsLoading(false);
-        if (userData.role !== "prodi") {
-          navigate("/login");
-        }
-      }
-    } catch (err) {
-      console.error(err);
-      alert("An error occurred while fetching user data");
-    }
-  };
 
   const fetchKerjaPraktek = async () => {
     try {
@@ -181,7 +162,7 @@ export const Dashboard = () => {
     }
   };
 
-  const fetchSidang = () => {
+  const fetchInformasiSidang = () => {
     const activeJadwalPengajuanQuery = query(
       collection(db, "jadwalSidang"),
       where("status", "==", "Aktif")
@@ -237,15 +218,33 @@ export const Dashboard = () => {
   useEffect(() => {
     if (loading) return;
     if (!user) return navigate("/login");
+    const fetchUserName = async () => {
+      try {
+        const userDocRef = doc(db, "users", user.uid);
+        const userDocSnapshot = await getDoc(userDocRef);
 
-    const unsubscribeKP = fetchSidang();
+        if (userDocSnapshot.exists()) {
+          const userData = userDocSnapshot.data();
+          setUsername(userData.nama);
+          setIsLoading(false);
+          if (userData.role !== "prodi") {
+            navigate("/login");
+          }
+        }
+      } catch (err) {
+        console.error(err);
+        alert("An error occurred while fetching user data");
+      }
+    };
+
+    fetchInformasiSidang();
     fetchUserName();
     fetchKerjaPraktek();
     fetchSeminarProposal();
     fetchKomprehensif();
     fetchSkripsi();
     return () => {
-      unsubscribeKP();
+      fetchInformasiSidang();
     };
   }, [user, loading, navigate]);
 
@@ -520,3 +519,5 @@ export const Dashboard = () => {
     </>
   );
 };
+
+export default Dashboard;

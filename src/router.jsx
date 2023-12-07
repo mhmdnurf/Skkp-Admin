@@ -1,5 +1,5 @@
-import { Dashboard } from "./pages/Dashboard";
-import { Login } from "./pages/auth/Login";
+import Dashboard from "./pages/Dashboard";
+import Login from "./pages/auth/Login";
 import { HomePengajuanKP } from "./pages/pengelolaan/pengajuan/pengajuan_kp/HomePengajuanKP";
 import { DetailPengajuanKP } from "./pages/pengelolaan/pengajuan/pengajuan_kp/DetailPengajuanKP";
 import { VerifikasiKP } from "./pages/pengelolaan/pengajuan/pengajuan_kp/VerifikasiKP";
