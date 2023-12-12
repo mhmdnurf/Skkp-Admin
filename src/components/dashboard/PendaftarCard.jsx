@@ -18,7 +18,7 @@ const PendaftarCard = ({ title, count, icon }) => (
     {iconMap[icon]}
     <div className="text-right">
       <p>{title}</p>
-      <p>{count}</p>
+      <p>{count ? count : 0}</p>
     </div>
   </div>
 );
@@ -27,6 +27,6 @@ export default PendaftarCard;
 
 PendaftarCard.propTypes = {
   title: PropTypes.string.isRequired,
-  count: PropTypes.number.isRequired,
+  count: PropTypes.number,
   icon: PropTypes.string.isRequired,
 };

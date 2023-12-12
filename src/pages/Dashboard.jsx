@@ -15,8 +15,8 @@ import {
 import { db } from "../utils/firebase";
 import { auth } from "../utils/firebase";
 import Header from "../components/Header";
-import PengumumanCard from "../components/PengumumanCard";
-import PendaftarCard from "../components/PendaftarCard";
+import PengumumanCard from "../components/dashboard/PengumumanCard";
+import PendaftarCard from "../components/dashboard/PendaftarCard";
 import Loader from "../components/Loader";
 
 /**
@@ -251,7 +251,7 @@ const Dashboard = () => {
   useEffect(() => {
     if (loading) return;
     if (!user) return navigate("/login");
-    const getUser = async () => {
+    const getUserAuthorization = async () => {
       try {
         const userDocRef = doc(db, "users", user.uid);
         const userDocSnapshot = await getDoc(userDocRef);
@@ -271,7 +271,7 @@ const Dashboard = () => {
     };
 
     getInformasiSidang();
-    getUser();
+    getUserAuthorization();
     getPendaftarKP();
     getPendaftarSempro();
     getPendaftarKompre();
@@ -297,7 +297,7 @@ const Dashboard = () => {
                 Dashboard
               </h1>
               <div className="flex">
-                <div className="data-pendaftar flex text-slate-600 text-xl drop-shadow-lg">
+                <div className="flex text-slate-600 text-xl drop-shadow-lg">
                   {/* Data Pendaftar Kiri */}
                   <div>
                     <PendaftarCard
