@@ -92,7 +92,7 @@ export const CreateTopik = () => {
           <div className="flex flex-col w-full pl-[300px] overflow-y-auto pr-4 pb-4">
             <div className="flex-1 p-8">
               <h1 className="text-2xl text-white text-center shadow-md font-semibold rounded-lg p-4 m-4 mb-4 w-full bg-slate-600">
-                Buat Jadwal Pengajuan
+                Buat Topik Penelitian
               </h1>
               <form
                 onSubmit={handleFormSubmit}

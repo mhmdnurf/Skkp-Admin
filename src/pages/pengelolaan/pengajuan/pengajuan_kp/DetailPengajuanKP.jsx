@@ -217,14 +217,14 @@ export const DetailPengajuanKP = () => {
               <h1 className="mb-2 text-lg font-bold text-slate-600">
                 Dosen Pembimbing
               </h1>
-              <p className="mb-2 uppercase">
+              <div className="mb-2 uppercase">
                 {" "}
                 {data.dosenPembimbingInfo ? (
                   <p className="mb-2">{data.dosenPembimbingInfo.nama}</p>
                 ) : (
                   <p className="mb-2 ">-</p>
                 )}
-              </p>
+              </div>
             </div>
 
             <div className="flex flex-1 justify-end p-4">

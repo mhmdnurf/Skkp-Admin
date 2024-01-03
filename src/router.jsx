@@ -62,6 +62,9 @@ import { CreateDosen } from "./pages/pengelolaan/pengguna/dosen/CreateDosen";
 import { EditDosen } from "./pages/pengelolaan/pengguna/dosen/EditDosen";
 import { CreatePengumuman } from "./pages/pengelolaan/pengumuman/CreatePengumuman";
 import { HomePengumuman } from "./pages/pengelolaan/pengumuman/HomeBukaPengumuman";
+import HomePersyaratan from "./pages/pengelolaan/persyaratan/HomePersyaratan";
+import CreatePersyaratan from "./pages/pengelolaan/persyaratan/CreatePersyaratan";
+import EditPersyaratan from "./pages/pengelolaan/persyaratan/EditPersyaratan";
 
 const routes = [
   { path: "/login", element: <Login /> },
@@ -167,6 +170,9 @@ const routes = [
   { path: "/kelola-pengguna/dosen/edit/:itemId", element: <EditDosen /> },
   { path: "/pengumuman", element: <HomePengumuman /> },
   { path: "/pengumuman/create", element: <CreatePengumuman /> },
+  { path: "/kelola-persyaratan", element: <HomePersyaratan /> },
+  { path: "/kelola-persyaratan/create", element: <CreatePersyaratan /> },
+  { path: "/kelola-persyaratan/edit/:itemId", element: <EditPersyaratan /> },
 ];
 
 export default routes;

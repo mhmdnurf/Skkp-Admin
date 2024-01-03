@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import {
   FaBullhorn,
+  FaElementor,
   FaFileContract,
   FaHistory,
   FaHome,
@@ -48,6 +49,8 @@ export const Sidebar = () => {
       setActive("kelolaNilai");
     } else if (path.startsWith("kelola-topik")) {
       setActive("kelolaTopik");
+    } else if (path.startsWith("kelola-persyaratan")) {
+      setActive("kelolaPersyaratan");
     } else if (path.startsWith("kelola-pengguna")) {
       setActive("kelolaPengguna");
     } else if (path.startsWith("tahun-ajaran")) {
@@ -185,7 +188,7 @@ export const Sidebar = () => {
         </div>
         {subMenuSidang && <SubMenuSidang />}
 
-        {/* Jadwal Pengajuan */}
+        {/* Kelola Jadwal */}
         <div className="flex items-center justify-center mt-4">
           <div
             onClick={dropdownJadwal}
@@ -201,7 +204,7 @@ export const Sidebar = () => {
         </div>
         {subMenuJadwal && <SubMenuJadwal />}
 
-        {/* Jadwal Pengajuan */}
+        {/* Kelola Nilai */}
         <div className="flex items-center justify-center mt-4">
           <div
             onClick={dropdownNilai}
@@ -217,7 +220,7 @@ export const Sidebar = () => {
         </div>
         {subMenuNilai && <SubMenuNilai />}
 
-        {/* Jadwal Pengajuan */}
+        {/* Kelola Topik */}
         <div className="flex items-center justify-center mt-4">
           <Link
             to="/kelola-topik"
@@ -232,7 +235,22 @@ export const Sidebar = () => {
           </Link>
         </div>
 
-        {/* Jadwal Pengajuan */}
+        {/* Kelola Persyaratan */}
+        <div className="flex items-center justify-center mt-4">
+          <Link
+            to="/kelola-persyaratan"
+            className={`flex w-[200px] p-4 items-center cursor-pointer ${
+              active === "kelolaPersyaratan"
+                ? " bg-white rounded-md drop-shadow-lg"
+                : "opacity-50"
+            }`}
+          >
+            <FaElementor className="font-bold mr-2 text-lg" />
+            <h1 className="font-bold">Kelola Persyaratan</h1>
+          </Link>
+        </div>
+
+        {/* Kelola Pengguna */}
         <div className="flex items-center justify-center mt-4">
           <div
             onClick={dropdownPengguna}

@@ -1,6 +1,14 @@
 import { useEffect, useState } from "react";
-import { FaInfoCircle } from "react-icons/fa";
+import {
+  FaInfoCircle,
+  FaLaptopCode,
+  FaRegFileAlt,
+  FaRegPaperPlane,
+  FaToolbox,
+  FaUserGraduate,
+} from "react-icons/fa";
 import { Sidebar } from "../components/Sidebar";
+import { InfinitySpin } from "react-loader-spinner";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useNavigate } from "react-router-dom";
 import {
@@ -14,44 +22,50 @@ import {
 } from "firebase/firestore";
 import { db } from "../utils/firebase";
 import { auth } from "../utils/firebase";
-import Header from "../components/Header";
-import PengumumanCard from "../components/dashboard/PengumumanCard";
-import PendaftarCard from "../components/dashboard/PendaftarCard";
-import Loader from "../components/Loader";
 
-/**
- * Dashboard component.
- * Renders the dashboard page with user information and data about registered students for different types of exams.
- */
 const Dashboard = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   const [username, setUsername] = useState("");
   const [user, loading] = useAuthState(auth);
-  const [periode, setPeriode] = useState({
-    tanggalBukaKP: null,
-    tanggalTutupKP: null,
-    tanggalBukaSempro: null,
-    tanggalTutupSempro: null,
-    tanggalBukaKompre: null,
-    tanggalTutupKompre: null,
-    tanggalBukaSkripsi: null,
-    tanggalTutupSkripsi: null,
-  });
-  const [tanggalSidang, setTanggalSidang] = useState({
-    tanggalSidangKP: null,
-    tanggalSidangSempro: null,
-    tanggalSidangKompre: null,
-    tanggalSidangSkripsi: null,
-  });
-  const [jumlahPendaftar, setJumlahPendaftar] = useState({
-    jumlahPendaftarKP: 0,
-    jumlahPendaftarSempro: 0,
-    jumlahPendaftarKompre: 0,
-    jumlahPendaftarSkripsi: 0,
-  });
+  const [tanggalBukaKP, setTanggalBukaKP] = useState(null);
+  const [tanggalTutupKP, setTanggalTutupKP] = useState(null);
+  const [tanggalBukaSempro, setTanggalBukaSempro] = useState(null);
+  const [tanggalTutupSempro, setTanggalTutupSempro] = useState(null);
+  const [tanggalBukaKompre, setTanggalBukaKompre] = useState(null);
+  const [tanggalTutupKompre, setTanggalTutupKompre] = useState(null);
+  const [tanggalBukaSkripsi, setTanggalBukaSkripsi] = useState(null);
+  const [tanggalTutupSkripsi, setTanggalTutupSkripsi] = useState(null);
+  const [tanggalSidangKP, setTanggalSidangKP] = useState(null);
+  const [tanggalSidangSempro, setTanggalSidangSempro] = useState(null);
+  const [tanggalSidangKompre, setTanggalSidangKompre] = useState(null);
+  const [tanggalSidangSkripsi, setTanggalSidangSkripsi] = useState(null);
+  const [jumlahPendaftarKP, setJumlahPendaftarKP] = useState(0);
+  const [jumlahPendaftarSempro, setJumlahPendaftarSempro] = useState(0);
+  const [jumlahPendaftarKompre, setJumlahPendaftarKompre] = useState(0);
+  const [jumlahPendaftarSkripsi, setJumlahPendaftarSkripsi] = useState(0);
 
-  const getPendaftarKP = async () => {
+  const fetchUserName = async () => {
+    try {
+      const userDocRef = doc(db, "users", user.uid);
+      const userDocSnapshot = await getDoc(userDocRef);
+
+      if (userDocSnapshot.exists()) {
+        const userData = userDocSnapshot.data();
+        setUsername(userData.nama);
+        setIsLoading(false);
+
+        if (userData.role !== "prodi") {
+          navigate("/login"); // Redirect jika peran bukan "prodi"
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      alert("An error occurred while fetching user data");
+    }
+  };
+
+  const fetchKerjaPraktek = async () => {
     try {
       const querySnapshot = await getDocs(
         query(collection(db, "jadwalSidang"), where("status", "==", "Aktif"))
@@ -75,15 +89,12 @@ const Dashboard = () => {
 
       // Membandingkan isi array
       const jumlahPendaftarKP = periodePendaftaran.length;
-      setJumlahPendaftar({
-        jumlahPendaftarKP: jumlahPendaftarKP,
-      });
+      setJumlahPendaftarKP(jumlahPendaftarKP);
     } catch (error) {
       console.error(error);
     }
   };
-
-  const getPendaftarSempro = async () => {
+  const fetchSeminarProposal = async () => {
     try {
       const querySnapshot = await getDocs(
         query(collection(db, "jadwalSidang"), where("status", "==", "Aktif"))
@@ -109,15 +120,39 @@ const Dashboard = () => {
 
       // Membandingkan isi array
       const jumlahPendaftarSempro = periodePendaftaran.length;
-      setJumlahPendaftar({
-        jumlahPendaftarSempro: jumlahPendaftarSempro,
-      });
+      setJumlahPendaftarSempro(jumlahPendaftarSempro);
     } catch (error) {
       console.error(error);
     }
   };
 
-  const getPendaftarKompre = async () => {
+  const fetchSkripsi = async () => {
+    try {
+      const querySnapshot = await getDocs(
+        query(collection(db, "jadwalSidang"), where("status", "==", "Aktif"))
+      );
+
+      const skripsiUIDs = querySnapshot.docs
+        .filter((doc) => doc.data().jenisSidang.includes("Skripsi"))
+        .map((doc) => doc.id);
+
+      console.log(skripsiUIDs);
+
+      const querySkripsi = await getDocs(
+        query(collection(db, "sidang"), where("jenisSidang", "==", "Skripsi"))
+      );
+      const periodePendaftaran = querySkripsi.docs
+        .filter((doc) => skripsiUIDs.includes(doc.data().jadwalSidang_uid))
+        .map((doc) => doc.data().periodePendaftaran);
+
+      // Membandingkan isi array
+      const jumlahPendaftarSkripsi = periodePendaftaran.length;
+      setJumlahPendaftarSkripsi(jumlahPendaftarSkripsi);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+  const fetchKomprehensif = async () => {
     try {
       const querySnapshot = await getDocs(
         query(collection(db, "jadwalSidang"), where("status", "==", "Aktif"))
@@ -141,44 +176,13 @@ const Dashboard = () => {
 
       // Membandingkan isi array
       const jumlahPendaftarKompre = periodePendaftaran.length;
-      setJumlahPendaftar({
-        jumlahPendaftarKompre: jumlahPendaftarKompre,
-      });
+      setJumlahPendaftarKompre(jumlahPendaftarKompre);
     } catch (error) {
       console.error(error);
     }
   };
 
-  const getPendaftarSkripsi = async () => {
-    try {
-      const querySnapshot = await getDocs(
-        query(collection(db, "jadwalSidang"), where("status", "==", "Aktif"))
-      );
-
-      const skripsiUIDs = querySnapshot.docs
-        .filter((doc) => doc.data().jenisSidang.includes("Skripsi"))
-        .map((doc) => doc.id);
-
-      console.log(skripsiUIDs);
-
-      const querySkripsi = await getDocs(
-        query(collection(db, "sidang"), where("jenisSidang", "==", "Skripsi"))
-      );
-      const periodePendaftaran = querySkripsi.docs
-        .filter((doc) => skripsiUIDs.includes(doc.data().jadwalSidang_uid))
-        .map((doc) => doc.data().periodePendaftaran);
-
-      // Membandingkan isi array
-      const jumlahPendaftarSkripsi = periodePendaftaran.length;
-      setJumlahPendaftar({
-        jumlahPendaftarSkripsi: jumlahPendaftarSkripsi,
-      });
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  const getInformasiSidang = () => {
+  const fetchSidang = () => {
     const activeJadwalPengajuanQuery = query(
       collection(db, "jadwalSidang"),
       where("status", "==", "Aktif")
@@ -191,56 +195,39 @@ const Dashboard = () => {
           jadwalPengajuanSnapshot.forEach((doc) => {
             const jadwalData = doc.data();
             const jenisSidang = jadwalData.jenisSidang;
-            const periodePendaftaran = jadwalData.periodePendaftaran;
-
             if (jenisSidang.includes("Kerja Praktek")) {
-              setPeriode((prevPeriode) => ({
-                ...prevPeriode,
-                tanggalBukaKP: periodePendaftaran.tanggalBuka.toDate(),
-                tanggalTutupKP: periodePendaftaran.tanggalTutup.toDate(),
-              }));
-              setTanggalSidang((prevTanggalSidang) => ({
-                ...prevTanggalSidang,
-                tanggalSidangKP: jadwalData.tanggalSidang.toDate(),
-              }));
+              // Memeriksa jenis pengajuan
+              const periodePendaftaran = jadwalData.periodePendaftaran;
+              setTanggalBukaKP(periodePendaftaran.tanggalBuka.toDate());
+              setTanggalTutupKP(periodePendaftaran.tanggalTutup.toDate());
+              setTanggalSidangKP(jadwalData.tanggalSidang.toDate());
             }
-
             if (jenisSidang.includes("Seminar Proposal")) {
-              setPeriode((prevPeriode) => ({
-                ...prevPeriode,
-                tanggalBukaSempro: periodePendaftaran.tanggalBuka.toDate(),
-                tanggalTutupSempro: periodePendaftaran.tanggalTutup.toDate(),
-              }));
-              setTanggalSidang((prevTanggalSidang) => ({
-                ...prevTanggalSidang,
-                tanggalSidangSempro: jadwalData.tanggalSidang.toDate(),
-              }));
+              // Memeriksa jenis pengajuan
+              const periodePendaftaran = jadwalData.periodePendaftaran;
+              setTanggalBukaSempro(periodePendaftaran.tanggalBuka.toDate());
+              setTanggalTutupSempro(periodePendaftaran.tanggalTutup.toDate());
+              setTanggalSidangSempro(jadwalData.tanggalSidang.toDate());
             }
-
             if (jenisSidang.includes("Komprehensif")) {
-              setPeriode((prevPeriode) => ({
-                ...prevPeriode,
-                tanggalBukaKompre: periodePendaftaran.tanggalBuka.toDate(),
-                tanggalTutupKompre: periodePendaftaran.tanggalTutup.toDate(),
-              }));
-              setTanggalSidang((prevTanggalSidang) => ({
-                ...prevTanggalSidang,
-                tanggalSidangKompre: jadwalData.tanggalSidang.toDate(),
-              }));
+              // Memeriksa jenis pengajuan
+              const periodePendaftaran = jadwalData.periodePendaftaran;
+              setTanggalBukaKompre(periodePendaftaran.tanggalBuka.toDate());
+              setTanggalTutupKompre(periodePendaftaran.tanggalTutup.toDate());
+              setTanggalSidangKompre(jadwalData.tanggalSidang.toDate());
             }
-
             if (jenisSidang.includes("Skripsi")) {
-              setPeriode((prevPeriode) => ({
-                ...prevPeriode,
-                tanggalBukaSkripsi: periodePendaftaran.tanggalBuka.toDate(),
-                tanggalTutupSkripsi: periodePendaftaran.tanggalTutup.toDate(),
-              }));
-              setTanggalSidang((prevTanggalSidang) => ({
-                ...prevTanggalSidang,
-                tanggalSidangSkripsi: jadwalData.tanggalSidang.toDate(),
-              }));
+              // Memeriksa jenis pengajuan
+              const periodePendaftaran = jadwalData.periodePendaftaran;
+              setTanggalBukaSkripsi(periodePendaftaran.tanggalBuka.toDate());
+              setTanggalTutupSkripsi(periodePendaftaran.tanggalTutup.toDate());
+              setTanggalSidangSkripsi(jadwalData.tanggalSidang.toDate());
             }
           });
+        } else {
+          // Tidak ada jadwal sidang aktif
+          setTanggalBukaKP(false);
+          setTanggalTutupKP(false);
         }
       }
     );
@@ -251,33 +238,15 @@ const Dashboard = () => {
   useEffect(() => {
     if (loading) return;
     if (!user) return navigate("/login");
-    const getUserAuthorization = async () => {
-      try {
-        const userDocRef = doc(db, "users", user.uid);
-        const userDocSnapshot = await getDoc(userDocRef);
 
-        if (userDocSnapshot.exists()) {
-          const userData = userDocSnapshot.data();
-          setUsername(userData.nama);
-          setIsLoading(false);
-          if (userData.role !== "prodi") {
-            navigate("/login");
-          }
-        }
-      } catch (err) {
-        console.error(err);
-        alert("An error occurred while fetching user data");
-      }
-    };
-
-    getInformasiSidang();
-    getUserAuthorization();
-    getPendaftarKP();
-    getPendaftarSempro();
-    getPendaftarKompre();
-    getPendaftarSkripsi();
+    const unsubscribeKP = fetchSidang();
+    fetchUserName();
+    fetchKerjaPraktek();
+    fetchSeminarProposal();
+    fetchKomprehensif();
+    fetchSkripsi();
     return () => {
-      getInformasiSidang();
+      unsubscribeKP();
     };
   }, [user, loading, navigate]);
 
@@ -286,43 +255,58 @@ const Dashboard = () => {
       <div className="flex bg-slate-100 h-screen">
         {isLoading ? (
           <>
-            <Loader />
+            <div className="flex items-center justify-center w-full h-screen overflow-y-auto ">
+              <InfinitySpin width="200" color="#475569" />
+            </div>
           </>
         ) : (
           <>
             <Sidebar />
             <div className="flex flex-col w-full pl-[300px] overflow-y-auto pr-4 pb-4">
-              <Header username={username} />
+              <h1 className="m-2 p-6 bg-white mb-4 rounded-xl drop-shadow-xl text-xl text-slate-600 font-extrabold flex items-center">
+                Welcome Back, {username}
+                <div className="ml-4 flex ">
+                  <FaRegPaperPlane size={40} />
+                </div>
+              </h1>
               <h1 className="p-4 text-4xl text-slate-600 font-bold">
                 Dashboard
               </h1>
               <div className="flex">
-                <div className="flex text-slate-600 text-xl drop-shadow-lg">
+                <div className="data-pendaftar flex text-slate-600 text-xl drop-shadow-lg">
                   {/* Data Pendaftar Kiri */}
                   <div>
-                    <PendaftarCard
-                      title="Pendaftar Sidang Kerja Praktek"
-                      count={jumlahPendaftar.jumlahPendaftarKP}
-                      icon="FaToolbox"
-                    />
-                    <PendaftarCard
-                      title="Pendaftar Seminar Proposal"
-                      count={jumlahPendaftar.jumlahPendaftarSempro}
-                      icon="FaRegFileAlt"
-                    />
+                    <div className="p-4 bg-white m-2 flex items-center justify-center rounded-xl hover:transform hover:scale-110 transition-transform duration-300 ease-in-out">
+                      <FaToolbox className="mr-2" size={80} />
+                      <div className="text-right">
+                        <p>Pendaftar Sidang Kerja Praktek</p>
+                        <p>{jumlahPendaftarKP}</p>
+                      </div>
+                    </div>
+                    <div className="p-4 bg-white m-2 flex items-center justify-center rounded-xl hover:transform hover:scale-110 transition-transform duration-300 ease-in-out">
+                      <FaRegFileAlt className="mr-2" size={80} />
+                      <div className="text-right">
+                        <p>Pendaftar Seminar Proposal</p>
+                        <p>{jumlahPendaftarSempro}</p>
+                      </div>
+                    </div>
                   </div>
                   {/* Data Pendaftar Kanan */}
                   <div>
-                    <PendaftarCard
-                      title="Pendaftar Sidang Komprehensif"
-                      count={jumlahPendaftar.jumlahPendaftarKompre}
-                      icon="FaLaptopCode"
-                    />
-                    <PendaftarCard
-                      title="Pendaftar Sidang Akhir Skripsi"
-                      count={jumlahPendaftar.jumlahPendaftarSkripsi}
-                      icon="FaUserGraduate"
-                    />
+                    <div className="p-4 bg-white m-2 flex items-center justify-center rounded-xl hover:transform hover:scale-110 transition-transform duration-300 ease-in-out">
+                      <FaLaptopCode className="mr-2" size={80} />
+                      <div className="text-right">
+                        <p>Pendaftar Sidang Komprehensif</p>
+                        <p>{jumlahPendaftarKompre}</p>
+                      </div>
+                    </div>
+                    <div className="p-4 bg-white m-2 flex items-center justify-center rounded-xl hover:transform hover:scale-110 transition-transform duration-300 ease-in-out">
+                      <FaUserGraduate className="mr-2" size={80} />
+                      <div className="text-right">
+                        <p>Pendaftar Sidang Akhir Skripsi</p>
+                        <p>{jumlahPendaftarSkripsi}</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
                 <div>
@@ -336,38 +320,197 @@ const Dashboard = () => {
                 </div>
                 <div className="flex-row">
                   <div className="px-10">
-                    <PengumumanCard
-                      title="INFORMASI SEMINAR PROPOSAL !"
-                      dates={{ start: tanggalSidang.tanggalSidangSempro }}
-                      registrationDates={{
-                        start: periode.tanggalBukaSempro,
-                        end: periode.tanggalTutupSempro,
-                      }}
-                    />
-                    <PengumumanCard
-                      title="INFORMASI SIDANG AKHIR SKRIPSI !"
-                      dates={{ start: tanggalSidang.tanggalSidangSkripsi }}
-                      registrationDates={{
-                        start: periode.tanggalBukaSkripsi,
-                        end: periode.tanggalTutupSkripsi,
-                      }}
-                    />
-                    <PengumumanCard
-                      title="INFORMASI SIDANG KERJA PRAKTEK !"
-                      dates={{ start: tanggalSidang.tanggalSidangKP }}
-                      registrationDates={{
-                        start: periode.tanggalBukaKP,
-                        end: periode.tanggalTutupKP,
-                      }}
-                    />
-                    <PengumumanCard
-                      title="INFORMASI SIDANG KOMPREHENSIF !"
-                      dates={{ start: tanggalSidang.tanggalSidangKompre }}
-                      registrationDates={{
-                        start: periode.tanggalBukaKompre,
-                        end: periode.tanggalTutupKompre,
-                      }}
-                    />
+                    <div className="proporsal bg-white p-4 rounded-lg mb-4 hover:transform hover:scale-105 transition-transform duration-300 ease-in-out text-slate-600 drop-shadow-lg">
+                      <h3 className="font-bold text-md">
+                        INFORMASI SEMINAR PROPOSAL !
+                      </h3>
+                      {tanggalBukaSempro && tanggalTutupSempro ? (
+                        <>
+                          <p>
+                            Diberitahukan kepada mahasiswa/i Seminar Proposal
+                            akan diadakan pada tanggal :{" "}
+                            <b>
+                              {" "}
+                              {new Intl.DateTimeFormat("id-ID", {
+                                weekday: "long",
+                                day: "2-digit",
+                                month: "long",
+                                year: "numeric",
+                              }).format(tanggalSidangSempro)}
+                            </b>
+                          </p>
+                          <p>
+                            Pendaftaran dibuka Tanggal:{" "}
+                            <b>
+                              {new Intl.DateTimeFormat("id-ID", {
+                                weekday: "long",
+                                day: "2-digit",
+                                month: "long",
+                                year: "numeric",
+                              }).format(tanggalBukaSempro)}
+                            </b>
+                          </p>
+                          <p>
+                            Pendaftaran ditutup Tanggal:{" "}
+                            <b>
+                              {new Intl.DateTimeFormat("id-ID", {
+                                weekday: "long",
+                                day: "2-digit",
+                                month: "long",
+                                year: "numeric",
+                              }).format(tanggalTutupSempro)}
+                            </b>
+                          </p>
+                        </>
+                      ) : (
+                        <p className="text-red-500 font-bold uppercase">
+                          Pendaftaran Sedang Ditutup
+                        </p>
+                      )}
+                    </div>
+                    <div className="proporsal bg-white p-4 rounded-lg mb-4 hover:transform hover:scale-105 transition-transform duration-300 ease-in-out text-slate-600 drop-shadow-lg">
+                      <h3 className="font-bold text-md">
+                        INFORMASI SIDANG AKHIR SKRIPSI !
+                      </h3>
+                      {tanggalBukaSkripsi && tanggalTutupSkripsi ? (
+                        <>
+                          <p>
+                            Diberitahukan kepada mahasiswa/i Sidang Skripsi akan
+                            diadakan pada tanggal :{" "}
+                            <b>
+                              {" "}
+                              {new Intl.DateTimeFormat("id-ID", {
+                                weekday: "long",
+                                day: "2-digit",
+                                month: "long",
+                                year: "numeric",
+                              }).format(tanggalSidangSkripsi)}
+                            </b>
+                          </p>
+                          <p>
+                            Pendaftaran dibuka Tanggal:{" "}
+                            <b>
+                              {new Intl.DateTimeFormat("id-ID", {
+                                weekday: "long",
+                                day: "2-digit",
+                                month: "long",
+                                year: "numeric",
+                              }).format(tanggalBukaSkripsi)}
+                            </b>
+                          </p>
+                          <p>
+                            Pendaftaran ditutup Tanggal:{" "}
+                            <b>
+                              {new Intl.DateTimeFormat("id-ID", {
+                                weekday: "long",
+                                day: "2-digit",
+                                month: "long",
+                                year: "numeric",
+                              }).format(tanggalTutupSkripsi)}
+                            </b>
+                          </p>
+                        </>
+                      ) : (
+                        <p className="text-red-500 font-bold uppercase">
+                          Pendaftaran Sedang Ditutup
+                        </p>
+                      )}
+                    </div>
+                    <div className="proporsal bg-white p-4 rounded-lg mb-4 hover:transform hover:scale-105 transition-transform duration-300 ease-in-out text-slate-600 drop-shadow-lg">
+                      <h3 className="font-bold text-md">
+                        INFORMASI SIDANG KERJA PRAKTEK !
+                      </h3>
+                      {tanggalBukaKP && tanggalTutupKP ? (
+                        <>
+                          <p>
+                            Diberitahukan kepada mahasiswa/i Sidang Kerja
+                            Praktek akan diadakan pada tanggal :{" "}
+                            <b>
+                              {new Intl.DateTimeFormat("id-ID", {
+                                weekday: "long",
+                                day: "2-digit",
+                                month: "long",
+                                year: "numeric",
+                              }).format(tanggalSidangKP)}
+                            </b>
+                          </p>
+                          <p>
+                            Pendaftaran dibuka Tanggal:{" "}
+                            <b>
+                              {new Intl.DateTimeFormat("id-ID", {
+                                weekday: "long",
+                                day: "2-digit",
+                                month: "long",
+                                year: "numeric",
+                              }).format(tanggalBukaKP)}
+                            </b>
+                          </p>
+                          <p>
+                            Pendaftaran ditutup Tanggal:{" "}
+                            <b>
+                              {new Intl.DateTimeFormat("id-ID", {
+                                weekday: "long",
+                                day: "2-digit",
+                                month: "long",
+                                year: "numeric",
+                              }).format(tanggalTutupKP)}
+                            </b>
+                          </p>
+                        </>
+                      ) : (
+                        <p className="text-red-500 font-bold uppercase">
+                          Pendaftaran Sedang Ditutup
+                        </p>
+                      )}
+                    </div>
+                    <div className="proporsal bg-white p-4 rounded-lg mb-4 hover:transform hover:scale-105 transition-transform duration-300 ease-in-out text-slate-600 drop-shadow-lg">
+                      <h3 className="font-bold text-md">
+                        INFORMASI SIDANG KOMPREHENSIF !
+                      </h3>
+                      {tanggalBukaKompre && tanggalTutupKompre ? (
+                        <>
+                          <p>
+                            Diberitahukan kepada mahasiswa/i Sidang Komprehensif
+                            akan diadakan pada tanggal :{" "}
+                            <b>
+                              {" "}
+                              {new Intl.DateTimeFormat("id-ID", {
+                                weekday: "long",
+                                day: "2-digit",
+                                month: "long",
+                                year: "numeric",
+                              }).format(tanggalSidangKompre)}
+                            </b>
+                          </p>
+                          <p>
+                            Pendaftaran dibuka Tanggal:{" "}
+                            <b>
+                              {new Intl.DateTimeFormat("id-ID", {
+                                weekday: "long",
+                                day: "2-digit",
+                                month: "long",
+                                year: "numeric",
+                              }).format(tanggalBukaKompre)}
+                            </b>
+                          </p>
+                          <p>
+                            Pendaftaran ditutup Tanggal:{" "}
+                            <b>
+                              {new Intl.DateTimeFormat("id-ID", {
+                                weekday: "long",
+                                day: "2-digit",
+                                month: "long",
+                                year: "numeric",
+                              }).format(tanggalTutupKompre)}
+                            </b>
+                          </p>
+                        </>
+                      ) : (
+                        <p className="text-red-500 font-bold uppercase">
+                          Pendaftaran Sedang Ditutup
+                        </p>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>

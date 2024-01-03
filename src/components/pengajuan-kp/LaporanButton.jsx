@@ -75,7 +75,10 @@ LaporanButton.propTypes = {
   onOpen: PropTypes.func,
   isOpen: PropTypes.bool,
   onClose: PropTypes.func,
-  tanggal: PropTypes.string,
+  tanggal: PropTypes.shape({
+    start: PropTypes.instanceOf(Date),
+    end: PropTypes.instanceOf(Date),
+  }),
   handleValueChange: PropTypes.func,
   handleLaporan: PropTypes.func,
   handleRiwayatLaporan: PropTypes.func,
