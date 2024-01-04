@@ -56,7 +56,7 @@ const Dashboard = () => {
         setIsLoading(false);
 
         if (userData.role !== "prodi") {
-          navigate("/login"); // Redirect jika peran bukan "prodi"
+          navigate("/login");
         }
       }
     } catch (err) {
@@ -74,9 +74,6 @@ const Dashboard = () => {
       const kerjaPraktekUIDs = querySnapshot.docs
         .filter((doc) => doc.data().jenisSidang.includes("Kerja Praktek"))
         .map((doc) => doc.id);
-
-      console.log(kerjaPraktekUIDs);
-
       const queryKerjaPraktek = await getDocs(
         query(
           collection(db, "sidang"),
@@ -103,8 +100,6 @@ const Dashboard = () => {
       const seminarProposalUIDs = querySnapshot.docs
         .filter((doc) => doc.data().jenisSidang.includes("Seminar Proposal"))
         .map((doc) => doc.id);
-
-      console.log(seminarProposalUIDs);
 
       const querySempro = await getDocs(
         query(
@@ -136,8 +131,6 @@ const Dashboard = () => {
         .filter((doc) => doc.data().jenisSidang.includes("Skripsi"))
         .map((doc) => doc.id);
 
-      console.log(skripsiUIDs);
-
       const querySkripsi = await getDocs(
         query(collection(db, "sidang"), where("jenisSidang", "==", "Skripsi"))
       );
@@ -161,9 +154,6 @@ const Dashboard = () => {
       const kompreUIDs = querySnapshot.docs
         .filter((doc) => doc.data().jenisSidang.includes("Komprehensif"))
         .map((doc) => doc.id);
-
-      console.log(kompreUIDs);
-
       const queryKompre = await getDocs(
         query(
           collection(db, "sidang"),
@@ -248,7 +238,7 @@ const Dashboard = () => {
     return () => {
       unsubscribeKP();
     };
-  }, [user, loading, navigate]);
+  }, [loading, navigate, user]);
 
   return (
     <>

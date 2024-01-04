@@ -1,5 +1,5 @@
 import React from "react";
-import { addDoc, collection } from "firebase/firestore";
+import { addDoc, collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../../../utils/firebase";
 import { Sidebar } from "../../../components/Sidebar";
 import { Link, useNavigate } from "react-router-dom";
@@ -63,6 +63,16 @@ const CreatePersyaratan = () => {
       const { jenisPersyaratan, berkasList } = formData;
       if (jenisPersyaratan.length === 0 || berkasList.length === 0) {
         alert("Mohon isi semua kolom!");
+        return;
+      }
+
+      const persyaratanRef = collection(db, "persyaratan");
+      const sameJenisPersyaratanSnapshot = await getDocs(
+        query(persyaratanRef, where("jenisPersyaratan", "==", jenisPersyaratan))
+      );
+
+      if (!sameJenisPersyaratanSnapshot.empty) {
+        alert("Jenis persyaratan sudah ada!");
         return;
       }
 

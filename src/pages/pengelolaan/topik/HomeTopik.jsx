@@ -31,27 +31,13 @@ export const HomeTopik = () => {
           ...doc.data(),
         }));
 
-        const filteredData = fetchedData.filter((item) => {
-          const namaTopikLower = item.namaTopik.toLowerCase();
-          const prodiTopikLower = Array.isArray(item.prodiTopik)
-            ? item.prodiTopik.join(" ").toLowerCase()
-            : item.prodiTopik.toLowerCase();
-
-          return (
-            namaTopikLower.includes(searchText.toLowerCase()) ||
-            prodiTopikLower.includes(searchText.toLowerCase())
-          );
-        });
-
-        setData(filteredData);
+        setData(fetchedData);
         setIsLoading(false);
       }
     );
 
     if (loading) return;
     if (!user) return navigate("/login");
-
-    // Cleanup: unsubscribe when the component unmounts or when the effect re-runs
     return () => unsubscribe();
   }, [user, loading, navigate, searchText]);
 

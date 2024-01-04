@@ -126,8 +126,6 @@ export const HomePengajuanKP = () => {
     };
 
     getUserAuthorization();
-
-    // Cleanup: unsubscribe when the component unmounts or when the effect re-runs
     return () => unsubscribe();
   }, [user, loading, navigate, searchText, tanggal.startDate, tanggal.endDate]);
 

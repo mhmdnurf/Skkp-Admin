@@ -30,27 +30,13 @@ const HomePersyaratan = () => {
           id: doc.id,
           ...doc.data(),
         }));
-        const filteredData = fetchedData.filter((item) => {
-          const jenisPersyaratan = item.jenisPersyaratan.toLowerCase();
-          const berkasPersyaratan = Array.isArray(item.berkasPersyaratan)
-            ? item.berkasPersyaratan.join(" ").toLowerCase()
-            : item.berkasPersyaratan.toLowerCase();
-
-          return (
-            jenisPersyaratan.includes(searchText.toLowerCase()) ||
-            berkasPersyaratan.includes(searchText.toLowerCase())
-          );
-        });
-
-        setData(filteredData);
+        setData(fetchedData);
         setIsLoading(false);
       }
     );
 
     if (loading) return;
     if (!user) return navigate("/login");
-
-    // Cleanup: unsubscribe when the component unmounts or when the effect re-runs
     return () => unsubscribe();
   }, [user, loading, navigate, searchText]);
 

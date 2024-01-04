@@ -1,50 +1,33 @@
-import { useEffect, useState } from "react";
+import React from "react";
 import { Sidebar } from "../../../components/Sidebar";
-import { InfinitySpin } from "react-loader-spinner";
 import { auth, db } from "../../../utils/firebase";
+import Loader from "../../../components/Loader";
 import {
   collection,
-  onSnapshot,
   query,
   orderBy,
   deleteDoc,
   doc,
+  getDocs,
+  limit,
+  startAfter,
 } from "firebase/firestore";
 import { Link, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { useAuthState } from "react-firebase-hooks/auth";
+import { FaSearch } from "react-icons/fa";
 
 export const HomeTahunAjaran = () => {
-  const itemsPerPage = 5;
-  const [data, setData] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [isLoading, setIsLoading] = useState(true);
-  const [searchText, setSearchText] = useState("");
+  const [data, setData] = React.useState([]);
+  const [isLoading, setIsLoading] = React.useState(true);
+  const [searchText, setSearchText] = React.useState("");
   const navigate = useNavigate();
   const [user, loading] = useAuthState(auth);
+  const [lastDoc, setLastDoc] = React.useState(null);
+  const itemsPerPage = 2;
 
-  useEffect(() => {
-    const unsubscribe = onSnapshot(
-      query(collection(db, "tahunAjaran"), orderBy("tahun", "asc")),
-      (snapshot) => {
-        const fetchedData = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        const filteredData = fetchedData.filter((item) =>
-          item.tahun.toLowerCase().includes(searchText.toLowerCase())
-        );
-        setData(filteredData);
-        setIsLoading(false);
-      }
-    );
-
-    if (loading) return;
-    if (!user) return navigate("/login");
-
-    // Cleanup: unsubscribe when the component unmounts or when the effect re-runs
-    return () => unsubscribe();
-  }, [user, loading, navigate, searchText]);
+  // State untuk menyimpan dokumen pertama di setiap halaman
+  const [firstDocs, setFirstDocs] = React.useState([]);
 
   const handleDelete = async (id) => {
     try {
@@ -63,22 +46,124 @@ export const HomeTahunAjaran = () => {
         const docRef = doc(db, "tahunAjaran", id);
         await deleteDoc(docRef);
         Swal.fire("Success", "Data Berhasil dihapus!", "success");
+        setData(data.filter((item) => item.id !== id));
       }
     } catch (error) {
       console.error("Error deleting data: ", error);
     }
   };
+  const handleSearch = async () => {};
 
-  const lastIndex = currentPage * itemsPerPage;
-  const firstIndex = lastIndex - itemsPerPage;
-  const currentItems = data.slice(firstIndex, lastIndex);
+  // Modifikasi fetchData untuk menyimpan dokumen pertama
+  const fetchData = async () => {
+    setIsLoading(true);
+    try {
+      const q = query(
+        collection(db, "tahunAjaran"),
+        orderBy("tahun", "asc"),
+        limit(itemsPerPage)
+      );
+
+      const querySnapshot = await getDocs(q);
+      const fetchedData = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setData(fetchedData);
+      setLastDoc(querySnapshot.docs[querySnapshot.docs.length - 1]);
+
+      // Menyimpan dokumen pertama
+      setFirstDocs((prevFirstDocs) => [
+        ...prevFirstDocs,
+        querySnapshot.docs[0],
+      ]);
+    } catch (error) {
+      console.error("Error fetching data: ", error);
+    }
+    setIsLoading(false);
+  };
+
+  // Modifikasi handleNext untuk menyimpan dokumen pertama
+  const handleNext = async () => {
+    const q = query(
+      collection(db, "tahunAjaran"),
+      orderBy("tahun", "asc"),
+      startAfter(lastDoc),
+      limit(itemsPerPage)
+    );
+
+    const querySnapshot = await getDocs(q);
+    if (querySnapshot.empty) {
+      console.log("No more documents!");
+      return;
+    }
+
+    const fetchedData = querySnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+    setData(fetchedData);
+    setLastDoc(querySnapshot.docs[querySnapshot.docs.length - 1]);
+
+    // Menyimpan dokumen pertama
+    setFirstDocs((prevFirstDocs) => [...prevFirstDocs, querySnapshot.docs[0]]);
+  };
+
+  // Fungsi handlePrev baru
+  // Fungsi handlePrev yang sudah disesuaikan
+  const handlePrev = async () => {
+    try {
+      // Periksa jika halaman sebelumnya ada atau tidak
+      if (firstDocs.length < 2) {
+        console.log("No more previous documents!");
+        // Jika halaman sebelumnya adalah halaman pertama, panggil fetchData
+        fetchData();
+        return;
+      }
+
+      // Ambil dan hapus dokumen pertama dari halaman sebelumnya
+      const prevFirstDoc = firstDocs[firstDocs.length - 2];
+      setFirstDocs((prevFirstDocs) => prevFirstDocs.slice(0, -1));
+
+      // Buat query untuk mendapatkan halaman sebelumnya
+      const q = query(
+        collection(db, "tahunAjaran"),
+        orderBy("tahun", "asc"), // Ubah ke "asc" untuk urutan terbalik
+        startAfter(prevFirstDoc), // Gunakan "startAfter" karena kita ingin halaman sebelumnya
+        limit(itemsPerPage)
+      );
+
+      const querySnapshot = await getDocs(q);
+
+      // Ambil data dari hasil query dan perbarui state
+      const fetchedData = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+
+      // Perbarui state data dan tambahkan dokumen pertama dari halaman sebelumnya
+      setData(fetchedData);
+      setLastDoc(querySnapshot.docs[querySnapshot.docs.length - 1]);
+      setFirstDocs((prevFirstDocs) => [
+        ...prevFirstDocs.slice(0, -1), // Hapus dokumen pertama sebelumnya
+        querySnapshot.docs[0], // Tambahkan dokumen pertama dari halaman sebelumnya
+      ]);
+    } catch (error) {
+      console.error("Error fetching previous data: ", error);
+    }
+  };
+
+  React.useEffect(() => {
+    if (loading) return;
+    if (!user) return navigate("/login");
+
+    fetchData();
+  }, [user, loading, navigate]);
 
   return (
     <>
       {isLoading ? (
-        <div className="flex-1 flex justify-center items-center h-screen bg-slate-100">
-          <InfinitySpin width="200" color="#475569" />
-        </div>
+        <Loader />
       ) : (
         <>
           <div className="flex bg-slate-100 min-h-screen">
@@ -105,6 +190,13 @@ export const HomeTahunAjaran = () => {
                     value={searchText}
                     onChange={(e) => setSearchText(e.target.value)}
                   />
+                  <button
+                    className="ml-2 bg-slate-600 p-2 rounded shadow drop-shadow"
+                    type="button"
+                    onClick={handleSearch}
+                  >
+                    <FaSearch size={20} color="white" />
+                  </button>
                 </div>
               </div>
 
@@ -118,67 +210,45 @@ export const HomeTahunAjaran = () => {
                     </tr>
                   </thead>
                   <tbody className="rounded-b-md text-sm">
-                    {currentItems
-                      .filter((item) =>
-                        item.tahun
-                          .toLowerCase()
-                          .includes(searchText.toLowerCase())
-                      )
-                      .map((item, index) => (
-                        <tr
-                          key={item.id}
-                          className="hover:bg-slate-100 border-b border-t border-slate-300"
-                        >
-                          <td className="text-center">
-                            {index + 1 + firstIndex}
-                          </td>
-                          <td className="text-center">{item.tahun}</td>
-                          <td className="text-center p-4">
-                            <div className="flex items-center justify-center">
-                              <Link
-                                to={`/tahun-ajaran/edit/${item.id}`}
-                                className="p-2 bg-slate-200 rounded-md hover:bg-slate-300 mr-1"
-                              >
-                                Ubah
-                              </Link>
-                              <button
-                                onClick={() => handleDelete(item.id)}
-                                className="p-2 bg-red-200 rounded-md hover:bg-red-300"
-                              >
-                                Hapus
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
+                    {data.map((item, index) => (
+                      <tr
+                        key={item.id}
+                        className="hover:bg-slate-100 border-b border-t border-slate-300"
+                      >
+                        <td className="text-center">{index + 1}</td>
+                        <td className="text-center">{item.tahun}</td>
+                        <td className="text-center p-4">
+                          <div className="flex items-center justify-center">
+                            <Link
+                              to={`/tahun-ajaran/edit/${item.id}`}
+                              className="p-2 bg-slate-200 rounded-md hover:bg-slate-300 mr-1"
+                            >
+                              Ubah
+                            </Link>
+                            <button
+                              onClick={() => handleDelete(item.id)}
+                              className="p-2 bg-red-200 rounded-md hover:bg-red-300"
+                            >
+                              Hapus
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
                 {/* Pagination */}
-                <div className="flex justify-between items-center bg-white drop-shadow-md rounded-b-lg p-2">
-                  <p className="text-xs text-slate-600 ml-2">
-                    Showing{" "}
-                    {Math.min(
-                      (currentPage - 1) * itemsPerPage + 1,
-                      data.length
-                    )}{" "}
-                    to {Math.min(currentPage * itemsPerPage, data.length)} of{" "}
-                    {data.length} results
-                  </p>
-
+                <div className="flex justify-end items-center bg-white drop-shadow-md rounded-b-lg p-2">
                   <div className="flex">
                     <button
                       className="px-3 py-2 text-xs bg-slate-300 text-slate-600 rounded-md hover:bg-slate-400 mr-1"
-                      onClick={() => setCurrentPage(currentPage - 1)}
-                      disabled={currentPage === 1}
+                      onClick={handlePrev}
                     >
                       Previous
                     </button>
                     <button
                       className="px-3 py-2 text-xs text-slate-600 bg-slate-300 rounded-md hover:bg-slate-400"
-                      onClick={() => setCurrentPage(currentPage + 1)}
-                      disabled={
-                        currentPage === Math.ceil(data.length / itemsPerPage)
-                      }
+                      onClick={handleNext}
                     >
                       Next
                     </button>
