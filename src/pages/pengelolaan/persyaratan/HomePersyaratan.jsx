@@ -47,16 +47,17 @@ const HomePersyaratan = () => {
         text: "Data akan hilang permanen ketika dihapus",
         icon: "warning",
         showCancelButton: true,
-        confirmButtonColor: "#d33",
-        cancelButtonColor: "#3085d6",
+        confirmButtonColor: "#334155",
+        cancelButtonColor: "#94a3b8",
         cancelButtonText: "Batal",
         confirmButtonText: "Confirm",
       });
 
       if (result.isConfirmed) {
-        const docRef = doc(db, "topikPenelitian", id);
+        const docRef = doc(db, "persyaratan", id);
         await deleteDoc(docRef);
         Swal.fire("Success", "Data Berhasil dihapus!", "success");
+        setData(data.filter((item) => item.id !== id));
       }
     } catch (error) {
       console.error("Error deleting data: ", error);

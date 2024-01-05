@@ -5,6 +5,7 @@ import { db } from "../utils/firebase";
 
 const useUserAuthorization = (user) => {
   const [isLoading, setIsLoading] = useState(true);
+  const [role, setRole] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -15,6 +16,7 @@ const useUserAuthorization = (user) => {
 
         if (userDocSnapshot.exists()) {
           const userData = userDocSnapshot.data();
+          setRole(userData.role);
           setIsLoading(false);
           if (userData.role !== "prodi") {
             navigate("/login");
@@ -29,7 +31,7 @@ const useUserAuthorization = (user) => {
     getUserAuthorization();
   }, [user, navigate]);
 
-  return isLoading;
+  return { role, isLoading };
 };
 
 export default useUserAuthorization;
