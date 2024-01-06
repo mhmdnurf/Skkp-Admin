@@ -1,20 +1,23 @@
 import { useEffect, useState } from "react";
 import { Sidebar } from "../../../../components/Sidebar";
-import { InfinitySpin } from "react-loader-spinner";
 import { auth, db } from "../../../../utils/firebase";
 import {
   collection,
-  onSnapshot,
   query,
   deleteDoc,
   doc,
   where,
   getDocs,
-  getDoc,
+  orderBy,
+  limit,
 } from "firebase/firestore";
 import { Link, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { useAuthState } from "react-firebase-hooks/auth";
+import Loader from "../../../../components/Loader";
+import Header from "../../../../components/pengguna/Header";
+import SearchFieldMhs from "../../../../components/pengguna/SearchFieldMhs";
+import useUserAuthorization from "../../../../hooks/useAuthorization";
 
 export const HomeMahasiswa = () => {
   const itemsPerPage = 5;
@@ -24,48 +27,47 @@ export const HomeMahasiswa = () => {
   const [searchText, setSearchText] = useState("");
   const navigate = useNavigate();
   const [user, loading] = useAuthState(auth);
+  const { role, isLoading: isAuthLoading } = useUserAuthorization(user);
 
-  const validateUser = async () => {
-    const userDocRef = doc(db, "users", user.uid);
-    const userDocSnapshot = await getDoc(userDocRef);
+  const fetchData = async () => {
+    try {
+      setIsLoading(true);
 
-    if (userDocSnapshot.exists()) {
-      const userData = userDocSnapshot.data();
-      if (userData.role !== "prodi") {
-        navigate("/login");
+      const q = query(
+        collection(db, "users"),
+        orderBy("nim", "asc"),
+        limit(itemsPerPage)
+      );
+
+      const querySnapshot = await getDocs(q);
+      if (querySnapshot.empty) {
+        console.log("No documents!");
+        return;
       }
+      let items = [];
+
+      querySnapshot.docs.forEach((doc) => {
+        items.push({
+          id: doc.id,
+          ...doc.data(),
+        });
+      });
+      console.log("first items", items);
+      setData(items);
+      // setStartIndex(1);
+    } catch (error) {
+      console.error("Error fetching data: ", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    const unsubscribe = onSnapshot(
-      query(collection(db, "users"), where("role", "==", "Mahasiswa")),
-      (snapshot) => {
-        const fetchedData = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
+    if (loading || isAuthLoading) return;
+    if (!user || role !== "prodi") return navigate("/login");
 
-        const filteredData = fetchedData.filter(
-          (item) =>
-            item.nama.toLowerCase().includes(searchText.toLowerCase()) ||
-            item.email.toLowerCase().includes(searchText.toLowerCase()) ||
-            item.nim.toLowerCase().includes(searchText.toLowerCase()) ||
-            item.jurusan.toLowerCase().includes(searchText.toLowerCase())
-        );
-        setData(filteredData);
-        setIsLoading(false);
-      }
-    );
-
-    validateUser();
-
-    if (loading) return;
-    if (!user) return navigate("/login");
-
-    // Cleanup: unsubscribe when the component unmounts or when the effect re-runs
-    return () => unsubscribe();
-  }, [user, loading, navigate, searchText]);
+    fetchData();
+  }, [user, loading, navigate, role, isAuthLoading]);
 
   const mahasiswaTerikat = async (id) => {
     try {
@@ -88,6 +90,36 @@ export const HomeMahasiswa = () => {
     } catch (error) {
       console.error("Error checking data: ", error);
       return false;
+    }
+  };
+
+  const handleSearch = async () => {
+    try {
+      setIsLoading(true);
+      const q = query(
+        collection(db, "users"),
+        orderBy("nim", "asc"),
+        where("nim", "==", searchText)
+      );
+
+      const querySnapshot = await getDocs(q);
+      if (querySnapshot.empty) {
+        console.log("No matching documents!");
+        return;
+      }
+      let items = [];
+
+      querySnapshot.docs.forEach((doc) => {
+        items.push({
+          id: doc.id,
+          ...doc.data(),
+        });
+      });
+      setData(items);
+    } catch (error) {
+      console.error("Error searching data: ", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -127,29 +159,23 @@ export const HomeMahasiswa = () => {
   return (
     <>
       {isLoading ? (
-        <div className="flex-1 flex justify-center items-center h-screen bg-slate-100">
-          <InfinitySpin width="200" color="#475569" />
-        </div>
+        <Loader />
       ) : (
         <>
           <div className="flex bg-slate-100 min-h-screen">
             <Sidebar />
             <div className="flex flex-col w-full pl-[300px] overflow-y-auto pr-4 pb-4">
-              <h1 className="text-2xl text-white text-center shadow-md font-semibold rounded-lg p-4 m-4 mb-10 bg-slate-600">
-                Data Mahasiswa
-              </h1>
-              <div className="flex justify-between mt-16">
-                <div className="flex items-center ml-4 " />
-                <div className="flex items-center mr-4">
-                  <input
-                    type="text"
-                    className="px-4 py-2 border w-[400px] rounded-md drop-shadow-sm"
-                    placeholder="Search..."
-                    value={searchText}
-                    onChange={(e) => setSearchText(e.target.value)}
-                  />
-                </div>
-              </div>
+              <Header title="Mahasiswa" />
+              {/* Search Field */}
+              <SearchFieldMhs
+                onClickReset={() => {
+                  setSearchText("");
+                  fetchData();
+                }}
+                onClick={handleSearch}
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+              />
 
               <div className="overflow-x-auto flex flex-col px-4 mt-2">
                 <table className="w-full bg-white rounded-t-lg text-slate-700 drop-shadow-md">
@@ -197,17 +223,7 @@ export const HomeMahasiswa = () => {
                   </tbody>
                 </table>
                 {/* Pagination */}
-                <div className="flex justify-between items-center bg-white drop-shadow-md rounded-b-lg p-2">
-                  <p className="text-xs text-slate-600 ml-2">
-                    Showing{" "}
-                    {Math.min(
-                      (currentPage - 1) * itemsPerPage + 1,
-                      data.length
-                    )}{" "}
-                    to {Math.min(currentPage * itemsPerPage, data.length)} of{" "}
-                    {data.length} results
-                  </p>
-
+                <div className="flex justify-end items-center bg-white drop-shadow-md rounded-b-lg p-2">
                   <div className="flex">
                     <button
                       className="px-3 py-2 text-xs bg-slate-300 text-slate-600 rounded-md hover:bg-slate-400 mr-1"

@@ -15,6 +15,7 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { useAuthState } from "react-firebase-hooks/auth";
+import Header from "../../../../components/pengguna/Header";
 
 export const HomeDosen = () => {
   const itemsPerPage = 5;
@@ -138,9 +139,7 @@ export const HomeDosen = () => {
           <div className="flex bg-slate-100 min-h-screen">
             <Sidebar />
             <div className="flex flex-col w-full pl-[300px] overflow-y-auto pr-4 pb-4">
-              <h1 className="text-2xl text-white text-center shadow-md font-semibold rounded-lg p-4 m-4 mb-10 bg-slate-600">
-                Data Dosen
-              </h1>
+              <Header title="Dosen" />
 
               <div className="flex justify-between mt-16">
                 <div className="flex items-center ml-4">
