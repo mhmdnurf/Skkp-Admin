@@ -10,24 +10,54 @@ import {
   getDocs,
   orderBy,
   limit,
+  getDoc,
+  startAfter,
+  endBefore,
+  limitToLast,
 } from "firebase/firestore";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { useAuthState } from "react-firebase-hooks/auth";
 import Loader from "../../../../components/Loader";
 import Header from "../../../../components/pengguna/Header";
 import SearchFieldMhs from "../../../../components/pengguna/SearchFieldMhs";
-import useUserAuthorization from "../../../../hooks/useAuthorization";
+import MhsTable from "../../../../components/pengguna/MhsTable";
 
 export const HomeMahasiswa = () => {
   const itemsPerPage = 5;
   const [data, setData] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [searchText, setSearchText] = useState("");
   const navigate = useNavigate();
   const [user, loading] = useAuthState(auth);
-  const { role, isLoading: isAuthLoading } = useUserAuthorization(user);
+  const [page, setPage] = useState(1);
+  const [startIndex, setStartIndex] = useState(1);
+
+  useEffect(() => {
+    if (loading) return;
+    if (!user) return navigate("/login");
+
+    const getUserAuthorization = async () => {
+      try {
+        const userDocRef = doc(db, "users", user.uid);
+        const userDocSnapshot = await getDoc(userDocRef);
+
+        if (userDocSnapshot.exists()) {
+          const userData = userDocSnapshot.data();
+          console.log(userData);
+          if (userData.role !== "prodi") {
+            navigate("/login");
+          }
+        }
+      } catch (err) {
+        console.error(err);
+        alert("An error occurred while fetching user data");
+      }
+    };
+
+    fetchData();
+    getUserAuthorization();
+  }, [user, loading, navigate]);
 
   const fetchData = async () => {
     try {
@@ -62,12 +92,77 @@ export const HomeMahasiswa = () => {
     }
   };
 
-  useEffect(() => {
-    if (loading || isAuthLoading) return;
-    if (!user || role !== "prodi") return navigate("/login");
+  const handleNext = async ({ item }) => {
+    try {
+      if (data.length === 0) {
+        console.log("No more next documents!");
+        setIsLoading(false);
+      }
+      setIsLoading(true);
+      const q = query(
+        collection(db, "users"),
+        orderBy("nim", "asc"),
+        startAfter(item.nim),
+        limit(itemsPerPage)
+      );
 
-    fetchData();
-  }, [user, loading, navigate, role, isAuthLoading]);
+      const querySnapshot = await getDocs(q);
+      if (querySnapshot.empty) {
+        console.log("No documents!");
+        return;
+      }
+      let items = [];
+
+      querySnapshot.docs.forEach((doc) => {
+        items.push({
+          id: doc.id,
+          ...doc.data(),
+        });
+      });
+      setData(items);
+      console.log("next items", items);
+      setPage(page + 1); // Update page on next
+      setStartIndex(page * itemsPerPage + 1);
+    } catch (error) {
+      console.error("Error fetching next documents: ", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handlePrev = async ({ item }) => {
+    setIsLoading(true);
+    try {
+      const q = query(
+        collection(db, "users"),
+        orderBy("nim", "asc"),
+        endBefore(item.nim),
+        limitToLast(itemsPerPage)
+      );
+
+      const querySnapshot = await getDocs(q);
+      if (querySnapshot.empty) {
+        console.log("No documents!");
+        return;
+      }
+      let items = [];
+
+      querySnapshot.docs.forEach((doc) => {
+        items.push({
+          id: doc.id,
+          ...doc.data(),
+        });
+      });
+      setData(items);
+      console.log("previous items", items);
+      setPage(page - 1); // Update page on next
+      setStartIndex((page - 2) * itemsPerPage + 1);
+    } catch (error) {
+      console.error("Error fetching previous documents: ", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const mahasiswaTerikat = async (id) => {
     try {
@@ -176,75 +271,13 @@ export const HomeMahasiswa = () => {
                 value={searchText}
                 onChange={(e) => setSearchText(e.target.value)}
               />
-
-              <div className="overflow-x-auto flex flex-col px-4 mt-2">
-                <table className="w-full bg-white rounded-t-lg text-slate-700 drop-shadow-md">
-                  <thead className="shadow-sm font-extralight text-sm">
-                    <tr>
-                      <th className="p-2 px-6">No</th>
-                      <th className="p-2 px-6">NIM</th>
-                      <th className="p-2 px-6">Nama</th>
-                      <th className="p-2 px-6">Jurusan</th>
-                      <th className="p-2 px-6">Email</th>
-                      <th className="p-2 px-6">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody className="rounded-b-md text-sm">
-                    {data.map((item, index) => (
-                      <tr
-                        key={item.id}
-                        className="hover:bg-slate-100 border-b border-t border-slate-300"
-                      >
-                        <td className="text-center">{index + 1}</td>
-                        <td className="text-center">{item.nim}</td>
-                        <td className="text-center whitespace-nowrap">
-                          {item.nama}
-                        </td>
-                        <td className="text-center">{item.jurusan}</td>
-                        <td className="text-center">{item.email}</td>
-                        <td className="text-center p-4">
-                          <div className="flex justify-center items-center">
-                            <Link
-                              to={`/kelola-pengguna/mahasiswa/edit/${item.id}`}
-                              className="p-2 bg-slate-200 rounded-md hover:bg-slate-300 mr-1"
-                            >
-                              Ubah
-                            </Link>
-                            <button
-                              className="p-2 bg-red-200 rounded-md hover:bg-red-300"
-                              onClick={() => handleDelete(item.id)}
-                            >
-                              Hapus
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-                {/* Pagination */}
-                <div className="flex justify-end items-center bg-white drop-shadow-md rounded-b-lg p-2">
-                  <div className="flex">
-                    <button
-                      className="px-3 py-2 text-xs bg-slate-300 text-slate-600 rounded-md hover:bg-slate-400 mr-1"
-                      onClick={() => setCurrentPage(currentPage - 1)}
-                      disabled={currentPage === 1}
-                    >
-                      Previous
-                    </button>
-                    <button
-                      className="px-3 py-2 text-xs text-slate-600 bg-slate-300 rounded-md hover:bg-slate-400"
-                      onClick={() => setCurrentPage(currentPage + 1)}
-                      disabled={
-                        currentPage === Math.ceil(data.length / itemsPerPage)
-                      }
-                    >
-                      Next
-                    </button>
-                  </div>
-                </div>
-                <div className="mb-10" />
-              </div>
+              <MhsTable
+                data={data}
+                startIndex={startIndex}
+                handleDelete={() => handleDelete(data[0].id)}
+                handlePrev={() => handlePrev({ item: data[0] })}
+                handleNext={() => handleNext({ item: data[data.length - 1] })}
+              />
             </div>
           </div>
         </>

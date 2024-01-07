@@ -14,6 +14,7 @@ import {
   endBefore,
   limitToLast,
   where,
+  getDoc,
 } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
@@ -21,7 +22,6 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import Header from "../../../components/tahun-ajaran/Header";
 import TopTable from "../../../components/tahun-ajaran/TopTable";
 import DataTable from "../../../components/tahun-ajaran/DataTable";
-import useUserAuthorization from "../../../hooks/useAuthorization";
 
 export const HomeTahunAjaran = () => {
   const [data, setData] = React.useState([]);
@@ -32,8 +32,6 @@ export const HomeTahunAjaran = () => {
   const itemsPerPage = 10;
   const [page, setPage] = React.useState(1);
   const [startIndex, setStartIndex] = React.useState(1);
-
-  const { role, isLoading: isAuthLoading } = useUserAuthorization(user);
 
   const fetchData = async () => {
     try {
@@ -195,11 +193,30 @@ export const HomeTahunAjaran = () => {
   };
 
   React.useEffect(() => {
-    if (loading || isAuthLoading) return;
-    if (!user || role !== "prodi") return navigate("/login");
+    if (loading) return;
+    if (!user) return navigate("/login");
+
+    const getUserAuthorization = async () => {
+      try {
+        const userDocRef = doc(db, "users", user.uid);
+        const userDocSnapshot = await getDoc(userDocRef);
+
+        if (userDocSnapshot.exists()) {
+          const userData = userDocSnapshot.data();
+          console.log(userData);
+          if (userData.role !== "prodi") {
+            navigate("/login");
+          }
+        }
+      } catch (err) {
+        console.error(err);
+        alert("An error occurred while fetching user data");
+      }
+    };
 
     fetchData();
-  }, [user, loading, navigate, role, isAuthLoading]);
+    getUserAuthorization();
+  }, [user, loading, navigate]);
 
   return (
     <>
@@ -223,9 +240,9 @@ export const HomeTahunAjaran = () => {
               <DataTable
                 data={data}
                 startIndex={startIndex}
-                handleDelete={handleDelete}
-                handlePrev={handlePrev}
-                handleNext={handleNext}
+                handleDelete={() => handleDelete(data[0].id)}
+                handlePrev={() => handlePrev({ item: data[0] })}
+                handleNext={() => handleNext({ item: data[data.length - 1] })}
               />
             </div>
           </div>
