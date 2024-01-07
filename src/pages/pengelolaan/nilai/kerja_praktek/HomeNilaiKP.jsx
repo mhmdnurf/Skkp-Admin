@@ -74,28 +74,7 @@ export const HomeNilaiKP = () => {
             dosenPembimbingInfo: dosenPembimbingInfo,
           });
         }
-        const filteredData = fetchedData.filter(
-          (item) =>
-            item.userInfo.nama
-              .toLowerCase()
-              .includes(searchText.toLowerCase()) ||
-            item.userInfo.jurusan
-              .toLowerCase()
-              .includes(searchText.toLowerCase()) ||
-            item.userInfo.nim
-              .toLowerCase()
-              .includes(searchText.toLowerCase()) ||
-            item.status.toLowerCase().includes(searchText.toLowerCase()) ||
-            (item.dosenPembimbingInfo &&
-              item.dosenPembimbingInfo.nama
-                .toLowerCase()
-                .includes(searchText.toLowerCase())) ||
-            new Date(item.createdAt.seconds * 1000)
-              .toLocaleDateString("en-US")
-              .includes(searchText) ||
-            item.judul.toLowerCase().includes(searchText.toLowerCase())
-        );
-        setData(filteredData);
+        setData(fetchedData);
         console.log(data);
         setIsLoading(false);
       }
@@ -106,14 +85,21 @@ export const HomeNilaiKP = () => {
 
     // Cleanup: unsubscribe when the component unmounts or when the effect re-runs
     return () => unsubscribe();
-  }, [user, loading, navigate, data, searchText]);
+  }, [user, loading, navigate, searchText]);
+
+  const fetchData = () => {
+    const q = query(
+      collection(db, "pengajuan"),
+      where("jenisPengajuan", "==", "Kerja Praktek"),
+      orderBy("status", "asc")
+    );
+  };
 
   const handleRiwayatLaporan = () => {
     navigate("/kelola-nilai/kp/riwayat-laporan");
   };
 
   const handleValueChange = (newValue) => {
-    // console.log("newValue:", newValue);
     setTanggal(newValue);
   };
 
