@@ -4,41 +4,173 @@ import { InfinitySpin } from "react-loader-spinner";
 import { auth, db } from "../../../utils/firebase";
 import {
   collection,
-  onSnapshot,
   query,
   deleteDoc,
   doc,
+  orderBy,
+  limit,
+  getDocs,
+  startAfter,
+  endBefore,
+  limitToLast,
+  where,
 } from "firebase/firestore";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { useAuthState } from "react-firebase-hooks/auth";
+import TableHeader from "../../../components/persyaratan/TableHeader";
+import TableData from "../../../components/persyaratan/TableData";
 
 const HomePersyaratan = () => {
   const itemsPerPage = 5;
   const [data, setData] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [searchText, setSearchText] = useState("");
   const navigate = useNavigate();
   const [user, loading] = useAuthState(auth);
+  const [page, setPage] = useState(1);
+  const [startIndex, setStartIndex] = useState(1);
 
   useEffect(() => {
-    const unsubscribe = onSnapshot(
-      query(collection(db, "persyaratan")),
-      (snapshot) => {
-        const fetchedData = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        setData(fetchedData);
-        setIsLoading(false);
-      }
-    );
-
     if (loading) return;
     if (!user) return navigate("/login");
-    return () => unsubscribe();
-  }, [user, loading, navigate, searchText]);
+    fetchData();
+  }, [user, loading, navigate]);
+
+  const fetchData = async () => {
+    try {
+      setIsLoading(true);
+
+      const q = query(
+        collection(db, "persyaratan"),
+        orderBy("jenisPersyaratan", "asc"),
+        limit(itemsPerPage)
+      );
+
+      const querySnapshot = await getDocs(q);
+      if (querySnapshot.empty) {
+        console.log("No documents!");
+        return;
+      }
+      let items = [];
+
+      querySnapshot.docs.forEach((doc) => {
+        items.push({
+          id: doc.id,
+          ...doc.data(),
+        });
+      });
+      console.log("first items", items);
+      setData(items);
+      setStartIndex(1);
+    } catch (error) {
+      console.error("Error fetching data: ", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSearch = async () => {
+    try {
+      setIsLoading(true);
+      const q = query(
+        collection(db, "persyaratan"),
+        orderBy("jenisPersyaratan", "asc"),
+        where("berkasPersyaratan", "array-contains", searchText)
+      );
+
+      const querySnapshot = await getDocs(q);
+      if (querySnapshot.empty) {
+        console.log("No matching documents!");
+        return;
+      }
+      let items = [];
+
+      querySnapshot.docs.forEach((doc) => {
+        items.push({
+          id: doc.id,
+          ...doc.data(),
+        });
+      });
+      setData(items);
+    } catch (error) {
+      console.error("Error searching data: ", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleNext = async ({ item }) => {
+    try {
+      if (data.length === 0) {
+        console.log("No more next documents!");
+        setIsLoading(false);
+      }
+      setIsLoading(true);
+      const q = query(
+        collection(db, "persyaratan"),
+        orderBy("jenisPersyaratan", "asc"),
+        startAfter(item.jenisPersyaratan),
+        limit(itemsPerPage)
+      );
+
+      const querySnapshot = await getDocs(q);
+      if (querySnapshot.empty) {
+        console.log("No documents!");
+        return;
+      }
+      let items = [];
+
+      querySnapshot.docs.forEach((doc) => {
+        items.push({
+          id: doc.id,
+          ...doc.data(),
+        });
+      });
+      setData(items);
+      console.log("next items", items);
+      setPage(page + 1); // Update page on next
+      setStartIndex(page * itemsPerPage + 1);
+    } catch (error) {
+      console.error("Error fetching next documents: ", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handlePrev = async ({ item }) => {
+    setIsLoading(true);
+    try {
+      const q = query(
+        collection(db, "persyaratan"),
+        orderBy("jenisPersyaratan", "asc"),
+        endBefore(item.jenisPersyaratan),
+        limitToLast(itemsPerPage)
+      );
+
+      const querySnapshot = await getDocs(q);
+      if (querySnapshot.empty) {
+        console.log("No documents!");
+        return;
+      }
+      let items = [];
+
+      querySnapshot.docs.forEach((doc) => {
+        items.push({
+          id: doc.id,
+          ...doc.data(),
+        });
+      });
+      setData(items);
+      console.log("previous items", items);
+      setPage(page - 1); // Update page on next
+      setStartIndex((page - 2) * itemsPerPage + 1);
+    } catch (error) {
+      console.error("Error fetching previous documents: ", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleDelete = async (id) => {
     try {
@@ -64,9 +196,6 @@ const HomePersyaratan = () => {
     }
   };
 
-  const startIdx = (currentPage - 1) * itemsPerPage;
-  const endIdx = currentPage * itemsPerPage;
-
   return (
     <>
       {isLoading ? (
@@ -81,101 +210,21 @@ const HomePersyaratan = () => {
               <h1 className="text-2xl text-white text-center shadow-md font-semibold rounded-lg p-4 m-4 mb-10 bg-slate-600">
                 Data Persyaratan
               </h1>
+              {/* Search Field */}
+              <TableHeader
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                onClick={handleSearch}
+                onClickReset={fetchData}
+              />
 
-              <div className="flex justify-between mt-16">
-                <div className="flex items-center ml-4">
-                  <Link
-                    to={"/kelola-persyaratan/create"}
-                    className="px-4 py-2 border rounded-md drop-shadow-lg bg-slate-600 text-white font-bold hover:bg-slate-700"
-                  >
-                    Tambah Persyaratan
-                  </Link>
-                </div>
-                <div className="flex items-center mr-4">
-                  <input
-                    type="text"
-                    className="px-4 py-2 border w-[400px] rounded-md drop-shadow-sm"
-                    placeholder="Search..."
-                    value={searchText}
-                    onChange={(e) => setSearchText(e.target.value)}
-                  />
-                </div>
-              </div>
-
-              <div className="overflow-x-auto flex flex-col px-4 mt-2">
-                <table className="w-full bg-white rounded-t-lg text-slate-700 drop-shadow-md">
-                  <thead className="shadow-sm font-extralight text-sm">
-                    <tr>
-                      <th className="p-2 px-6">No</th>
-                      <th className="p-2 px-6">Jenis Persyaratan</th>
-                      <th className="p-2 px-6">Berkas Persyaratan</th>
-                      <th className="p-2 px-6">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody className="rounded-b-md text-sm">
-                    {data.slice(startIdx, endIdx).map((item, index) => (
-                      <tr
-                        key={item.id}
-                        className="hover:bg-slate-100 border-b border-t border-slate-300"
-                      >
-                        <td className="text-center">{startIdx + index + 1}</td>
-                        <td className="text-center">{item.jenisPersyaratan}</td>
-                        <td className="text-center">
-                          {item.berkasPersyaratan.join(", ")}
-                        </td>
-                        <td className="text-center p-4">
-                          <div className="flex justify-center items-center">
-                            <Link
-                              to={`/kelola-persyaratan/edit/${item.id}`}
-                              className="p-2 bg-slate-200 rounded-md hover:bg-slate-300 mr-1"
-                            >
-                              Ubah
-                            </Link>
-                            <button
-                              className="p-2 bg-red-200 rounded-md hover:bg-red-300"
-                              onClick={() => handleDelete(item.id)}
-                            >
-                              Hapus
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-                {/* Pagination */}
-                <div className="flex justify-between items-center bg-white drop-shadow-md rounded-b-lg p-2">
-                  <p className="text-xs text-slate-600 ml-2">
-                    Showing{" "}
-                    {Math.min(
-                      (currentPage - 1) * itemsPerPage + 1,
-                      data.length
-                    )}{" "}
-                    to {Math.min(currentPage * itemsPerPage, data.length)} of{" "}
-                    {data.length} results
-                  </p>
-
-                  <div className="flex">
-                    <button
-                      className="px-3 py-2 text-xs bg-slate-300 text-slate-600 rounded-md hover:bg-slate-400 mr-1"
-                      onClick={() => setCurrentPage(currentPage - 1)}
-                      disabled={currentPage === 1}
-                    >
-                      Previous
-                    </button>
-                    <button
-                      className="px-3 py-2 text-xs text-slate-600 bg-slate-300 rounded-md hover:bg-slate-400"
-                      onClick={() => setCurrentPage(currentPage + 1)}
-                      disabled={
-                        currentPage === Math.ceil(data.length / itemsPerPage)
-                      }
-                    >
-                      Next
-                    </button>
-                  </div>
-                </div>
-                <div className="mb-10" />
-              </div>
+              <TableData
+                data={data}
+                handleDelete={() => handleDelete(data[0].id)}
+                startIndex={startIndex}
+                handleNext={() => handleNext({ item: data[data.length - 1] })}
+                handlePrev={() => handlePrev({ item: data[0] })}
+              />
             </div>
           </div>
         </>
