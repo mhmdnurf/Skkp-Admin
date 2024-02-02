@@ -36,7 +36,7 @@ export const VerifikasiSkripsi = () => {
         // Update the document with new status and catatan
         await updateDoc(itemDocRef, {
           status: status,
-          catatan: catatan,
+          catatan: catatan.toUpperCase(),
         });
 
         Swal.fire({

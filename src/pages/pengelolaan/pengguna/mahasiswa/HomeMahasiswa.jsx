@@ -169,14 +169,14 @@ export const HomeMahasiswa = () => {
       // Buat kueri untuk mengambil pengajuan yang terkait dengan dosenId
       const pengajuanQuery = query(
         collection(db, "pengajuan"),
-        where("user_uid", "==", id)
+        where("mahasiswa_uid", "==", id)
       );
       const pengajuanSnapshot = await getDocs(pengajuanQuery);
 
       // Buat kueri untuk mengambil sidang yang terkait dengan dosenId
       const sidangQuery = query(
         collection(db, "sidang"),
-        where("user_uid", "==", id)
+        where("mahasiswa_uid", "==", id)
       );
       const sidangSnapshot = await getDocs(sidangQuery);
 

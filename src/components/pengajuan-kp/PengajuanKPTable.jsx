@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import PropTypes from "prop-types";
 
-const PengajuanKPTable = ({ data, startIdx, endIdx, handleDelete }) => {
+const PengajuanKPTable = ({ data, startIndex, handleDelete }) => {
   return (
     <table className="overflow-x-auto block bg-white rounded-t-lg text-slate-700 drop-shadow-md uppercase">
       <thead className=" shadow-sm font-extralight text-sm">
@@ -19,12 +19,12 @@ const PengajuanKPTable = ({ data, startIdx, endIdx, handleDelete }) => {
         </tr>
       </thead>
       <tbody className="rounded-b-md text-sm">
-        {data.slice(startIdx, endIdx).map((item, index) => (
+        {data.map((item, index) => (
           <tr
             key={item.id}
             className="hover:bg-slate-100 border-b border-t border-slate-300"
           >
-            <td className="text-center">{startIdx + index + 1}</td>
+            <td className="text-center">{startIndex + index}</td>
             <td className="text-center">
               {item.createdAt &&
                 new Date(item.createdAt.seconds * 1000).toLocaleDateString(
@@ -78,8 +78,7 @@ const PengajuanKPTable = ({ data, startIdx, endIdx, handleDelete }) => {
 
 PengajuanKPTable.propTypes = {
   data: PropTypes.array.isRequired,
-  startIdx: PropTypes.number.isRequired,
-  endIdx: PropTypes.number.isRequired,
+  startIndex: PropTypes.number.isRequired,
   handleDelete: PropTypes.func.isRequired,
 };
 

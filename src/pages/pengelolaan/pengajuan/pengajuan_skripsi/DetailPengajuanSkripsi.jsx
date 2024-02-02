@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Sidebar } from "../../../../components/Sidebar";
 import { InfinitySpin } from "react-loader-spinner";
 import { useParams, useNavigate, Link } from "react-router-dom";
@@ -14,15 +14,6 @@ export const DetailPengajuanSkripsi = () => {
   const navigate = useNavigate();
   const [user, loading] = useAuthState(auth);
 
-  const getUserInfo = async (uid) => {
-    const userDocRef = doc(db, "users", uid);
-    const userDocSnapshot = await getDoc(userDocRef);
-
-    if (userDocSnapshot.exists()) {
-      return userDocSnapshot.data();
-    }
-    return null;
-  };
   const getPeriodeInfo = async (uid) => {
     const userDocRef = doc(db, "jadwalPengajuan", uid);
     const userDocSnapshot = await getDoc(userDocRef);
@@ -33,36 +24,30 @@ export const DetailPengajuanSkripsi = () => {
     return null;
   };
 
+  const fetchData = React.useCallback(async () => {
+    const itemDocRef = doc(db, "pengajuan", itemId);
+    const itemDocSnapshot = await getDoc(itemDocRef);
+    if (itemDocSnapshot.exists()) {
+      const itemData = itemDocSnapshot.data();
+      const periodePendaftaranInfo = await getPeriodeInfo(
+        itemData.jadwalPengajuan_uid
+      );
+      setData({
+        id: itemDocSnapshot.id,
+        ...itemData,
+        periodePendaftaranInfo: periodePendaftaranInfo,
+      });
+      console.log(itemData);
+    }
+
+    setIsLoading(false);
+  }, [itemId]);
+
   useEffect(() => {
-    const fetchData = async () => {
-      const itemDocRef = doc(db, "pengajuan", itemId);
-      const itemDocSnapshot = await getDoc(itemDocRef);
-
-      if (itemDocSnapshot.exists()) {
-        const itemData = itemDocSnapshot.data();
-        const userInfo = await getUserInfo(itemData.user_uid);
-        const dosenPembimbingInfo = await getUserInfo(itemData.pembimbing_uid);
-        const periodePendaftaranInfo = await getPeriodeInfo(
-          itemData.jadwalPengajuan_uid
-        );
-
-        setData({
-          id: itemDocSnapshot.id,
-          ...itemData,
-          userInfo: userInfo,
-          dosenPembimbingInfo: dosenPembimbingInfo,
-          periodePendaftaranInfo: periodePendaftaranInfo,
-        });
-      }
-
-      setIsLoading(false);
-    };
-
     fetchData();
-
     if (loading) return;
     if (!user) return navigate("/login");
-  }, [itemId, user, loading, navigate]);
+  }, [user, loading, navigate, fetchData]);
 
   if (isLoading) {
     return (
@@ -104,42 +89,17 @@ export const DetailPengajuanSkripsi = () => {
                 Berkas Persyaratan
               </h1>
             </div>
-            <div className="flex justify-evenly items-center p-4">
-              <Link
-                to={`${data.berkasPersyaratan.formTopik}`}
-                target="_blank"
-                className="p-2 bg-slate-300 hover:bg-slate-200 rounded-md text-slate-600  font-semibold hover:transform hover:scale-110 transition-transform duration-300 ease-in-out"
-              >
-                Form Pengajuan Topik
-              </Link>
-              <Link
-                to={`${data.berkasPersyaratan.formKrs}`}
-                target="_blank"
-                className="p-2 bg-slate-300 hover:bg-slate-200 rounded-md text-slate-600  font-semibold hover:transform hover:scale-110 transition-transform duration-300 ease-in-out"
-              >
-                Form KRS
-              </Link>
-              <Link
-                to={`${data.berkasPersyaratan.transkipNilai}`}
-                target="_blank"
-                className="p-2 bg-slate-300 hover:bg-slate-200 rounded-md font-semibold text-slate-600 hover:transform hover:scale-110 transition-transform duration-300 ease-in-out"
-              >
-                Transkip Nilai
-              </Link>
-              <Link
-                to={`${data.berkasPersyaratan.slipPembayaranSkripsi}`}
-                target="_blank"
-                className="p-2 bg-slate-300 hover:bg-slate-200 rounded-md text-slate-600  font-semibold hover:transform hover:scale-110 transition-transform duration-300 ease-in-out"
-              >
-                Slip Pembayaran Skripsi
-              </Link>
-              <Link
-                to={`${data.berkasPersyaratan.fileSertifikatPSPT}`}
-                target="_blank"
-                className="p-2 bg-slate-300 hover:bg-slate-200 rounded-md text-slate-600  font-semibold hover:transform hover:scale-110 transition-transform duration-300 ease-in-out"
-              >
-                Sertifikat PSPT
-              </Link>
+            <div className="flex flex-wrap justify-center items-center p-4 gap-4">
+              {Object.keys(data.berkas).map((key) => (
+                <Link
+                  key={key}
+                  to={`${data.berkas[key]}`}
+                  target="_blank"
+                  className="p-2 bg-slate-300 hover:bg-slate-200 rounded-md text-slate-600 font-semibold hover:transform hover:scale-110 transition-transform duration-300 ease-in-out text-center"
+                >
+                  {key}
+                </Link>
+              ))}
             </div>
 
             <div className="border p-4 rounded-md border-slate-300">
@@ -183,11 +143,11 @@ export const DetailPengajuanSkripsi = () => {
                   data.periodePendaftaranInfo.tahunAjaran}
               </p>
               <p className="mb-2 text-lg font-bold text-slate-600">NIM</p>
-              <p className="mb-2">{data.userInfo.nim}</p>
+              <p className="mb-2">{data.nim}</p>
               <p className="mb-2 text-lg font-bold text-slate-600">Nama</p>
-              <p className="mb-2 uppercase">{data.userInfo.nama}</p>
+              <p className="mb-2 uppercase">{data.nama}</p>
               <p className="mb-2 text-lg font-bold text-slate-600">Jurusan</p>
-              <p className="mb-2 uppercase">{data.userInfo.jurusan}</p>
+              <p className="mb-2 uppercase">{data.prodi}</p>
               <p className="mb-2 text-lg font-bold text-slate-600">
                 Topik Penelitian
               </p>
@@ -195,14 +155,16 @@ export const DetailPengajuanSkripsi = () => {
               <p className="mb-2 text-lg font-bold text-slate-600">Status</p>
               <p className="mb-2 uppercase">{data.status}</p>
               <p className="mb-2 text-lg font-bold text-slate-600">Catatan</p>
-              <p className="mb-2 uppercase">{data.catatan}</p>
+              <p className="mb-2 uppercase">
+                {data.catatan ? data.catatan : "-"}
+              </p>
               <p className="mb-2 text-lg font-bold text-slate-600">
                 Dosen Pembimbing
               </p>
               <p className="mb-2 uppercase">
                 {" "}
-                {data.dosenPembimbingInfo ? (
-                  <p className="mb-2">{data.dosenPembimbingInfo.nama}</p>
+                {data.namaPembimbing ? (
+                  <p className="mb-2">{`${data.namaPembimbing} (${data.nidnPembimbing})`}</p>
                 ) : (
                   <p className="mb-2 ">-</p>
                 )}

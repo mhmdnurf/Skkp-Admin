@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Sidebar } from "../../../../components/Sidebar";
 import { InfinitySpin } from "react-loader-spinner";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, db, storage } from "../../../../utils/firebase";
 import {
@@ -9,10 +9,14 @@ import {
   collection,
   deleteDoc,
   doc,
+  endBefore,
   getDoc,
   getDocs,
-  onSnapshot,
+  limit,
+  limitToLast,
+  orderBy,
   query,
+  startAfter,
   where,
 } from "firebase/firestore";
 import Swal from "sweetalert2";
@@ -26,19 +30,15 @@ import {
   ModalCloseButton,
   useDisclosure,
 } from "@chakra-ui/react";
-import {
-  deleteObject,
-  getDownloadURL,
-  ref,
-  uploadBytes,
-} from "firebase/storage";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import Datepicker from "react-tailwindcss-datepicker";
 import * as XLSX from "xlsx";
+import Pagination from "../../../../components/pengajuan-skripsi/Pagination";
+import PengajuanSkripsiTable from "../../../../components/pengajuan-skripsi/PengajuanSkripsiTable";
 
 export const HomePengajuanSkripsi = () => {
   const itemsPerPage = 5;
   const [data, setData] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [searchText, setSearchText] = useState("");
   const navigate = useNavigate();
@@ -48,6 +48,8 @@ export const HomePengajuanSkripsi = () => {
     startDate: new Date(),
     endDate: new Date().setMonth(11),
   });
+  const [page, setPage] = useState(1);
+  const [startIndex, setStartIndex] = useState(1);
 
   const getUserInfo = async (uid) => {
     const userDocRef = doc(db, "users", uid);
@@ -59,71 +61,42 @@ export const HomePengajuanSkripsi = () => {
     return null;
   };
 
-  useEffect(() => {
-    const unsubscribe = onSnapshot(
-      query(
+  const fetchData = React.useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const q = query(
         collection(db, "pengajuan"),
-        where("jenisPengajuan", "==", "Skripsi")
-      ),
-      async (snapshot) => {
-        const fetchedData = [];
-        for (const doc of snapshot.docs) {
-          const data = doc.data();
-          const userInfo = await getUserInfo(data.user_uid);
-          let dosenPembimbingInfo = null;
+        where("jenisPengajuan", "==", "Skripsi"),
+        orderBy("createdAt", "desc"),
+        limit(itemsPerPage)
+      );
 
-          // Cek jika pembimbing_uid tidak sama dengan "-"
-          if (data.pembimbing_uid !== "-") {
-            dosenPembimbingInfo = await getUserInfo(data.pembimbing_uid);
-          }
-          fetchedData.push({
-            id: doc.id,
-            ...data,
-            userInfo: userInfo,
-            dosenPembimbingInfo: dosenPembimbingInfo,
-          });
-        }
-
-        const filteredData = fetchedData.filter(
-          (item) =>
-            item.userInfo.nama
-              .toLowerCase()
-              .includes(searchText.toLowerCase()) ||
-            item.userInfo.jurusan
-              .toLowerCase()
-              .includes(searchText.toLowerCase()) ||
-            item.userInfo.nim
-              .toLowerCase()
-              .includes(searchText.toLowerCase()) ||
-            item.status.toLowerCase().includes(searchText.toLowerCase()) ||
-            (item.dosenPembimbingInfo &&
-              item.dosenPembimbingInfo.nama
-                .toLowerCase()
-                .includes(searchText.toLowerCase())) ||
-            new Date(item.createdAt.seconds * 1000)
-              .toLocaleDateString("en-US")
-              .includes(searchText) ||
-            item.topikPenelitian
-              .toLowerCase()
-              .includes(searchText.toLowerCase())
-        );
-        setData(filteredData);
-        setIsLoading(false);
+      const querySnapshot = await getDocs(q);
+      if (querySnapshot.empty) {
+        console.log("No documents!");
+        return;
       }
-    );
-
-    if (loading) return;
-    if (!user) return navigate("/login");
-
-    // Cleanup: unsubscribe when the component unmounts or when the effect re-runs
-    return () => unsubscribe();
-  }, [user, loading, navigate, searchText]);
+      let items = [];
+      querySnapshot.docs.forEach((doc) => {
+        items.push({
+          id: doc.id,
+          ...doc.data(),
+        });
+      });
+      console.log("first items", items);
+      setData(items);
+      setStartIndex(1);
+    } catch (e) {
+      console.error("Error fetching data: ", e);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   const handleDelete = async (id) => {
     try {
       const docRef = doc(db, "pengajuan", id);
       const docSnapshot = await getDoc(docRef);
-      const data = docSnapshot.data();
       if (docSnapshot.exists()) {
         const pengajuanSnapshot = await getDocs(collection(db, "sidang"));
         let isUsedInPengajuan = false;
@@ -148,18 +121,9 @@ export const HomePengajuanSkripsi = () => {
           });
 
           if (result.isConfirmed) {
-            const transkipNilaiFileName = `persyaratan/pengajuanSkripsi/transkipNilai/${data.user_uid}`;
-            const formKrsFileName = `persyaratan/pengajuanSkripsi/formKRS/${data.user_uid}`;
-            const formTopikFileName = `persyaratan/pengajuanSkripsi/formTopik/${data.user_uid}`;
-            const pembayaranSkripsiFileName = `persyaratan/pengajuanSkripsi/slipPembayaranSkripsi/${data.user_uid}`;
-            const sertifikatFileName = `persyaratan/pengajuanSkripsi/sertifikatPSPT/${data.user_uid}`;
-            await deleteObject(ref(storage, transkipNilaiFileName));
-            await deleteObject(ref(storage, formKrsFileName));
-            await deleteObject(ref(storage, formTopikFileName));
-            await deleteObject(ref(storage, pembayaranSkripsiFileName));
-            await deleteObject(ref(storage, sertifikatFileName));
             const docRef = doc(db, "pengajuan", id);
             await deleteDoc(docRef);
+            setData(data.filter((item) => item.id !== id));
             Swal.fire("Success", "Data Berhasil dihapus!", "success");
           }
         }
@@ -173,11 +137,7 @@ export const HomePengajuanSkripsi = () => {
     navigate("/pengajuan-skripsi/riwayat-laporan");
   };
 
-  const startIdx = (currentPage - 1) * itemsPerPage;
-  const endIdx = currentPage * itemsPerPage;
-
   const handleValueChange = (newValue) => {
-    // console.log("newValue:", newValue);
     setTanggal(newValue);
   };
 
@@ -307,6 +267,87 @@ export const HomePengajuanSkripsi = () => {
     }
   };
 
+  const handleNext = async ({ item }) => {
+    try {
+      if (data.length === 0) {
+        console.log("No more next documents!");
+        setIsLoading(false);
+      }
+      setIsLoading(true);
+      const q = query(
+        collection(db, "pengajuan"),
+        where("jenisPengajuan", "==", "Skripsi"),
+        orderBy("createdAt", "desc"),
+        startAfter(item.createdAt),
+        limit(itemsPerPage)
+      );
+
+      const querySnapshot = await getDocs(q);
+      if (querySnapshot.empty) {
+        console.log("No documents!");
+        return;
+      }
+      let items = [];
+
+      querySnapshot.docs.forEach((doc) => {
+        items.push({
+          id: doc.id,
+          ...doc.data(),
+        });
+      });
+      setData(items);
+      console.log("next items", items);
+      setPage(page + 1); // Update page on next
+      setStartIndex(page * itemsPerPage + 1);
+    } catch (error) {
+      console.error("Error fetching next documents: ", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handlePrev = async ({ item }) => {
+    setIsLoading(true);
+    try {
+      const q = query(
+        collection(db, "pengajuan"),
+        where("jenisPengajuan", "==", "Skripsi"),
+        orderBy("createdAt", "desc"),
+        endBefore(item.createdAt),
+        limitToLast(itemsPerPage)
+      );
+
+      const querySnapshot = await getDocs(q);
+      if (querySnapshot.empty) {
+        console.log("No documents!");
+        return;
+      }
+      let items = [];
+
+      querySnapshot.docs.forEach((doc) => {
+        items.push({
+          id: doc.id,
+          ...doc.data(),
+        });
+      });
+      setData(items);
+      console.log("previous items", items);
+      setPage(page - 1); // Update page on next
+      setStartIndex((page - 2) * itemsPerPage + 1);
+    } catch (error) {
+      console.error("Error fetching previous documents: ", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (loading) return;
+    if (!user) return navigate("/login");
+
+    fetchData();
+  }, [fetchData, loading, user, navigate]);
+
   return (
     <>
       {isLoading ? (
@@ -385,116 +426,18 @@ export const HomePengajuanSkripsi = () => {
                 </div>
               </div>
 
-              {/* Tabel Data */}
               <div className="flex flex-col px-4 mt-2">
-                <table className="overflow-x-auto block bg-white rounded-t-lg text-slate-700 drop-shadow-md uppercase">
-                  <thead className=" shadow-sm font-extralight text-sm">
-                    <tr className="">
-                      <th className="p-2 px-6">No</th>
-                      <th className="p-2 px-6 whitespace-nowrap">
-                        Tanggal Daftar
-                      </th>
-                      <th className="p-2 px-6">NIM</th>
-                      <th className="p-2 px-6">Nama</th>
-                      <th className="p-2 px-6">Jurusan</th>
-                      <th className="p-2 px-6">Topik Penelitian</th>
-                      <th className="p-2 px-6">Status</th>
-                      <th className="p-2 px-6">Catatan</th>
-                      <th className="p-2 px-6">Pembimbing</th>
-                      <th className="p-2 px-6">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody className="rounded-b-md text-sm">
-                    {data.slice(startIdx, endIdx).map((item, index) => (
-                      <tr
-                        key={item.id}
-                        className="hover:bg-slate-100 border-b border-t border-slate-300"
-                      >
-                        <td className="text-center">{startIdx + index + 1}</td>
-                        <td className="text-center">
-                          {item.createdAt &&
-                            new Date(
-                              item.createdAt.seconds * 1000
-                            ).toLocaleDateString("id-ID", {
-                              day: "2-digit",
-                              month: "2-digit",
-                              year: "numeric",
-                            })}
-
-                          {item.tanggalDaftar}
-                        </td>
-                        <td className="text-center">
-                          {item.userInfo && item.userInfo.nim}
-                        </td>
-                        <td className="text-center whitespace-nowrap">
-                          {item.userInfo && item.userInfo.nama}
-                        </td>
-                        <td className="text-center">
-                          {item.userInfo && item.userInfo.jurusan}
-                        </td>
-                        <td className="text-center p-4 whitespace-nowrap">
-                          {item.topikPenelitian}
-                        </td>
-                        <td className="text-center">{item.status}</td>
-                        <td className="text-center p-4 whitespace-nowrap">
-                          {item.catatan}
-                        </td>
-                        <td className="text-center p-6 whitespace-nowrap">
-                          {item.dosenPembimbingInfo
-                            ? item.dosenPembimbingInfo.nama
-                            : "-"}
-                        </td>
-                        <td className="text-center p-4">
-                          <div className="flex">
-                            <Link
-                              to={`/pengajuan-skripsi/detail/${item.id}`}
-                              className="p-2 bg-slate-200 rounded-md hover:bg-slate-300 mr-1 normal-case"
-                            >
-                              Detail
-                            </Link>
-                            <button
-                              className="p-2 bg-red-200 rounded-md hover:bg-red-300"
-                              onClick={() => handleDelete(item.id)}
-                            >
-                              Hapus
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                {/* Tabel Data */}
+                <PengajuanSkripsiTable
+                  data={data}
+                  startIndex={startIndex}
+                  handleDelete={handleDelete}
+                />
                 {/* Pagination */}
-                <div className="flex justify-between items-center bg-white drop-shadow-md rounded-b-lg p-2">
-                  <p className="text-xs text-slate-600 ml-2">
-                    Showing{" "}
-                    {Math.min(
-                      (currentPage - 1) * itemsPerPage + 1,
-                      data.length
-                    )}{" "}
-                    to {Math.min(currentPage * itemsPerPage, data.length)} of{" "}
-                    {data.length} results
-                  </p>
-
-                  <div className="flex">
-                    <button
-                      className="px-3 py-2 text-xs bg-slate-300 text-slate-600 rounded-md hover:bg-slate-400 mr-1"
-                      onClick={() => setCurrentPage(currentPage - 1)}
-                      disabled={currentPage === 1}
-                    >
-                      Previous
-                    </button>
-                    <button
-                      className="px-3 py-2 text-xs text-slate-600 bg-slate-300 rounded-md hover:bg-slate-400"
-                      onClick={() => setCurrentPage(currentPage + 1)}
-                      disabled={
-                        currentPage === Math.ceil(data.length / itemsPerPage)
-                      }
-                    >
-                      Next
-                    </button>
-                  </div>
-                </div>
+                <Pagination
+                  handlePrev={() => handlePrev({ item: data[0] })}
+                  handleNext={() => handleNext({ item: data[data.length - 1] })}
+                />
               </div>
               <div className="mb-10" />
             </div>

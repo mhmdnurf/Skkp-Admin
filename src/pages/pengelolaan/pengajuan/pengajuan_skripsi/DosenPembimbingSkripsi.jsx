@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Sidebar } from "../../../../components/Sidebar";
 import { auth, db } from "../../../../utils/firebase";
 import {
@@ -27,31 +27,31 @@ export const DosenPembimbingSkripsi = () => {
 
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchDosen = async () => {
-      try {
-        const querySnapshot = await getDocs(
-          query(collection(db, "users"), where("role", "==", "Dosen"))
-        );
-        console.log(querySnapshot);
-        const dosenOptions = querySnapshot.docs.map((doc) => ({
-          value: doc.id, // Gunakan id sebagai value
-          label: doc.data().nama, // Gunakan nama sebagai label
-        }));
-        console.log(dosenOptions);
-        setAvailableDosen(dosenOptions);
-        setIsLoading(false);
-      } catch (error) {
-        console.error("Error fetching data: ", error);
-        setError("Error fetching data");
-        setIsLoading(false);
-      }
-    };
+  const fetchDosen = React.useCallback(async () => {
+    try {
+      const querySnapshot = await getDocs(
+        query(collection(db, "users"), where("role", "==", "Dosen"))
+      );
+      console.log(querySnapshot);
+      const dosenOptions = querySnapshot.docs.map((doc) => ({
+        value: { id: doc.id, nama: doc.data().nama, nidn: doc.data().nidn },
+        label: doc.data().nama,
+      }));
+      console.log(dosenOptions);
+      setAvailableDosen(dosenOptions);
+      setIsLoading(false);
+    } catch (error) {
+      console.error("Error fetching data: ", error);
+      setError("Error fetching data");
+      setIsLoading(false);
+    }
+  }, []);
 
+  useEffect(() => {
     if (loading) return;
     if (!user) return navigate("/login");
     fetchDosen();
-  }, [user, loading, navigate]);
+  }, [user, loading, navigate, fetchDosen]);
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
@@ -61,12 +61,13 @@ export const DosenPembimbingSkripsi = () => {
       // Get the existing document data
       const itemDocRef = doc(db, "pengajuan", itemId);
       const itemDocSnapshot = await getDoc(itemDocRef);
-
       if (itemDocSnapshot.exists()) {
         // Update the document with new status and catatan
         await updateDoc(itemDocRef, {
           catatan: "-",
-          pembimbing_uid: dosenPembimbing.value,
+          pembimbing_uid: dosenPembimbing.value.id,
+          namaPembimbing: dosenPembimbing.value.nama,
+          nidnPembimbing: dosenPembimbing.value.nidn,
         });
 
         Swal.fire({
@@ -78,31 +79,31 @@ export const DosenPembimbingSkripsi = () => {
           navigate(`/pengajuan-skripsi/detail/${itemId}`);
         });
       }
-      const user_uid = itemDocSnapshot.data().user_uid;
-      const userDocRef = doc(db, "users", user_uid);
-      const userDocSnapshot = await getDoc(userDocRef);
-      if (userDocSnapshot.exists()) {
-        const registrationToken = userDocSnapshot.data().registrationToken;
+      // const user_uid = itemDocSnapshot.data().user_uid;
+      // const userDocRef = doc(db, "users", user_uid);
+      // const userDocSnapshot = await getDoc(userDocRef);
+      // if (userDocSnapshot.exists()) {
+      //   const registrationToken = userDocSnapshot.data().registrationToken;
 
-        const response = await fetch(
-          `https://fcm-skkp-cqk5st7fhq-et.a.run.app/send-notification/dosen-pembimbing-skripsi/${user_uid}`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              registrationToken: registrationToken,
-            }),
-          }
-        );
+      //   const response = await fetch(
+      //     `https://fcm-skkp-cqk5st7fhq-et.a.run.app/send-notification/dosen-pembimbing-skripsi/${user_uid}`,
+      //     {
+      //       method: "POST",
+      //       headers: {
+      //         "Content-Type": "application/json",
+      //       },
+      //       body: JSON.stringify({
+      //         registrationToken: registrationToken,
+      //       }),
+      //     }
+      //   );
 
-        if (response.ok) {
-          console.log("Notification sent successfully");
-        } else {
-          console.error("Failed to send notification");
-        }
-      }
+      //   if (response.ok) {
+      //     console.log("Notification sent successfully");
+      //   } else {
+      //     console.error("Failed to send notification");
+      //   }
+      // }
     } catch (error) {
       console.error("Error updating document: ", error);
       setError("Error updating document");

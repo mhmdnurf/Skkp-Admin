@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Sidebar } from "../../../../components/Sidebar";
 import { InfinitySpin } from "react-loader-spinner";
 import { Link, useNavigate } from "react-router-dom";
@@ -7,27 +7,32 @@ import {
   collection,
   deleteDoc,
   doc,
+  endBefore,
   getDoc,
   getDocs,
-  onSnapshot,
+  limit,
+  limitToLast,
   orderBy,
   query,
-  updateDoc,
+  startAfter,
 } from "firebase/firestore";
 import Swal from "sweetalert2";
 import { useAuthState } from "react-firebase-hooks/auth";
+import JadwalPengajuanTable from "../../../../components/jadwal/pengajuan/JadwalPengajuanTable";
+import Pagination from "../../../../components/jadwal/pengajuan/Pagination";
 
 export const HomeJadwalPengajuan = () => {
   const [user, loading] = useAuthState(auth);
   const [isLoading, setIsLoading] = useState(true);
   const [searchText, setSearchText] = useState("");
-  const itemsPerPage = 5;
-  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
   const [data, setData] = useState([]);
+  const [startIndex, setStartIndex] = React.useState(1);
+  const [page, setPage] = React.useState(1);
 
   const navigate = useNavigate();
 
-  const validateUser = async () => {
+  const validateUser = React.useCallback(async () => {
     const userDocRef = doc(db, "users", user.uid);
     const userDocSnapshot = await getDoc(userDocRef);
 
@@ -37,47 +42,35 @@ export const HomeJadwalPengajuan = () => {
         navigate("/login");
       }
     }
-  };
+  }, [user, navigate]);
 
-  useEffect(() => {
-    const unsubscribe = onSnapshot(
-      query(
+  const fetchDataJadwal = React.useCallback(async () => {
+    try {
+      const q = query(
         collection(db, "jadwalPengajuan"),
-        orderBy("periodePendaftaran", "desc")
-      ),
-      async (snapshot) => {
-        const promises = snapshot.docs.map(async (doc) => {
-          const data = doc.data();
-
-          if (
-            data.periodePendaftaran.tanggalTutup &&
-            data.periodePendaftaran.tanggalTutup.toDate() < new Date() &&
-            !data.manualStatus // Tambahkan pengecekan manualStatus di sini
-          ) {
-            const docRef = doc.ref;
-            await updateDoc(docRef, {
-              status: "Tidak Aktif",
-            });
-          }
-
-          return {
-            id: doc.id,
-            ...data,
-          };
-        });
-        const fetchedData = await Promise.all(promises);
-        setData(fetchedData);
-        setIsLoading(false);
+        orderBy("createdAt", "desc"),
+        limit(itemsPerPage)
+      );
+      const querySnapshot = await getDocs(q);
+      if (querySnapshot.empty) {
+        console.log("No documents!");
+        return;
       }
-    );
+      let items = [];
 
-    if (loading) return;
-    if (!user) return navigate("/login");
-
-    validateUser();
-    // Cleanup the subscription when component unmounts
-    return () => unsubscribe();
-  }, [user, loading, data, navigate]);
+      querySnapshot.docs.forEach((doc) => {
+        items.push({
+          id: doc.id,
+          ...doc.data(),
+        });
+      });
+      setData(items);
+    } catch (error) {
+      console.error("Error fetching data: ", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   const handleDelete = async (id) => {
     try {
@@ -117,6 +110,7 @@ export const HomeJadwalPengajuan = () => {
           if (result.isConfirmed) {
             await deleteDoc(docRef);
             Swal.fire("Success", "Data Berhasil dihapus!", "success");
+            setData(data.filter((item) => item.id !== id));
           }
         }
       }
@@ -125,8 +119,85 @@ export const HomeJadwalPengajuan = () => {
     }
   };
 
-  const startIdx = (currentPage - 1) * itemsPerPage;
-  const endIdx = currentPage * itemsPerPage;
+  const handleNext = async ({ item }) => {
+    try {
+      if (data.length === 0) {
+        console.log("No more next documents!");
+        setIsLoading(false);
+      }
+      setIsLoading(true);
+      const q = query(
+        collection(db, "jadwalPengajuan"),
+        orderBy("createdAt", "desc"),
+        startAfter(item.createdAt),
+        limit(itemsPerPage)
+      );
+
+      const querySnapshot = await getDocs(q);
+      if (querySnapshot.empty) {
+        console.log("No documents!");
+        return;
+      }
+      let items = [];
+
+      querySnapshot.docs.forEach((doc) => {
+        items.push({
+          id: doc.id,
+          ...doc.data(),
+        });
+      });
+      setData(items);
+      console.log("next items", items);
+      setPage(page + 1); // Update page on next
+      setStartIndex(page * itemsPerPage + 1);
+    } catch (error) {
+      console.error("Error fetching next documents: ", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handlePrev = async ({ item }) => {
+    setIsLoading(true);
+    try {
+      const q = query(
+        collection(db, "jadwalPengajuan"),
+        orderBy("createdAt", "desc"),
+        endBefore(item.createdAt),
+        limitToLast(itemsPerPage)
+      );
+
+      const querySnapshot = await getDocs(q);
+      if (querySnapshot.empty) {
+        console.log("No documents!");
+        return;
+      }
+      let items = [];
+
+      querySnapshot.docs.forEach((doc) => {
+        items.push({
+          id: doc.id,
+          ...doc.data(),
+        });
+      });
+      setData(items);
+      console.log("previous items", items);
+      setPage(page - 1); // Update page on next
+      setStartIndex((page - 2) * itemsPerPage + 1);
+    } catch (error) {
+      console.error("Error fetching previous documents: ", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (loading) return;
+    if (!user) return navigate("/login");
+
+    validateUser();
+    fetchDataJadwal();
+  }, [user, loading, data, navigate, validateUser, fetchDataJadwal]);
 
   return (
     <>
@@ -162,101 +233,18 @@ export const HomeJadwalPengajuan = () => {
                 </div>
               </div>
 
-              {/* Tabel Data */}
               <div className="overflow-x-auto flex flex-col px-4 mt-2">
-                <table className="w-full bg-white rounded-t-lg text-slate-700 drop-shadow-md">
-                  <thead className="shadow-sm font-extralight text-sm">
-                    <tr>
-                      <th className="p-2 px-6 text-center">No</th>
-                      <th className="p-2 px-6 text-center">Tanggal Periode</th>
-                      <th className="p-2 px-6 text-center">Jenis Pengajuan</th>
-                      <th className="p-2 px-6 text-center">Status</th>
-                      <th className="p-2 px-6 text-center">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody className="rounded-b-md text-sm text-center">
-                    {data.slice(startIdx, endIdx).map((item, index) => (
-                      <tr key={item.id}>
-                        <td className="p-2 px-6">{startIdx + index + 1}</td>
-                        <td className="p-2 px-6">
-                          {item.periodePendaftaran.tanggalBuka &&
-                            new Date(
-                              item.periodePendaftaran.tanggalBuka.toDate()
-                            ).toLocaleDateString("id-ID", {
-                              day: "2-digit",
-                              month: "2-digit",
-                              year: "numeric",
-                            })}{" "}
-                          -{" "}
-                          {item.periodePendaftaran.tanggalTutup &&
-                            new Date(
-                              item.periodePendaftaran.tanggalTutup.toDate()
-                            ).toLocaleDateString("id-ID", {
-                              day: "2-digit",
-                              month: "2-digit",
-                              year: "numeric",
-                            })}
-                        </td>
-                        <td className="p-2 px-6">
-                          <ul className="list-none">
-                            {item.jenisPengajuan.map((jenis) => (
-                              <li key={jenis}>{jenis}</li>
-                            ))}
-                          </ul>
-                        </td>
-                        <td className="p-2 px-6">{item.status}</td>
-
-                        <td className="p-2 px-6">
-                          <div className="flex items-center justify-center">
-                            <Link
-                              to={`/kelola-jadwal/pengajuan/edit/${item.id}`}
-                              className="p-2 bg-slate-200 rounded-md hover:bg-slate-300 mr-1"
-                            >
-                              Ubah
-                            </Link>
-                            <button
-                              onClick={() => handleDelete(item.id)}
-                              className="p-2 bg-red-200 rounded-md hover:bg-red-300"
-                            >
-                              Hapus
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                {/* Tabel Data */}
+                <JadwalPengajuanTable
+                  data={data}
+                  startIndex={startIndex}
+                  handleDelete={handleDelete}
+                />
                 {/* Pagination */}
-                <div className="flex justify-between items-center bg-white drop-shadow-md rounded-b-lg p-2">
-                  <p className="text-xs text-slate-600 ml-2">
-                    Showing{" "}
-                    {Math.min(
-                      (currentPage - 1) * itemsPerPage + 1,
-                      data.length
-                    )}{" "}
-                    to {Math.min(currentPage * itemsPerPage, data.length)} of{" "}
-                    {data.length} results
-                  </p>
-
-                  <div className="flex">
-                    <button
-                      className="px-3 py-2 text-xs bg-slate-300 text-slate-600 rounded-md hover:bg-slate-400 mr-1"
-                      onClick={() => setCurrentPage(currentPage - 1)}
-                      disabled={currentPage === 1}
-                    >
-                      Previous
-                    </button>
-                    <button
-                      className="px-3 py-2 text-xs text-slate-600 bg-slate-300 rounded-md hover:bg-slate-400"
-                      onClick={() => setCurrentPage(currentPage + 1)}
-                      disabled={
-                        currentPage === Math.ceil(data.length / itemsPerPage)
-                      }
-                    >
-                      Next
-                    </button>
-                  </div>
-                </div>
+                <Pagination
+                  handlePrev={() => handlePrev({ item: data[0] })}
+                  handleNext={() => handleNext({ item: data[data.length - 1] })}
+                />
                 <div className="mb-10" />
               </div>
             </div>

@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Sidebar } from "../../../../components/Sidebar";
 import { InfinitySpin } from "react-loader-spinner";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { db, auth } from "../../../../utils/firebase";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { doc, getDoc, serverTimestamp, updateDoc } from "firebase/firestore";
 import Swal from "sweetalert2";
 import { useAuthState } from "react-firebase-hooks/auth";
 
@@ -18,32 +18,25 @@ export const EditJadwalSidang = () => {
   const [error, setError] = useState("");
   const [user, loading] = useAuthState(auth);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const docRef = doc(db, "jadwalSidang", itemId);
-        const docSnap = await getDoc(docRef);
+  const fetchData = React.useCallback(async () => {
+    try {
+      const docRef = doc(db, "jadwalSidang", itemId);
+      const docSnap = await getDoc(docRef);
 
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          setStatus(data.status);
-        } else {
-          setError("Data not found");
-        }
-
-        setIsLoading(false);
-      } catch (error) {
-        console.error("Error fetching data: ", error);
-        setError("Error fetching data");
-        setIsLoading(false);
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        setStatus(data.status);
+      } else {
+        setError("Data not found");
       }
-    };
 
-    if (loading) return;
-    if (!user) return navigate("/login");
-
-    fetchData();
-  }, [itemId, user, loading, navigate]);
+      setIsLoading(false);
+    } catch (error) {
+      console.error("Error fetching data: ", error);
+      setError("Error fetching data");
+      setIsLoading(false);
+    }
+  }, [itemId]);
 
   const handleFormEdit = async (e) => {
     e.preventDefault();
@@ -58,7 +51,11 @@ export const EditJadwalSidang = () => {
 
       // Update data pada Firestore
       const docRef = doc(db, "jadwalSidang", itemId);
-      await updateDoc(docRef, { status: status, manualStatus: true });
+      await updateDoc(docRef, {
+        status: status,
+        manualStatus: true,
+        updatedAt: serverTimestamp(),
+      });
       if (status === "Tidak Aktif") {
         // Kirim permintaan ke server untuk mengirim notifikasi
         const response = await fetch(
@@ -86,6 +83,13 @@ export const EditJadwalSidang = () => {
       setIsSubmitting(false);
     }
   };
+
+  useEffect(() => {
+    if (loading) return;
+    if (!user) return navigate("/login");
+
+    fetchData();
+  }, [user, loading, navigate, fetchData]);
 
   return (
     <div className="flex bg-slate-100 min-h-screen">

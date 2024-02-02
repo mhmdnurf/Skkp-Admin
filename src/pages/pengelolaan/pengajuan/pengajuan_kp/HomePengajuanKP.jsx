@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React from "react";
 import { Sidebar } from "../../../../components/Sidebar";
 import { useNavigate } from "react-router-dom";
 import { useAuthState } from "react-firebase-hooks/auth";
@@ -8,11 +8,14 @@ import {
   collection,
   deleteDoc,
   doc,
+  endBefore,
   getDoc,
   getDocs,
-  onSnapshot,
+  limit,
+  limitToLast,
   orderBy,
   query,
+  startAfter,
   where,
 } from "firebase/firestore";
 import {
@@ -31,18 +34,37 @@ import SearchBar from "../../../../components/pengajuan-kp/SearchBar";
 import LaporanButton from "../../../../components/pengajuan-kp/LaporanButton";
 
 export const HomePengajuanKP = () => {
-  const itemsPerPage = 5;
-  const [data, setData] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [isLoading, setIsLoading] = useState(true);
-  const [searchText, setSearchText] = useState("");
+  const itemsPerPage = 10;
+  const [data, setData] = React.useState([]);
+  const [isLoading, setIsLoading] = React.useState(true);
+  const [searchText, setSearchText] = React.useState("");
   const navigate = useNavigate();
+  const [page, setPage] = React.useState(1);
   const [user, loading] = useAuthState(auth);
-  const [tanggal, setTanggal] = useState({
+  const [tanggal, setTanggal] = React.useState({
     startDate: new Date(),
     endDate: new Date().setMonth(11),
   });
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const [startIndex, setStartIndex] = React.useState(1);
+
+  const getUserAuthorization = React.useCallback(async () => {
+    try {
+      const userDocRef = doc(db, "users", user.uid);
+      const userDocSnapshot = await getDoc(userDocRef);
+
+      if (userDocSnapshot.exists()) {
+        const userData = userDocSnapshot.data();
+        setIsLoading(false);
+        if (userData.role !== "prodi") {
+          navigate("/login");
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      alert("An error occurred while fetching user data");
+    }
+  }, [user, navigate]);
 
   const getUserInfo = async (uid) => {
     const userDocRef = doc(db, "users", uid);
@@ -54,80 +76,111 @@ export const HomePengajuanKP = () => {
     return null;
   };
 
-  useEffect(() => {
-    const unsubscribe = onSnapshot(
-      query(
+  const fetchData = React.useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const q = query(
         collection(db, "pengajuan"),
         where("jenisPengajuan", "==", "Kerja Praktek"),
-        orderBy("status", "asc")
-      ),
-      async (snapshot) => {
-        const fetchedData = [];
-        for (const doc of snapshot.docs) {
-          const data = doc.data();
-          const userInfo = await getUserInfo(data.user_uid);
-          let dosenPembimbingInfo = null;
+        orderBy("createdAt", "desc"),
+        limit(itemsPerPage)
+      );
 
-          // Cek jika pembimbing_uid tidak sama dengan "-"
-          if (data.pembimbing_uid !== "-") {
-            dosenPembimbingInfo = await getUserInfo(data.pembimbing_uid);
-          }
-          fetchedData.push({
-            id: doc.id,
-            ...data,
-            userInfo: userInfo,
-            dosenPembimbingInfo: dosenPembimbingInfo,
-          });
-        }
-        const filteredData = fetchedData.filter(
-          (item) =>
-            item.userInfo.nama
-              .toLowerCase()
-              .includes(searchText.toLowerCase()) ||
-            item.userInfo.jurusan
-              .toLowerCase()
-              .includes(searchText.toLowerCase()) ||
-            item.userInfo.nim
-              .toLowerCase()
-              .includes(searchText.toLowerCase()) ||
-            item.status.toLowerCase().includes(searchText.toLowerCase()) ||
-            (item.dosenPembimbingInfo &&
-              item.dosenPembimbingInfo.nama
-                .toLowerCase()
-                .includes(searchText.toLowerCase())) ||
-            new Date(item.createdAt.seconds * 1000)
-              .toLocaleDateString("en-US")
-              .includes(searchText) ||
-            item.judul.toLowerCase().includes(searchText.toLowerCase())
-        );
-        setData(filteredData);
+      const querySnapshot = await getDocs(q);
+      if (querySnapshot.empty) {
+        console.log("No documents!");
+        return;
+      }
+      let items = [];
+      querySnapshot.docs.forEach((doc) => {
+        items.push({
+          id: doc.id,
+          ...doc.data(),
+        });
+      });
+      console.log("first items", items);
+      setData(items);
+      setStartIndex(1);
+    } catch (e) {
+      console.error("Error fetching data: ", e);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const handleNext = async ({ item }) => {
+    try {
+      if (data.length === 0) {
+        console.log("No more next documents!");
         setIsLoading(false);
       }
-    );
+      setIsLoading(true);
+      const q = query(
+        collection(db, "pengajuan"),
+        where("jenisPengajuan", "==", "Kerja Praktek"),
+        orderBy("createdAt", "desc"),
+        startAfter(item.createdAt),
+        limit(itemsPerPage)
+      );
 
-    if (loading) return;
-    if (!user) return navigate("/login");
-    const getUserAuthorization = async () => {
-      try {
-        const userDocRef = doc(db, "users", user.uid);
-        const userDocSnapshot = await getDoc(userDocRef);
-
-        if (userDocSnapshot.exists()) {
-          const userData = userDocSnapshot.data();
-          setIsLoading(false);
-          if (userData.role !== "prodi") {
-            navigate("/login");
-          }
-        }
-      } catch (err) {
-        console.error(err);
-        alert("An error occurred while fetching user data");
+      const querySnapshot = await getDocs(q);
+      if (querySnapshot.empty) {
+        console.log("No documents!");
+        return;
       }
-    };
+      let items = [];
 
-    getUserAuthorization();
-    return () => unsubscribe();
-  }, [user, loading, navigate, searchText, tanggal.startDate, tanggal.endDate]);
+      querySnapshot.docs.forEach((doc) => {
+        items.push({
+          id: doc.id,
+          ...doc.data(),
+        });
+      });
+      setData(items);
+      console.log("next items", items);
+      setPage(page + 1); // Update page on next
+      setStartIndex(page * itemsPerPage + 1);
+    } catch (error) {
+      console.error("Error fetching next documents: ", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handlePrev = async ({ item }) => {
+    setIsLoading(true);
+    try {
+      const q = query(
+        collection(db, "pengajuan"),
+        where("jenisPengajuan", "==", "Kerja Praktek"),
+        orderBy("createdAt", "desc"),
+        endBefore(item.createdAt),
+        limitToLast(itemsPerPage)
+      );
+
+      const querySnapshot = await getDocs(q);
+      if (querySnapshot.empty) {
+        console.log("No documents!");
+        return;
+      }
+      let items = [];
+
+      querySnapshot.docs.forEach((doc) => {
+        items.push({
+          id: doc.id,
+          ...doc.data(),
+        });
+      });
+      setData(items);
+      console.log("previous items", items);
+      setPage(page - 1); // Update page on next
+      setStartIndex((page - 2) * itemsPerPage + 1);
+    } catch (error) {
+      console.error("Error fetching previous documents: ", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleDelete = async (id) => {
     try {
@@ -321,8 +374,13 @@ export const HomePengajuanKP = () => {
     }
   };
 
-  const startIdx = (currentPage - 1) * itemsPerPage;
-  const endIdx = currentPage * itemsPerPage;
+  React.useEffect(() => {
+    if (loading) return;
+    if (!user) return navigate("/login");
+
+    getUserAuthorization();
+    fetchData();
+  }, [fetchData, getUserAuthorization, loading, navigate, user]);
 
   return (
     <>
@@ -361,16 +419,13 @@ export const HomePengajuanKP = () => {
                 {/* Tabel Data */}
                 <PengajuanKPTable
                   data={data}
-                  startIdx={startIdx}
-                  endIdx={endIdx}
+                  startIndex={startIndex}
                   handleDelete={handleDelete}
                 />
                 {/* Pagination */}
                 <Pagination
-                  currentPage={currentPage}
-                  itemsPerPage={itemsPerPage}
-                  data={data}
-                  setCurrentPage={setCurrentPage}
+                  handlePrev={() => handlePrev({ item: data[0] })}
+                  handleNext={() => handleNext({ item: data[data.length - 1] })}
                 />
               </div>
               <div className="mb-10" />

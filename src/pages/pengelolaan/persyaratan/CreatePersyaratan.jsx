@@ -16,14 +16,14 @@ const CreatePersyaratan = () => {
   const jenisPersyaratanOptions = [
     {
       id: 1,
-      value: "Pengajuan Kerja Praktek",
-      label: "Pengajuan Kerja Praktek",
+      value: "PENGAJUAN KERJA PRAKTEK",
+      label: "PENGAJUAN KERJA PRAKTEK",
     },
-    { id: 2, value: "Pengajuan Skripsi", label: "Pengajuan Skripsi" },
-    { id: 3, value: "Sidang Kerja Praktek", label: "Sidang Kerja Praktek" },
-    { id: 4, value: "Seminar Proposal", label: "Seminar Proposal" },
-    { id: 5, value: "Sidang Komprehensif", label: "Sidang Komprehensif" },
-    { id: 6, value: "Sidang Akhir Skripsi", label: "Sidang Akhir Skripsi" },
+    { id: 2, value: "PENGAJUAN SKRIPSI", label: "PENGAJUAN SKRIPSI" },
+    { id: 3, value: "SIDANG KERJA PRAKTEK", label: "SIDANG KERJA PRAKTEK" },
+    { id: 4, value: "SEMINAR PROPOSAL", label: "SEMINAR PROPOSAL" },
+    { id: 5, value: "SIDANG KOMPREHENSIF", label: "SIDANG KOMPREHENSIF" },
+    { id: 6, value: "Sidang AKHIR SKRIPSI", label: "SIDANG AKHIR SKRIPSI" },
   ];
 
   const navigate = useNavigate();
@@ -33,7 +33,7 @@ const CreatePersyaratan = () => {
     if (berkasPersyaratan) {
       setFormData({
         ...formData,
-        berkasList: [...berkasList, berkasPersyaratan.trim()],
+        berkasList: [...berkasList, berkasPersyaratan.trim().toUpperCase()],
         berkasPersyaratan: "",
       });
     }
@@ -88,7 +88,7 @@ const CreatePersyaratan = () => {
       if (result.isConfirmed) {
         const persyaratanRef = collection(db, "persyaratan");
         await addDoc(persyaratanRef, {
-          jenisPersyaratan,
+          jenisPersyaratan: jenisPersyaratan,
           berkasPersyaratan: berkasList,
         });
 

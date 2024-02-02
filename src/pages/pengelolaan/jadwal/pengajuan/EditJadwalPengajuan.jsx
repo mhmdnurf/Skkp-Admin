@@ -3,7 +3,7 @@ import { Sidebar } from "../../../../components/Sidebar";
 import { InfinitySpin } from "react-loader-spinner";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { db, auth } from "../../../../utils/firebase";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { doc, getDoc, serverTimestamp, updateDoc } from "firebase/firestore";
 import Swal from "sweetalert2";
 import { useAuthState } from "react-firebase-hooks/auth";
 
@@ -58,7 +58,11 @@ export const EditJadwalPengajuan = () => {
 
       // Update data pada Firestore
       const docRef = doc(db, "jadwalPengajuan", itemId);
-      await updateDoc(docRef, { status: status, manualStatus: true });
+      await updateDoc(docRef, {
+        status: status,
+        manualStatus: true,
+        updatedAt: serverTimestamp(),
+      });
       if (status === "Tidak Aktif") {
         // Kirim permintaan ke server untuk mengirim notifikasi
         const response = await fetch(

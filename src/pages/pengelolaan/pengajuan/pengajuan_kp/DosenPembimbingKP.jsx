@@ -80,31 +80,31 @@ export const DosenPembimbingKP = () => {
         });
       }
 
-      const user_uid = itemDocSnapshot.data().user_uid;
-      const userDocRef = doc(db, "users", user_uid);
-      const userDocSnapshot = await getDoc(userDocRef);
-      if (userDocSnapshot.exists()) {
-        const registrationToken = userDocSnapshot.data().registrationToken;
+      // const mahasiswa_uid = itemDocSnapshot.data().mahasiswa_uid;
+      // const userDocRef = doc(db, "users", mahasiswa_uid);
+      // const userDocSnapshot = await getDoc(userDocRef);
+      // if (userDocSnapshot.exists()) {
+      //   const registrationToken = userDocSnapshot.data().registrationToken;
 
-        const response = await fetch(
-          `https://fcm-skkp-cqk5st7fhq-et.a.run.app/send-notification/dosen-pembimbing-kp/${user_uid}`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              registrationToken: registrationToken,
-            }),
-          }
-        );
+      //   const response = await fetch(
+      //     `https://fcm-skkp-cqk5st7fhq-et.a.run.app/send-notification/dosen-pembimbing-kp/${mahasiswa_uid}`,
+      //     {
+      //       method: "POST",
+      //       headers: {
+      //         "Content-Type": "application/json",
+      //       },
+      //       body: JSON.stringify({
+      //         registrationToken: registrationToken,
+      //       }),
+      //     }
+      //   );
 
-        if (response.ok) {
-          console.log("Notification sent successfully");
-        } else {
-          console.error("Failed to send notification");
-        }
-      }
+      //   if (response.ok) {
+      //     console.log("Notification sent successfully");
+      //   } else {
+      //     console.error("Failed to send notification");
+      //   }
+      // }
     } catch (error) {
       console.error("Error updating document: ", error);
       setError("Error updating document");
