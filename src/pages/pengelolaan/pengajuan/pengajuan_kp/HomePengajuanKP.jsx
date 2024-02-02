@@ -18,12 +18,7 @@ import {
   startAfter,
   where,
 } from "firebase/firestore";
-import {
-  deleteObject,
-  getDownloadURL,
-  ref,
-  uploadBytes,
-} from "firebase/storage";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import Swal from "sweetalert2";
 import { useDisclosure } from "@chakra-ui/react";
 import * as XLSX from "xlsx";
@@ -186,7 +181,6 @@ export const HomePengajuanKP = () => {
     try {
       const docRef = doc(db, "pengajuan", id);
       const docSnapshot = await getDoc(docRef);
-      const data = docSnapshot.data();
       if (docSnapshot.exists()) {
         const pengajuanSnapshot = await getDocs(collection(db, "sidang"));
         let isUsedInPengajuan = false;
@@ -211,16 +205,6 @@ export const HomePengajuanKP = () => {
           });
 
           if (result.isConfirmed) {
-            const transkipNilaiFileName = `persyaratan/pengajuanKP/transkipNilai/${data.user_uid}`;
-            const formKrsFileName = `persyaratan/pengajuanKP/formKRS/${data.user_uid}`;
-            const pendaftaranKpFileName = `persyaratan/pengajuanKP/formPendaftaranKP/${data.user_uid}`;
-            const pembayaranKpFileName = `persyaratan/pengajuanKP/slipPembayaranKP/${data.user_uid}`;
-            const proporsalFileName = `persyaratan/pengajuanKP/proporsalKP/${data.user_uid}`;
-            await deleteObject(ref(storage, transkipNilaiFileName));
-            await deleteObject(ref(storage, formKrsFileName));
-            await deleteObject(ref(storage, pendaftaranKpFileName));
-            await deleteObject(ref(storage, pembayaranKpFileName));
-            await deleteObject(ref(storage, proporsalFileName));
             await deleteDoc(docRef);
             Swal.fire("Success", "Data Berhasil dihapus!", "success");
           }

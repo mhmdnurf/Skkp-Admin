@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   FaInfoCircle,
   FaLaptopCode,
@@ -16,7 +16,6 @@ import {
   doc,
   getDoc,
   getDocs,
-  onSnapshot,
   query,
   where,
 } from "firebase/firestore";
@@ -45,7 +44,7 @@ const Dashboard = () => {
   const [jumlahPendaftarKompre, setJumlahPendaftarKompre] = useState(0);
   const [jumlahPendaftarSkripsi, setJumlahPendaftarSkripsi] = useState(0);
 
-  const fetchUserName = async () => {
+  const fetchUserName = React.useCallback(async () => {
     try {
       const userDocRef = doc(db, "users", user.uid);
       const userDocSnapshot = await getDoc(userDocRef);
@@ -63,9 +62,9 @@ const Dashboard = () => {
       console.error(err);
       alert("An error occurred while fetching user data");
     }
-  };
+  }, [navigate, user]);
 
-  const fetchKerjaPraktek = async () => {
+  const fetchKerjaPraktek = React.useCallback(async () => {
     try {
       const querySnapshot = await getDocs(
         query(collection(db, "jadwalSidang"), where("status", "==", "Aktif"))
@@ -90,8 +89,9 @@ const Dashboard = () => {
     } catch (error) {
       console.error(error);
     }
-  };
-  const fetchSeminarProposal = async () => {
+  }, []);
+
+  const fetchSeminarProposal = React.useCallback(async () => {
     try {
       const querySnapshot = await getDocs(
         query(collection(db, "jadwalSidang"), where("status", "==", "Aktif"))
@@ -119,9 +119,9 @@ const Dashboard = () => {
     } catch (error) {
       console.error(error);
     }
-  };
+  }, []);
 
-  const fetchSkripsi = async () => {
+  const fetchSkripsi = React.useCallback(async () => {
     try {
       const querySnapshot = await getDocs(
         query(collection(db, "jadwalSidang"), where("status", "==", "Aktif"))
@@ -144,8 +144,9 @@ const Dashboard = () => {
     } catch (error) {
       console.error(error);
     }
-  };
-  const fetchKomprehensif = async () => {
+  }, []);
+
+  const fetchKomprehensif = React.useCallback(async () => {
     try {
       const querySnapshot = await getDocs(
         query(collection(db, "jadwalSidang"), where("status", "==", "Aktif"))
@@ -170,75 +171,77 @@ const Dashboard = () => {
     } catch (error) {
       console.error(error);
     }
-  };
+  }, []);
 
-  const fetchSidang = () => {
+  const fetchSidang = React.useCallback(async () => {
     const activeJadwalPengajuanQuery = query(
       collection(db, "jadwalSidang"),
       where("status", "==", "Aktif")
     );
 
-    const unsubscribe = onSnapshot(
-      activeJadwalPengajuanQuery,
-      (jadwalPengajuanSnapshot) => {
-        if (!jadwalPengajuanSnapshot.empty) {
-          jadwalPengajuanSnapshot.forEach((doc) => {
-            const jadwalData = doc.data();
-            const jenisSidang = jadwalData.jenisSidang;
-            if (jenisSidang.includes("Kerja Praktek")) {
-              // Memeriksa jenis pengajuan
-              const periodePendaftaran = jadwalData.periodePendaftaran;
-              setTanggalBukaKP(periodePendaftaran.tanggalBuka.toDate());
-              setTanggalTutupKP(periodePendaftaran.tanggalTutup.toDate());
-              setTanggalSidangKP(jadwalData.tanggalSidang.toDate());
-            }
-            if (jenisSidang.includes("Seminar Proposal")) {
-              // Memeriksa jenis pengajuan
-              const periodePendaftaran = jadwalData.periodePendaftaran;
-              setTanggalBukaSempro(periodePendaftaran.tanggalBuka.toDate());
-              setTanggalTutupSempro(periodePendaftaran.tanggalTutup.toDate());
-              setTanggalSidangSempro(jadwalData.tanggalSidang.toDate());
-            }
-            if (jenisSidang.includes("Komprehensif")) {
-              // Memeriksa jenis pengajuan
-              const periodePendaftaran = jadwalData.periodePendaftaran;
-              setTanggalBukaKompre(periodePendaftaran.tanggalBuka.toDate());
-              setTanggalTutupKompre(periodePendaftaran.tanggalTutup.toDate());
-              setTanggalSidangKompre(jadwalData.tanggalSidang.toDate());
-            }
-            if (jenisSidang.includes("Skripsi")) {
-              // Memeriksa jenis pengajuan
-              const periodePendaftaran = jadwalData.periodePendaftaran;
-              setTanggalBukaSkripsi(periodePendaftaran.tanggalBuka.toDate());
-              setTanggalTutupSkripsi(periodePendaftaran.tanggalTutup.toDate());
-              setTanggalSidangSkripsi(jadwalData.tanggalSidang.toDate());
-            }
-          });
-        } else {
-          // Tidak ada jadwal sidang aktif
-          setTanggalBukaKP(false);
-          setTanggalTutupKP(false);
-        }
-      }
-    );
+    const jadwalPengajuanSnapshot = await getDocs(activeJadwalPengajuanQuery);
 
-    return unsubscribe;
-  };
+    if (!jadwalPengajuanSnapshot.empty) {
+      jadwalPengajuanSnapshot.forEach((doc) => {
+        const jadwalData = doc.data();
+        const jenisSidang = jadwalData.jenisSidang;
+        if (jenisSidang.includes("Kerja Praktek")) {
+          const periodePendaftaran = jadwalData.periodePendaftaran;
+          setTanggalBukaKP(periodePendaftaran.tanggalBuka.toDate());
+          setTanggalTutupKP(periodePendaftaran.tanggalTutup.toDate());
+          setTanggalSidangKP(jadwalData.tanggalSidang.toDate());
+        }
+        if (jenisSidang.includes("Seminar Proposal")) {
+          const periodePendaftaran = jadwalData.periodePendaftaran;
+          setTanggalBukaSempro(periodePendaftaran.tanggalBuka.toDate());
+          setTanggalTutupSempro(periodePendaftaran.tanggalTutup.toDate());
+          setTanggalSidangSempro(jadwalData.tanggalSidang.toDate());
+        }
+        if (jenisSidang.includes("Komprehensif")) {
+          const periodePendaftaran = jadwalData.periodePendaftaran;
+          setTanggalBukaKompre(periodePendaftaran.tanggalBuka.toDate());
+          setTanggalTutupKompre(periodePendaftaran.tanggalTutup.toDate());
+          setTanggalSidangKompre(jadwalData.tanggalSidang.toDate());
+        }
+        if (jenisSidang.includes("Skripsi")) {
+          const periodePendaftaran = jadwalData.periodePendaftaran;
+          setTanggalBukaSkripsi(periodePendaftaran.tanggalBuka.toDate());
+          setTanggalTutupSkripsi(periodePendaftaran.tanggalTutup.toDate());
+          setTanggalSidangSkripsi(jadwalData.tanggalSidang.toDate());
+        }
+      });
+    } else {
+      setTanggalBukaKP(false);
+      setTanggalTutupKP(false);
+      setTanggalBukaSempro(false);
+      setTanggalTutupSempro(false);
+      setTanggalBukaKompre(false);
+      setTanggalTutupKompre(false);
+      setTanggalBukaSkripsi(false);
+      setTanggalTutupSkripsi(false);
+    }
+  }, []);
 
   useEffect(() => {
     if (loading) return;
     if (!user) return navigate("/login");
-
-    const unsubscribeKP = fetchSidang();
     fetchUserName();
     fetchKerjaPraktek();
     fetchSeminarProposal();
-    fetchKomprehensif();
     fetchSkripsi();
-    return () => {
-      unsubscribeKP();
-    };
-  }, [loading, navigate, user]);
+    fetchKomprehensif();
+    fetchSidang();
+  }, [
+    fetchUserName,
+    fetchKerjaPraktek,
+    fetchSeminarProposal,
+    fetchSkripsi,
+    fetchKomprehensif,
+    fetchSidang,
+    loading,
+    navigate,
+    user,
+  ]);
 
   return (
     <>

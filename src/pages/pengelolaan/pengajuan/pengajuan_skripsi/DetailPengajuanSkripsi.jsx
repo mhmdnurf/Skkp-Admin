@@ -44,6 +44,24 @@ export const DetailPengajuanSkripsi = () => {
   }, [itemId]);
 
   useEffect(() => {
+    const getUser = async () => {
+      try {
+        const userDocRef = doc(db, "users", user.uid);
+        const userDocSnapshot = await getDoc(userDocRef);
+
+        if (userDocSnapshot.exists()) {
+          const userData = userDocSnapshot.data();
+          setIsLoading(false);
+          if (userData.role !== "prodi") {
+            navigate("/login");
+          }
+        }
+      } catch (err) {
+        console.error(err);
+        alert("An error occurred while fetching user data");
+      }
+    };
+    getUser();
     fetchData();
     if (loading) return;
     if (!user) return navigate("/login");

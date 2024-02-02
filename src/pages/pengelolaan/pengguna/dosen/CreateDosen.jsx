@@ -2,11 +2,11 @@ import { useEffect, useState } from "react";
 import { Sidebar } from "../../../../components/Sidebar";
 import { db, auth } from "../../../../utils/firebase";
 import {
+  addDoc,
   collection,
-  doc,
   getDocs,
   query,
-  setDoc,
+  serverTimestamp,
   where,
 } from "firebase/firestore";
 import { InfinitySpin } from "react-loader-spinner";
@@ -49,13 +49,13 @@ export const CreateDosen = () => {
         setIsSubmitting(false);
         return;
       }
-      const userDocRef = doc(db, "users");
-      await setDoc(userDocRef, {
+      const usersCollectionRef = collection(db, "users");
+      await addDoc(usersCollectionRef, {
         nama: nama,
         email: email,
         role: "Dosen",
         nidn: nidn,
-        createdAt: new Date(),
+        createdAt: serverTimestamp(),
       });
 
       // Mengosongkan input setelah berhasil menambahkan data
@@ -68,7 +68,7 @@ export const CreateDosen = () => {
         icon: "success",
         confirmButtonText: "OK",
       });
-      navigate("/login");
+      navigate("/kelola-pengguna/dosen");
     } catch (error) {
       console.error("Error adding document: ", error);
     }

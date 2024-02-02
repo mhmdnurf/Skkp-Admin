@@ -49,7 +49,7 @@ export const VerifikasiKP = () => {
           navigate(`/pengajuan-kp/detail/${itemId}`);
         });
       }
-      const user_uid = itemDocSnapshot.data().user_uid;
+      const user_uid = itemDocSnapshot.data().mahasiswa_uid;
       const userDocRef = doc(db, "users", user_uid);
       const userDocSnapshot = await getDoc(userDocRef);
       if (userDocSnapshot.exists()) {

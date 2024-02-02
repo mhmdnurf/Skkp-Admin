@@ -43,8 +43,8 @@ export const CreateTopik = () => {
       };
 
       const result = await Swal.fire({
-        title: "Apakah Anda Yakin?",
-        text: "Data akan hilang permanen ketika dihapus",
+        title: "Apakah anda yakin menambahkan topik?",
+        text: "Pastikan data yang anda masukkan sudah benar",
         icon: "warning",
         showCancelButton: true,
         confirmButtonColor: "#334155",

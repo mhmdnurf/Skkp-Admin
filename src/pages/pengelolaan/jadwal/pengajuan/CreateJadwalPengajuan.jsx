@@ -79,8 +79,8 @@ export const CreateJadwalPengajuan = () => {
       };
 
       const result = await Swal.fire({
-        title: "Apakah Anda Yakin?",
-        text: "Data akan hilang permanen ketika dihapus",
+        title: "Apakah jadwal pengajuan sudah sesuai?",
+        text: "Pastikan data yang anda masukkan sudah benar",
         icon: "warning",
         showCancelButton: true,
         confirmButtonColor: "#334155",

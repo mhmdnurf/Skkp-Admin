@@ -25,7 +25,7 @@ const PengajuanKPTable = ({ data, startIndex, handleDelete }) => {
             className="hover:bg-slate-100 border-b border-t border-slate-300"
           >
             <td className="text-center">{startIndex + index}</td>
-            <td className="text-center">
+            <td className="text-center whitespace-nowrap px-8">
               {item.createdAt &&
                 new Date(item.createdAt.seconds * 1000).toLocaleDateString(
                   "id-ID",
@@ -36,22 +36,18 @@ const PengajuanKPTable = ({ data, startIndex, handleDelete }) => {
                   }
                 )}
             </td>
-            <td className="text-center">
-              {item.userInfo && item.userInfo.nim}
+            <td className="text-center whitespace-nowrap px-8">{item.nim}</td>
+            <td className="text-center whitespace-nowrap px-8">{item.nama}</td>
+            <td className="text-center whitespace-nowrap px-8">{item.prodi}</td>
+            <td className="text-center px-8 whitespace-nowrap">{item.judul}</td>
+            <td className="text-center whitespace-nowrap px-8">
+              {item.status}
             </td>
-            <td className="text-center whitespace-nowrap">
-              {item.userInfo && item.userInfo.nama}
+            <td className="text-center px-8 whitespace-nowrap">
+              {item.catatan ? item.catatan : "-"}
             </td>
-            <td className="text-center">
-              {item.userInfo && item.userInfo.jurusan}
-            </td>
-            <td className="text-center p-4 whitespace-nowrap">{item.judul}</td>
-            <td className="text-center whitespace-nowrap">{item.status}</td>
-            <td className="text-center p-4 whitespace-nowrap">
-              {item.catatan}
-            </td>
-            <td className="text-center p-6 whitespace-nowrap">
-              {item.dosenPembimbingInfo ? item.dosenPembimbingInfo.nama : "-"}
+            <td className="text-center px-8 whitespace-nowrap">
+              {item.namaPembimbing ? item.namaPembimbing : "-"}
             </td>
             <td className="text-center p-4 normal-case">
               <div className="flex">
